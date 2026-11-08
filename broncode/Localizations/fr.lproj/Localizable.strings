@@ -1,0 +1,23 @@
+/* EasyComp Keyboard Light v1.1.0 — fr */
+"brightness.label" = "Luminosité";
+"brightness.tooltip" = "Rétroéclairage du clavier";
+"brightness.up" = "Augmenter (+10 %)";
+"brightness.down" = "Diminuer (−10 %)";
+"power.off" = "Éteindre le rétroéclairage";
+"power.on" = "Allumer le rétroéclairage";
+"power.off.label" = "éteint";
+"startup.login" = "Ouvrir à la connexion";
+"startup.error" = "Démarrage auto : échec de l’enregistrement";
+"privacy.input" = "Ouvrir les réglages Surveillance de l’entrée…";
+"privacy.accessibility" = "Ouvrir les réglages Accessibilité…";
+"language" = "Langue";
+"language.system" = "Automatique (macOS)";
+"app.quit" = "Quitter EasyComp Keyboard Light";
+"touchbar.starting" = "Touch Bar : démarrage de la surveillance";
+"touchbar.listening" = "Touch Bar : écoute des touches d’éclairage";
+"touchbar.noaccess" = "Touch Bar : surveillance des touches indisponible";
+"touchbar.received" = "Touch Bar : touche détectée ✓";
+"hid.ready" = "HID : prêt";
+"hid.success" = "HID : commande acceptée";
+"hid.error" = "HID : erreur";
+"hid.launchfailed" = "HID : lancement impossible";

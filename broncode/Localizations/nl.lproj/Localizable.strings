@@ -1,0 +1,23 @@
+/* EasyComp Keyboard Light v1.1.0 — nl */
+"brightness.label" = "Helderheid";
+"brightness.tooltip" = "Toetsenbordverlichting";
+"brightness.up" = "Helderder (+10%)";
+"brightness.down" = "Donkerder (−10%)";
+"power.off" = "Verlichting uitschakelen";
+"power.on" = "Verlichting inschakelen";
+"power.off.label" = "uit";
+"startup.login" = "Automatisch starten bij inloggen";
+"startup.error" = "Autostart: opslaan mislukt";
+"privacy.input" = "Instellingen toetsmonitoring openen…";
+"privacy.accessibility" = "Instellingen toegankelijkheid openen…";
+"language" = "Taal";
+"language.system" = "Automatisch (macOS)";
+"app.quit" = "Stop EasyComp Keyboard Light";
+"touchbar.starting" = "Touch Bar: toetscontrole starten";
+"touchbar.listening" = "Touch Bar: luister naar verlichtingstoetsen";
+"touchbar.noaccess" = "Touch Bar: geen toegang tot toetsmonitoring";
+"touchbar.received" = "Touch Bar: toets ontvangen ✓";
+"hid.ready" = "HID: klaar";
+"hid.success" = "HID: opdracht geaccepteerd";
+"hid.error" = "HID: fout";
+"hid.launchfailed" = "HID: starten mislukt";
