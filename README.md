@@ -10,6 +10,13 @@ A free, open-source macOS menu bar app that restores **keyboard backlight contro
 
 [Installation](#installation) · [How it works](#how-it-works) · [Compatibility](#compatibility) · [Dutch instructions](LEESMIJ.md) · [License](LICENSE)
 
+<h2>🎬 Live Demonstration</h2>
+
+<p>See EasyComp Keyboard Light in action on a headless MacBook Pro.</p>
+
+<img src="Assets/IMG_0919.gif" alt="EasyComp Keyboard Light Demo" width="500">
+
+
 ## Why this exists: an unnecessary software roadblock
 
 Remove the broken display from a MacBook Pro, and you also remove its ambient light sensor. On the tested MacBook, **macOS then removes the normal keyboard-backlight controls**. The Touch Bar buttons no longer work through the usual path, System Settings offers no useful control, and Apple's CoreBrightness interface fails to report a usable brightness value.
