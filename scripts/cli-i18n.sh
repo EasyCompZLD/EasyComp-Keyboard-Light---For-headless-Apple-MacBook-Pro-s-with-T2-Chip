@@ -1,0 +1,213 @@
+#!/bin/bash
+# Localized user-facing shell messages. Developer reports deliberately stay English.
+# Sourced by the canonical .command scripts. Compatible with macOS Bash 3.2.
+ecz_language() {
+  local code="${ECZ_INSTALL_LANGUAGE:-}" first=""
+  if [[ -z "$code" ]] && [[ "$(uname -s)" == Darwin ]] && command -v defaults >/dev/null 2>&1; then
+    first="$(/usr/bin/defaults read -g AppleLanguages 2>/dev/null | /usr/bin/awk 'match($0, /[A-Za-z][A-Za-z](-[A-Za-z0-9]+)?/) { print substr($0,RSTART,2); exit }' || true)"
+    code="$first"
+  fi
+  if [[ -z "$code" ]]; then code="${LC_ALL:-${LC_MESSAGES:-${LANG:-en}}}"; fi
+  code="$(printf '%s' "$code" | /usr/bin/tr '[:upper:]' '[:lower:]')"
+  code="${code:0:2}"
+  case "$code" in en|nl|de|fr|es|it|pt|pl) printf '%s\n' "$code";; *) printf '%s\n' en;; esac
+}
+ECZ_LANGUAGE="$(ecz_language)"
+ecz_t() {
+  local key="$1"
+  case "$ECZ_LANGUAGE:$key" in
+    nl:boot.title) echo 'Installatiewizard starten';;
+    de:boot.title) echo 'Installationsassistent starten';;
+    fr:boot.title) echo "Démarrage de l’assistant d’installation";;
+    es:boot.title) echo 'Iniciando el asistente de instalación';;
+    it:boot.title) echo "Avvio dell'installazione guidata";;
+    pt:boot.title) echo 'A iniciar o assistente de instalação';;
+    pl:boot.title) echo 'Uruchamianie kreatora instalacji';;
+    *:boot.title) echo 'Starting setup wizard';;
+    nl:boot.nonmac) echo 'Deze installer werkt alleen op macOS.';;
+    de:boot.nonmac) echo 'Dieses Installationsprogramm funktioniert nur unter macOS.';;
+    fr:boot.nonmac) echo 'Ce programme fonctionne uniquement sur macOS.';;
+    es:boot.nonmac) echo 'Este instalador solo funciona en macOS.';;
+    it:boot.nonmac) echo 'Questo programma funziona solo su macOS.';;
+    pt:boot.nonmac) echo 'Este instalador só funciona no macOS.';;
+    pl:boot.nonmac) echo 'Ten instalator działa tylko w macOS.';;
+    *:boot.nonmac) echo 'This installer requires macOS.';;
+    nl:boot.noroot) echo 'Start als gewone gebruiker, niet met sudo.';;
+    de:boot.noroot) echo 'Als normaler Benutzer starten, nicht mit sudo.';;
+    fr:boot.noroot) echo 'Lancez en tant qu’utilisateur normal, sans sudo.';;
+    es:boot.noroot) echo 'Ejecuta como usuario normal, sin sudo.';;
+    it:boot.noroot) echo 'Esegui come utente normale, senza sudo.';;
+    pt:boot.noroot) echo 'Execute como utilizador normal, sem sudo.';;
+    pl:boot.noroot) echo 'Uruchom jako zwykły użytkownik, bez sudo.';;
+    *:boot.noroot) echo 'Run as a normal user, not with sudo.';;
+    nl:boot.incomplete) echo 'Project niet compleet. Pak de volledige ZIP uit.';;
+    de:boot.incomplete) echo 'Projekt unvollständig. Das gesamte ZIP-Archiv entpacken.';;
+    fr:boot.incomplete) echo 'Projet incomplet. Décompressez toute l’archive ZIP.';;
+    es:boot.incomplete) echo 'Proyecto incompleto. Extrae todo el archivo ZIP.';;
+    it:boot.incomplete) echo "Progetto incompleto. Estrai tutto l'archivio ZIP.";;
+    pt:boot.incomplete) echo 'Projeto incompleto. Extraia todo o ficheiro ZIP.';;
+    pl:boot.incomplete) echo 'Niekompletny projekt. Rozpakuj całe archiwum ZIP.';;
+    *:boot.incomplete) echo 'Incomplete project. Extract the complete ZIP archive.';;
+    nl:boot.tools) echo 'De Apple-ontwikkeltools konden niet worden voorbereid. Controleer het foutlog en probeer opnieuw.';;
+    de:boot.tools) echo 'Apple-Entwicklerwerkzeuge konnten nicht vorbereitet werden. Prüfen Sie das Fehlerprotokoll.';;
+    fr:boot.tools) echo 'Impossible de préparer les outils Apple. Consultez le journal des erreurs et réessayez.';;
+    es:boot.tools) echo 'No se pudieron preparar las herramientas Apple. Revisa el registro e inténtalo de nuevo.';;
+    it:boot.tools) echo 'Impossibile preparare gli strumenti Apple. Controlla il registro e riprova.';;
+    pt:boot.tools) echo 'Não foi possível preparar as ferramentas Apple. Verifique o registo e tente novamente.';;
+    pl:boot.tools) echo 'Nie udało się przygotować narzędzi Apple. Sprawdź dziennik błędów i spróbuj ponownie.';;
+    *:boot.tools) echo 'Apple tools could not be prepared. Check the diagnostic log and retry.';;
+    nl:boot.compile) echo '[1/4] Native installatiewizard compileren...';;
+    de:boot.compile) echo '[1/4] Nativen Installationsassistenten kompilieren...';;
+    fr:boot.compile) echo '[1/4] Compilation de l’assistant natif...';;
+    es:boot.compile) echo '[1/4] Compilando el asistente nativo...';;
+    it:boot.compile) echo '[1/4] Compilazione guidata nativa...';;
+    pt:boot.compile) echo '[1/4] A compilar o assistente nativo...';;
+    pl:boot.compile) echo '[1/4] Kompilowanie natywnego kreatora...';;
+    *:boot.compile) echo '[1/4] Compiling native setup wizard...';;
+    nl:boot.bundle) echo '[2/4] Appicoon en macOS-bundel controleren...';;
+    de:boot.bundle) echo '[2/4] App-Symbol und macOS-Paket prüfen...';;
+    fr:boot.bundle) echo '[2/4] Vérification de l’icône et du paquet macOS...';;
+    es:boot.bundle) echo '[2/4] Comprobando el icono y el paquete macOS...';;
+    it:boot.bundle) echo '[2/4] Verifica icona e pacchetto macOS...';;
+    pt:boot.bundle) echo '[2/4] A verificar ícone e pacote macOS...';;
+    pl:boot.bundle) echo '[2/4] Sprawdzanie ikony i pakietu macOS...';;
+    *:boot.bundle) echo '[2/4] Validating app icon and macOS bundle...';;
+    nl:boot.save) echo '[3/4] Wizard bewaren...';;
+    de:boot.save) echo '[3/4] Installationsassistent speichern...';;
+    fr:boot.save) echo '[3/4] Enregistrement de l’assistant...';;
+    es:boot.save) echo '[3/4] Guardando el asistente...';;
+    it:boot.save) echo '[3/4] Salvataggio della procedura guidata...';;
+    pt:boot.save) echo '[3/4] A guardar o assistente...';;
+    pl:boot.save) echo '[3/4] Zapisywanie kreatora...';;
+    *:boot.save) echo '[3/4] Saving setup wizard...';;
+    nl:boot.open) echo '[4/4] Installatiewizard automatisch openen...';;
+    de:boot.open) echo '[4/4] Installationsassistent automatisch öffnen...';;
+    fr:boot.open) echo '[4/4] Ouverture automatique de l’assistant...';;
+    es:boot.open) echo '[4/4] Abriendo el asistente automáticamente...';;
+    it:boot.open) echo '[4/4] Apertura automatica della procedura guidata...';;
+    pt:boot.open) echo '[4/4] A abrir o assistente automaticamente...';;
+    pl:boot.open) echo '[4/4] Automatyczne otwieranie kreatora...';;
+    *:boot.open) echo '[4/4] Opening setup wizard automatically...';;
+    nl:boot.success) echo 'De installatiewizard is geopend.';;
+    de:boot.success) echo 'Der Installationsassistent wurde geöffnet.';;
+    fr:boot.success) echo 'L’assistant d’installation est ouvert.';;
+    es:boot.success) echo 'Se ha abierto el asistente de instalación.';;
+    it:boot.success) echo 'La procedura guidata è stata aperta.';;
+    pt:boot.success) echo 'O assistente de instalação foi aberto.';;
+    pl:boot.success) echo 'Kreator instalacji został otwarty.';;
+    *:boot.success) echo 'The setup wizard is open.';;
+    nl:boot.failed) echo 'De installatiewizard kon niet worden gestart. De bestaande app is niet gewijzigd.';;
+    de:boot.failed) echo 'Der Installationsassistent konnte nicht gestartet werden. Die vorhandene App bleibt unverändert.';;
+    fr:boot.failed) echo 'Impossible de démarrer l’assistant. L’application existante n’a pas été modifiée.';;
+    es:boot.failed) echo 'No se pudo iniciar el asistente. La aplicación existente no se ha modificado.';;
+    it:boot.failed) echo "Impossibile avviare la procedura guidata. L'app esistente non è stata modificata.";;
+    pt:boot.failed) echo 'Não foi possível iniciar o assistente. A aplicação existente não foi alterada.';;
+    pl:boot.failed) echo 'Nie udało się uruchomić kreatora. Istniejąca aplikacja nie została zmieniona.';;
+    *:boot.failed) echo 'Setup wizard could not start. Existing app was not changed.';;
+    nl:boot.close) echo 'Druk op Enter om dit venster te sluiten...';;
+    de:boot.close) echo 'Eingabetaste drücken, um das Fenster zu schließen...';;
+    fr:boot.close) echo 'Appuyez sur Entrée pour fermer cette fenêtre...';;
+    es:boot.close) echo 'Pulsa Intro para cerrar esta ventana...';;
+    it:boot.close) echo 'Premi Invio per chiudere la finestra...';;
+    pt:boot.close) echo 'Prima Enter para fechar esta janela...';;
+    pl:boot.close) echo 'Naciśnij Enter, aby zamknąć to okno...';;
+    *:boot.close) echo 'Press Enter to close this window...';;
+    nl:report.done) echo 'Rapport opgeslagen. Controleer het voor openbaar delen.';;
+    de:report.done) echo 'Bericht gespeichert. Vor dem Teilen überprüfen.';;
+    fr:report.done) echo 'Rapport enregistré. Vérifiez-le avant publication.';;
+    es:report.done) echo 'Informe guardado. Revísalo antes de publicarlo.';;
+    it:report.done) echo 'Rapporto salvato. Controllalo prima di pubblicarlo.';;
+    pt:report.done) echo 'Relatório guardado. Reveja-o antes de publicar.';;
+    pl:report.done) echo 'Zapisano raport. Sprawdź go przed publikacją.';;
+    *:report.done) echo 'Report saved. Review it before publishing.';;
+    nl:report.question) echo 'Wat wil je doen? (1: kopiëren en GitHub, 2: kopiëren, 3: GitHub, 4: TextEdit, Enter: sluiten)';;
+    de:report.question) echo 'Was möchten Sie tun? (1: Kopieren und GitHub, 2: Kopieren, 3: GitHub, 4: TextEdit, Enter: Schließen)';;
+    fr:report.question) echo 'Que souhaitez-vous faire ? (1 : copier et GitHub, 2 : copier, 3 : GitHub, 4 : TextEdit, Entrée : fermer)';;
+    es:report.question) echo '¿Qué quieres hacer? (1: copiar y GitHub, 2: copiar, 3: GitHub, 4: TextEdit, Intro: cerrar)';;
+    it:report.question) echo 'Cosa vuoi fare? (1: copia e GitHub, 2: copia, 3: GitHub, 4: TextEdit, Invio: chiudi)';;
+    pt:report.question) echo 'O que pretende fazer? (1: copiar e GitHub, 2: copiar, 3: GitHub, 4: TextEdit, Enter: fechar)';;
+    pl:report.question) echo 'Co chcesz zrobić? (1: kopiuj i GitHub, 2: kopiuj, 3: GitHub, 4: TextEdit, Enter: zamknij)';;
+    *:report.question) echo 'What would you like to do? (1: copy and GitHub, 2: copy, 3: GitHub, 4: TextEdit, Enter: close)';;
+    nl:remove.done) echo 'EasyComp Keyboard Light en automatisch starten zijn verwijderd. De helderheidsvoorkeur blijft opgeslagen.';;
+    de:remove.done) echo 'EasyComp Keyboard Light und Autostart wurden entfernt. Die Helligkeitseinstellung bleibt gespeichert.';;
+    fr:remove.done) echo 'EasyComp Keyboard Light et son démarrage automatique ont été supprimés. Le réglage de luminosité est conservé.';;
+    es:remove.done) echo 'Se han eliminado EasyComp Keyboard Light y el inicio automático. Se conserva la preferencia de brillo.';;
+    it:remove.done) echo "EasyComp Keyboard Light e l'avvio automatico sono stati rimossi. La preferenza di luminosità rimane salvata.";;
+    pt:remove.done) echo 'EasyComp Keyboard Light e o arranque automático foram removidos. A preferência de brilho foi mantida.';;
+    pl:remove.done) echo 'Usunięto EasyComp Keyboard Light i autostart. Ustawienie jasności zachowano.';;
+    *:remove.done) echo 'EasyComp Keyboard Light and autostart removed. Saved brightness preference retained.';;
+    nl:remove.confirm) echo 'EasyComp Keyboard Light verwijderen? [j/N]';;
+    de:remove.confirm) echo 'EasyComp Keyboard Light deinstallieren? [j/N]';;
+    fr:remove.confirm) echo 'Désinstaller EasyComp Keyboard Light ? [o/N]';;
+    es:remove.confirm) echo '¿Desinstalar EasyComp Keyboard Light? [s/N]';;
+    it:remove.confirm) echo 'Disinstallare EasyComp Keyboard Light? [s/N]';;
+    pt:remove.confirm) echo 'Desinstalar EasyComp Keyboard Light? [s/N]';;
+    pl:remove.confirm) echo 'Odinstalować EasyComp Keyboard Light? [t/N]';;
+    *:remove.confirm) echo 'Uninstall EasyComp Keyboard Light? [y/N]';;
+    nl:remove.cancel) echo 'Verwijderen geannuleerd.';;
+    de:remove.cancel) echo 'Deinstallation abgebrochen.';;
+    fr:remove.cancel) echo 'Désinstallation annulée.';;
+    es:remove.cancel) echo 'Desinstalación cancelada.';;
+    it:remove.cancel) echo 'Disinstallazione annullata.';;
+    pt:remove.cancel) echo 'Desinstalação cancelada.';;
+    pl:remove.cancel) echo 'Anulowano odinstalowanie.';;
+    *:remove.cancel) echo 'Uninstall cancelled.';;
+    nl:prereq.present) echo 'Apple-ontwikkeltools beschikbaar';;
+    de:prereq.present) echo 'Apple-Entwicklerwerkzeuge verfügbar';;
+    fr:prereq.present) echo 'Outils de développement Apple disponibles';;
+    es:prereq.present) echo 'Herramientas de desarrollo de Apple disponibles';;
+    it:prereq.present) echo 'Strumenti di sviluppo Apple disponibili';;
+    pt:prereq.present) echo 'Ferramentas de desenvolvimento Apple disponíveis';;
+    pl:prereq.present) echo 'Narzędzia programistyczne Apple są dostępne';;
+    *:prereq.present) echo 'Apple developer tools available';;
+    nl:prereq.missing) echo 'Geen werkende compiler gevonden. De officiële Apple Command Line Tools-installatie wordt gestart.';;
+    de:prereq.missing) echo 'Kein funktionsfähiger Compiler gefunden. Der offizielle Apple-Installer wird gestartet.';;
+    fr:prereq.missing) echo 'Aucun compilateur opérationnel trouvé. L’installation officielle Apple va démarrer.';;
+    es:prereq.missing) echo 'No se encontró un compilador funcional. Se iniciará el instalador oficial de Apple.';;
+    it:prereq.missing) echo 'Nessun compilatore funzionante trovato. Avvio dell’installer ufficiale Apple.';;
+    pt:prereq.missing) echo 'Não foi encontrado um compilador funcional. A iniciar o instalador oficial da Apple.';;
+    pl:prereq.missing) echo 'Nie znaleziono działającego kompilatora. Uruchamianie oficjalnego instalatora Apple.';;
+    *:prereq.missing) echo 'No working compiler found. Starting the official Apple Command Line Tools installer.';;
+    nl:prereq.approval) echo 'Bevestig de macOS-melding en licentie. Daarna gaat de installatie automatisch verder.';;
+    de:prereq.approval) echo 'Bestätigen Sie den macOS-Dialog und die Lizenz. Danach wird automatisch fortgesetzt.';;
+    fr:prereq.approval) echo 'Acceptez la boîte de dialogue macOS et la licence. L’installation reprendra automatiquement.';;
+    es:prereq.approval) echo 'Acepta el diálogo de macOS y la licencia. La instalación continuará automáticamente.';;
+    it:prereq.approval) echo 'Conferma la finestra macOS e la licenza. L’installazione riprenderà automaticamente.';;
+    pt:prereq.approval) echo 'Confirme a janela do macOS e a licença. A instalação continuará automaticamente.';;
+    pl:prereq.approval) echo 'Zatwierdź okno macOS i licencję. Instalacja zostanie automatycznie wznowiona.';;
+    *:prereq.approval) echo 'Approve the macOS dialog and license. Installation will then resume automatically.';;
+    nl:prereq.resume) echo 'De Apple-ontwikkeltools zijn gereed. We gaan automatisch verder.';;
+    de:prereq.resume) echo 'Apple-Entwicklerwerkzeuge sind bereit. Automatische Fortsetzung.';;
+    fr:prereq.resume) echo 'Les outils Apple sont prêts. Reprise automatique.';;
+    es:prereq.resume) echo 'Las herramientas Apple están listas. Continuando automáticamente.';;
+    it:prereq.resume) echo 'Gli strumenti Apple sono pronti. Ripresa automatica.';;
+    pt:prereq.resume) echo 'As ferramentas Apple estão prontas. A continuar automaticamente.';;
+    pl:prereq.resume) echo 'Narzędzia Apple są gotowe. Automatyczne kontynuowanie.';;
+    *:prereq.resume) echo 'Apple developer tools are ready. Continuing automatically.';;
+    nl:prereq.broken) echo 'Xcode-compilers bestaan maar werken niet. Open Xcode voor de eerste configuratie/licentie; er wordt niets onnodig gedownload.';;
+    de:prereq.broken) echo 'Xcode-Compiler sind vorhanden, funktionieren aber nicht. Öffnen Sie Xcode zur Einrichtung/Lizenzbestätigung.';;
+    fr:prereq.broken) echo 'Les compilateurs Xcode existent mais ne fonctionnent pas. Ouvrez Xcode pour terminer la configuration/licence.';;
+    es:prereq.broken) echo 'Los compiladores Xcode existen, pero no funcionan. Abre Xcode para completar la configuración y la licencia.';;
+    it:prereq.broken) echo 'I compilatori Xcode esistono ma non funzionano. Apri Xcode e completa configurazione e licenza.';;
+    pt:prereq.broken) echo 'Os compiladores Xcode existem, mas não funcionam. Abra o Xcode e conclua a configuração e licença.';;
+    pl:prereq.broken) echo 'Kompilatory Xcode istnieją, lecz nie działają. Otwórz Xcode i ukończ konfigurację oraz akceptację licencji.';;
+    *:prereq.broken) echo 'Xcode compilers exist but cannot run. Open Xcode to complete first launch/license acceptance; no redundant download will start.';;
+    nl:prereq.failed) echo 'De Apple-ontwikkeltools konden niet worden voorbereid. Controleer het foutlog en probeer opnieuw.';;
+    de:prereq.failed) echo 'Apple-Entwicklerwerkzeuge konnten nicht vorbereitet werden. Prüfen Sie das Fehlerprotokoll.';;
+    fr:prereq.failed) echo 'Impossible de préparer les outils Apple. Consultez le journal des erreurs et réessayez.';;
+    es:prereq.failed) echo 'No se pudieron preparar las herramientas Apple. Revisa el registro e inténtalo de nuevo.';;
+    it:prereq.failed) echo 'Impossibile preparare gli strumenti Apple. Controlla il registro e riprova.';;
+    pt:prereq.failed) echo 'Não foi possível preparar as ferramentas Apple. Verifique o registo e tente novamente.';;
+    pl:prereq.failed) echo 'Nie udało się przygotować narzędzi Apple. Sprawdź dziennik błędów i spróbuj ponownie.';;
+    *:prereq.failed) echo 'Apple tools could not be prepared. Check the diagnostic log and retry.';;
+    nl:prereq.check) echo 'Geen bruikbare Xcode- of Command Line Tools gevonden. De buildcontrole installeert geen software.';;
+    de:prereq.check) echo 'Kein nutzbares Xcode bzw. keine Command Line Tools gefunden. Die Build-Prüfung installiert nichts.';;
+    fr:prereq.check) echo 'Aucun outil Xcode ou Command Line Tools utilisable. La vérification ne lance aucune installation.';;
+    es:prereq.check) echo 'No hay Xcode ni Command Line Tools utilizables. La comprobación no instala software.';;
+    it:prereq.check) echo 'Nessun Xcode o Command Line Tools utilizzabile. Il controllo non installa software.';;
+    pt:prereq.check) echo 'Não foi encontrado Xcode ou Command Line Tools utilizável. A verificação não instala software.';;
+    pl:prereq.check) echo 'Brak działającego Xcode lub Command Line Tools. Sprawdzanie kompilacji niczego nie instaluje.';;
+    *:prereq.check) echo 'No usable Xcode or Command Line Tools detected. Build verification does not install software.';;
+    *) printf '%s\n' "$key";;
+  esac
+}

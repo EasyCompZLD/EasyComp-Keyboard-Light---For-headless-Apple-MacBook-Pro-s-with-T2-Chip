@@ -1,5 +1,5 @@
-// EasyComp Keyboard Light v1.1.0
-// Native menu bar utility for headless MacBookPro16,1 (A2141, T2).
+// EasyComp Keyboard Light v1.2.0-beta4
+// Native menu bar utility for compatible headless Intel T2 MacBooks (beta).
 // HID hardware control is delegated to the separately verified C helper.
 import AppKit
 import CoreGraphics
@@ -66,6 +66,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private var languageOptions = [NSMenuItem]()
     private var tap: CFMachPort?
     private var tapSource: CFRunLoopSource?
+    private var monitorThread: Thread?
     private var fallbackMonitor: Any?
     private var pending: DispatchWorkItem?
     private var activeProcess: Process?
@@ -79,7 +80,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private var powered = true
     private var helperURL: URL {
         Bundle.main.executableURL!.deletingLastPathComponent()
-            .appendingPathComponent("ecz-a2141-backlight")
+            .appendingPathComponent("ecz-t2-backlight")
     }
     private var agentURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
@@ -317,9 +318,20 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    // NX_KEYTYPE_ILLUMINATION_UP/DOWN/TOGGLE (21/22/23).
-    // Only works if macOS still publishes the original Touch Bar events.
+    // Run the event tap on a dedicated CFRunLoop. It must not depend on the
+    // AppKit status-bar menu tracking loop or whether the menu is currently open.
+    // Only NX_SYSDEFINED illumination media key events are processed.
     private func listenForIlluminationKeys() {
+        let worker = Thread { [weak self] in
+            self?.runIlluminationEventTap()
+        }
+        worker.name = "EasyComp Keyboard Light – Touch Bar events"
+        worker.qualityOfService = .userInitiated
+        monitorThread = worker
+        worker.start()
+    }
+
+    private func runIlluminationEventTap() {
         let mask: CGEventMask = CGEventMask(1) << 14 // NX_SYSDEFINED
         let cb: CGEventTapCallBack = { _, kind, event, userInfo in
             if kind == .tapDisabledByTimeout || kind == .tapDisabledByUserInput {
@@ -342,26 +354,35 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             }
             return Unmanaged.passUnretained(event)
         }
-        tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap,
-                                options: .listenOnly, eventsOfInterest: mask,
-                                callback: cb, userInfo: Unmanaged.passUnretained(self).toOpaque())
+        tap = CGEvent.tapCreate(tap: .cgSessionEventTap,
+                                place: .headInsertEventTap, options: .listenOnly,
+                                eventsOfInterest: mask, callback: cb,
+                                userInfo: Unmanaged.passUnretained(self).toOpaque())
         if let port = tap, let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, port, 0) {
             tapSource = source
-            CFRunLoopAddSource(CFRunLoopGetMain(), source, CFRunLoopMode.commonModes)
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, CFRunLoopMode.commonModes)
             CGEvent.tapEnable(tap: port, enable: true)
-            touchBarState = .listening
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.touchBarState = .listening
+                self.refreshMenu()
+            }
+            CFRunLoopRun() // independent of status-menu open/close
         } else {
-            touchBarState = .accessDenied
-            fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] e in
-                guard e.subtype.rawValue == 8 else { return }
-                let code = (e.data1 >> 16) & 0xffff
-                let state = (e.data1 >> 8) & 0xff
-                if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
-                    self?.handleIllumination(code: code)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.touchBarState = .accessDenied
+                self.fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] e in
+                    guard e.subtype.rawValue == 8 else { return }
+                    let code = (e.data1 >> 16) & 0xffff
+                    let state = (e.data1 >> 8) & 0xff
+                    if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
+                        self?.handleIllumination(code: code)
+                    }
                 }
+                self.refreshMenu()
             }
         }
-        refreshMenu()
     }
 
     private func handleIllumination(code: Int) {

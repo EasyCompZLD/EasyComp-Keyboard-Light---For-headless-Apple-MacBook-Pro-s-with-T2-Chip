@@ -19,3 +19,11 @@ Thanks for helping improve this small open-source project.
 - Explain what you tested and what remains unverified.
 
 By contributing, you agree that your contribution is distributed under the project's MIT License.
+
+## Installation failures and compatibility diagnostics
+
+On a refused or failed install, copy the report from `~/Downloads/` into a new
+[compatibility issue](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md).
+The report includes model, macOS build, HID descriptors, installer stage and compiler errors.
+For a read-only report without installing, run `bash Probleemrapport.command`.
+The script does **not** send any data to GitHub itself. **Inspect the report before sharing.**

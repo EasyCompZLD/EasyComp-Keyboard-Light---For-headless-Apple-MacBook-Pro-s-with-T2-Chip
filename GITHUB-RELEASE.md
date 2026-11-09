@@ -1,41 +1,43 @@
-# EasyComp Keyboard Light v1.1.0
+# EasyComp Keyboard Light v1.2.0-beta6 — Pre-release
 
-**No display. No light sensor. Still a glowing keyboard.** 💡
+**No display. No ambient light sensor. Still a glowing keyboard. 💡**
 
-Apple's normal macOS keyboard-backlight control can disappear when the ambient light sensor goes away with a MacBook's display. On our headless **2019 16-inch MacBook Pro (MacBookPro16,1 / A2141)**, the keyboard LEDs still work: **direct USB-HID commands to the T2 backlight interface turn them on, set brightness and turn them off**.
+This is an **experimental update** for EasyComp Keyboard Light, the open-source macOS menu bar utility that restores keyboard illumination on our headless **2019 16-inch MacBook Pro (MacBookPro16,1 / A2141)** via the Apple T2 USB-HID interface.
 
-In other words: macOS effectively gives headless owners the *metaphorical middle finger* with its usual controls, but the hardware doesn't require the screen sensor to illuminate. This is an observed software limitation, not evidence of Apple's intent.
+## What's new
 
-### What’s included
+- **One-click graphical installer:** double-click a launcher; the macOS setup wizard builds and opens automatically, with progress and understandable error messages.
+- **Automatic prerequisites:** reuse an installed Xcode or Command Line Tools. If missing, launch the official Apple installation prompt, requiring user approval.
+- **8-language setup:** English, Dutch, German, French, Spanish, Italian, Portuguese and Polish. Includes translated buttons, messages, and clickable installer, diagnostic, build-check and uninstall commands.
+- **Touch Bar background handling:** illumination-key events are now listened for on a dedicated event-tap runloop, independently from the open/closed state of the menu bar menu. **Please test and report whether this works on your Mac.**
+- **Safer installation and upgrades:** stage the new build and check compatibility before replacing an existing installation, with best-effort recovery.
+- **Development diagnostics:** when installation fails, a local, privacy-conscious report explains why, with a link to our GitHub issue form. No automatic upload.
+- **Experimental T2 compatibility discovery:** read-only HID checks and explicit opt-in for unvalidated Mac models. Other models are not yet confirmed working.
+- **Recorded installation and demonstration:** `Assets/EasyComp Keyboardlight install and demo.mp4` (76 seconds).
 
-- Native macOS menu bar controls: brightness, up/down, on/off
-- Per-user automatic start and saved brightness restoration
-- New native application icon, with editable SVG source
-- 8 UI languages: English, Dutch, German, French, Spanish, Italian, Portuguese and Polish
-- Automatic macOS language detection and manual selection
-- Optional support for original Touch Bar illumination events (when macOS still emits them)
-- Local installation scripts, source code, MIT license and documentation
+## Installation
 
-### Supported hardware
+1. Download and extract the attached **EasyComp-Keyboard-Light-v1.2.0-beta6-GitHub-Ready.zip** release asset. This is recommended because it preserves executable permissions on the double-clickable `.command` launchers. GitHub-generated source archives may not retain those permissions when files were uploaded through the browser.
+2. Double-click **`Install.command`** (automatic language detection), or a language-specific launcher such as `Install - English.command` / `Installeren - Nederlands.command`.
+3. The native macOS wizard will open automatically after its local build. Click **Install** and follow the steps.
+4. If macOS requires approval for the downloaded script or Apple's developer tools, review and confirm the system prompts.
 
-**Validated HID approach:** MacBookPro16,1 / A2141 · Intel T2 · macOS Tahoe 26. Other models are not yet tested; the installer refuses them by default. The v1.1.0 UI and localization update should be verified on-device before marking this release stable.
+Requires an Intel Mac running macOS with working Xcode or Apple Command Line Tools (automatically requested if genuinely missing). The app is built locally, not notarized or Developer ID-signed, and runs after login. SIP and FileVault do not need to be disabled.
 
-### Installation from source
+## Compatibility and status
 
-Download the project source archive, extract it, and from Terminal in the folder run:
+- **Confirmed HID control method:** `MacBookPro16,1 / A2141`, 2019 16-inch Intel T2, macOS Tahoe 26.
+- **New wizard, event-tap and expanded-model paths:** experimental; further device testing and feedback welcome.
+- **Other T2 MacBooks:** do not assume compatibility. Follow the safe diagnosis and experimental opt-in instructions.
+- **Apple Silicon:** not supported.
 
-```bash
-bash Controleer-build.command
-bash Installeer.command
-```
+The existing **v1.1.0 remains the stable release**. Publish this beta with GitHub's **Set as a pre-release** box selected.
 
-Requires Apple Command Line Tools. Builds `~/Applications/EasyComp Keyboard Light.app` locally. Not notarized or Developer ID-signed. FileVault and SIP remain enabled. No telemetry or network access.
+## Demo and support
 
-### Known limitations
+**[▶ Watch installation and demo (MP4)](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/blob/main/Assets/EasyComp%20Keyboardlight%20install%20and%20demo.mp4)** — video stored in the repository's `Assets/` directory.
 
-- Only the A2141 model is intentionally supported at present
-- Touch Bar illumination buttons depend on macOS still publishing illumination key events; menu bar controls work independently
-- No separate settings window; settings are in the menu bar
-- The app starts after logging in, not at FileVault preboot
+If the installation fails, use `Probleemrapport.command` (or the command in your language) and open an issue at:
+https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new
 
-Developed by **EasyComp Zeeland** · MIT License · Independent of Apple.
+**EasyComp Zeeland** · MIT License · Independent of Apple Inc.

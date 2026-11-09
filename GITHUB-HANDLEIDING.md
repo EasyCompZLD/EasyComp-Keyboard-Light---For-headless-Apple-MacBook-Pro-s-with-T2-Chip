@@ -1,39 +1,49 @@
-# EasyComp Keyboard Light — handmatig publiceren via GitHub.com
+# GitHub-publicatiehandleiding — v1.2.0-beta6
 
-Je hoeft **niet ingelogd te zijn op GitHub in Terminal**. Dit doe je volledig via de website.
+Deze ZIP is een volledige **broncode-update** voor EasyComp Keyboard Light. Je kunt hem via de GitHub-website uploaden; GitHub CLI, Terminal-login en Xcode op de publicerende computer zijn niet nodig.
 
-## Nieuwe openbare repository aanmaken
+## Wat uploaden?
 
-1. Open https://github.com/new in je browser en meld je aan.
-2. Kies de gewenste **Owner** (je persoonlijke account of een organisatie die je beheert).
-3. Repository name: **EasyComp-Keyboard-Light**.
-4. Description: kopieer de tekst uit `GITHUB-INFO.md` (GitHub About).
-5. Kies **Public**.
-6. Laat **Add a README file**, **Add .gitignore** en **Choose a license** uit: die bestanden zitten al in dit project.
-7. Klik **Create repository**.
+Pak de ZIP eerst uit. Upload daarna de **inhoud** van de map `EasyComp-Keyboard-Light-v1.2.0-beta6`, niet de map als extra niveau en niet uitsluitend het ZIP-bestand.
 
-## Projectbestanden via de browser uploaden
+De update bevat onder meer:
 
-1. Pak `EasyComp-Keyboard-Light-v1.1.0.zip` uit op de Mac.
-2. Open de zojuist aangemaakte repository op GitHub.
-3. Kies **uploading an existing file** of **Add file → Upload files**.
-4. Sleep **alle bestanden en mappen uit de uitgepakte projectmap** naar het uploadvak. Upload niet alleen het ZIP-bestand: GitHub pakt een ZIP in de repository niet automatisch uit.
-5. De verborgen `.github`-map en `.gitignore` zijn belangrijk: druk in Finder zo nodig `Command + Shift + .` om ze zichtbaar te maken. Indien jouw browser de mappen niet goed verwerkt, kun je ze via **Add file → Create new file** met hun relatieve paden toevoegen of een browser gebruiken die het slepen van mappen ondersteunt.
-6. Controleer of GitHub onder andere `README.md`, `LICENSE`, `Installeer.command`, `broncode/`, `Assets/` en `.github/workflows/build.yml` laat zien.
-7. Controleer ook of `GITHUB-INFO.md`, `CONTRIBUTING.md` en `GITHUB-RELEASE.md` erbij staan. Commit message: `Initial public release v1.1.0`.
-8. Klik **Commit changes**.
+- `README.md`, `LEESMIJ.md`, `START-HERE.md`, `BETA-RELEASE.md` en `GITHUB-RELEASE.md` (de laatste bevat tekst voor de GitHub-release)
+- `Assets/` inclusief de iconen, je GIF en de video `EasyComp Keyboardlight install and demo.mp4`
+- `broncode/`, inclusief Swift, C, de wizard en de **acht app- en wizard-vertalingen**
+- `Languages/`, met acht taalmappen met README's en aanklikbare commando's
+- `scripts/`, de gedeelde installatiehulpmiddelen
+- `.github/ISSUE_TEMPLATE/` en `.github/workflows/` (verborgen map, moet óók mee)
+- `.gitignore`, `LICENSE`, `CONTRIBUTING.md` en de volledige `.command`-bestanden
 
-## Optioneel: echte release toevoegen
+**Let op:** de eerdere `Assets/IMG_0919.gif` bestaat al in de repository. De video is toegevoegd aan deze bijgewerkte ZIP; je kunt die ook zelf apart uploaden onder precies dezelfde naam.
 
-1. Open de repository → **Releases** → **Draft a new release**.
-2. Tag: `v1.1.0` (maak de tag aan vanaf de hoofdbranch).
-3. Titel: `EasyComp Keyboard Light v1.1.0`.
-4. Gebruik de tekst uit `GITHUB-RELEASE.md` voor de beschrijving. Markeer de release als **Pre-release** zolang de bijgewerkte v1.1.0 niet op de Mac getest is.
-5. Je kunt desgewenst het gehele broncode-ZIP toevoegen als release-asset (geen kant-en-klare, ondertekende `.app`). GitHub biedt ook zelf Source Code (zip) aan.
-6. Kies **Publish release**.
+## Via de GitHub-website
 
-## Controle
+1. Ga naar https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip
+2. Kies de `main`-branch, **Add file → Upload files**.
+3. Upload alle gewijzigde en nieuwe bestanden **met de juiste mappenstructuur**. Vervang bestaande bestanden door de versies uit deze ZIP.
+4. Voor GitHub geldt een limiet van 100 bestanden per uploadactie en 25 MiB per bestand. Dit pakket bevat meer dan 100 bestanden: **verdeel de upload over minimaal twee acties/commits**, bijvoorbeeld eerst de rootbestanden, Assets, broncode, scripts en `.github`, daarna de volledige map `Languages/`. Controleer na afloop of de submappen intact zijn.
+5. Gebruik bijvoorbeeld `Prepare v1.2.0-beta6 multilingual installer and diagnostics` als commitbericht.
+6. Controleer de README en de videolink op GitHub voordat je een release aanmaakt.
 
-Na het committen kun je op GitHub onder **Actions** zien of de macOS-buildcontrole geslaagd is. Als de workflow wegens GitHub-repositoryinstellingen niet kan draaien, kan de eigenaar deze in de repositoryinstellingen activeren.
+Tip: in Finder toont `Command + Shift + .` verborgen bestanden zoals `.github` en `.gitignore`.
 
-**Let op:** het project bouwt de app lokaal op de eigen Mac. Het is nog geen Apple-notarized installatiepakket of universeel geteste macOS-release.
+## Bèta-release publiceren
+
+1. Open **Releases → Draft a new release**.
+2. Kies de tag `v1.2.0-beta6`, vanaf de geüploade `main`-branch.
+3. Titel: `EasyComp Keyboard Light v1.2.0-beta6`.
+4. Gebruik de inhoud van `GITHUB-RELEASE.md` als Release Description. Controleer de videolink in de release: relatieve paden naar `Assets` werken niet altijd vanuit een releasebeschrijving, dus gebruik daar liever de volledige repositorylink.
+5. Voeg de ZIP toe als downloadbestand (de geïnstalleerde app is **niet** als kant-en-klare `.app` bijgevoegd).
+6. Vink **Set as a pre-release** aan. Laat v1.1.0 de stabiele release totdat de nieuwe hardwarefuncties uitgebreid getest zijn.
+
+**Belangrijk:** GitHub-websiteuploads slaan `.command`-bestanden mogelijk zonder uitvoerbaarheidsattribuut (`chmod +x`) op. Bied daarom het meegeleverde **release-ZIP** aan als primaire download; daarin zijn de uitvoerbare bestandsrechten behouden. Wie de automatisch gegenereerde GitHub Source code ZIP downloadt, kan desnoods de scripts via `bash Install.command` starten.
+
+## Video in de README
+
+De README bevat een klikbare GIF-preview die verwijst naar `Assets/EasyComp Keyboardlight install and demo.mp4`. Op GitHub kan een direct geüploade repo-MP4 als bestand worden bekeken of gedownload. Voor een inline speler is meestal een GitHub-hosted video-attachment nodig; een gewone Markdown-link claimt geen inline afspelen.
+
+## Privacy
+
+Controleer of de video geen persoonlijke gegevens, serienummers of andere gevoelige informatie toont. Publiceer geen diagnostische rapporten zonder die zelf na te kijken.
