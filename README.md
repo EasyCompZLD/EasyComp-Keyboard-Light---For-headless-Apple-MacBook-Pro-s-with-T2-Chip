@@ -23,8 +23,16 @@ The demonstration shows the installation process and keyboard backlight function
 <a href="Assets/EasyComp%20Keyboardlight%20install%20and%20demo.mp4">
   <img src="Assets/IMG_0919.gif" alt="EasyComp Keyboard Light installation and live demonstration" width="500">
 </a>
+## 🎬 Installation & Live Demonstration
 
-**▶ [Watch the full installation and demonstration (MP4)](Assets/EasyComp%20Keyboardlight%20install%20and%20demo.mp4)**
+<!-- Upload the MP4 by dragging it into GitHub's README editor.
+     Replace the URL below with the generated user-attachments URL. -->
+
+<video src="https://github.com/user-attachments/assets/REPLACE_WITH_VIDEO_ID" controls>
+  <a href="Assets/EasyComp%20Keyboardlight%20install%20and%20demo.mp4">
+    Watch the full installation and demonstration
+  </a>
+</video>
 
 Video file: `Assets/EasyComp Keyboardlight install and demo.mp4`
 
