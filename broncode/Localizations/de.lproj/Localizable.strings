@@ -21,3 +21,13 @@
 "hid.success" = "HID: Befehl angenommen";
 "hid.error" = "HID: Fehler";
 "hid.launchfailed" = "HID: Start fehlgeschlagen";
+"idle.timeout.title" = "Tastaturbeleuchtung nach Inaktivität ausschalten";
+"idle.never" = "Nie";
+"idle.15s" = "15 Sekunden";
+"idle.30s" = "30 Sekunden";
+"idle.1m" = "1 Minute";
+"idle.5m" = "5 Minuten";
+"idle.10m" = "10 Minuten";
+"idle.30m" = "30 Minuten";
+"idle.status.off" = "Beleuchtung pausiert: inaktiv";
+"idle.status.active" = "Automatische Abschaltung aktiviert";

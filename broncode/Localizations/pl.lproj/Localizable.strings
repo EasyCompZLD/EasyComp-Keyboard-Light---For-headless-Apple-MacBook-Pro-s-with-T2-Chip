@@ -21,3 +21,13 @@
 "hid.success" = "HID: polecenie przyjęte";
 "hid.error" = "HID: błąd";
 "hid.launchfailed" = "HID: nie udało się uruchomić";
+"idle.timeout.title" = "Wyłącz podświetlenie po bezczynności";
+"idle.never" = "Nigdy";
+"idle.15s" = "15 sekund";
+"idle.30s" = "30 sekund";
+"idle.1m" = "1 minuta";
+"idle.5m" = "5 minut";
+"idle.10m" = "10 minut";
+"idle.30m" = "30 minut";
+"idle.status.off" = "Podświetlenie wyłączone: brak aktywności";
+"idle.status.active" = "Automatyczne wyłączanie włączone";

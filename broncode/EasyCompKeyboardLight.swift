@@ -1,4 +1,4 @@
-// EasyComp Keyboard Light v1.2.0-beta4
+// EasyComp Keyboard Light v1.2.0-beta7 development
 // Native menu bar utility for compatible headless Intel T2 MacBooks (beta).
 // HID hardware control is delegated to the separately verified C helper.
 import AppKit
@@ -63,11 +63,30 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private let quitItem = NSMenuItem()
     private let touchBarItem = NSMenuItem()
     private let messageItem = NSMenuItem()
+    private let idleStatusItem = NSMenuItem()
+    private let timeoutItem = NSMenuItem()
+    private var timeoutChoices = [NSMenuItem]()
+    private let timeoutOptions: [(seconds: Int, key: String)] = [
+        (0, "idle.never"),
+        (15, "idle.15s"),
+        (30, "idle.30s"),
+        (60, "idle.1m"),
+        (300, "idle.5m"),
+        (600, "idle.10m"),
+        (1800, "idle.30m")
+    ]
     private var languageOptions = [NSMenuItem]()
     private var tap: CFMachPort?
     private var tapSource: CFRunLoopSource?
     private var monitorThread: Thread?
     private var fallbackMonitor: Any?
+    private var idleTimer: Timer?
+    private var timeoutSeconds = 30 // User-configurable; 0 means never.
+    private var idleOff = false
+    private var sleeping = false
+    private var lastLocalAdjustmentUptime: TimeInterval = 0
+    private var lastIlluminationCode = -1
+    private var lastIlluminationUptime: TimeInterval = 0
     private var pending: DispatchWorkItem?
     private var activeProcess: Process?
     private var queuedLevel: Double?
@@ -96,7 +115,15 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         if store.object(forKey: "powered") != nil {
             powered = store.bool(forKey: "powered")
         }
+        if store.object(forKey: "idleTimeoutSeconds") != nil {
+            let saved = store.integer(forKey: "idleTimeoutSeconds")
+            if timeoutOptions.contains(where: { $0.seconds == saved }) {
+                timeoutSeconds = saved
+            }
+        }
         configureMenu()
+        watchSystemPowerState()
+        startIdleMonitoring()
         listenForIlluminationKeys()
         refreshMenu()
         scheduleWrite(delay: 0.25)
@@ -140,6 +167,21 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         dimmerItem.action = #selector(dimmerAction)
         dimmerItem.target = self
         menu.addItem(dimmerItem)
+
+        menu.addItem(.separator())
+        let timeoutMenu = NSMenu()
+        timeoutMenu.autoenablesItems = false
+        for option in timeoutOptions {
+            let item = NSMenuItem(title: "", action: #selector(selectTimeout(_:)), keyEquivalent: "")
+            item.representedObject = option.seconds
+            item.target = self
+            timeoutMenu.addItem(item)
+            timeoutChoices.append(item)
+        }
+        timeoutItem.submenu = timeoutMenu
+        menu.addItem(timeoutItem)
+        idleStatusItem.isEnabled = false
+        menu.addItem(idleStatusItem)
 
         menu.addItem(.separator())
         touchBarItem.isEnabled = false
@@ -188,6 +230,10 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         languageItem.title = T("language")
         quitItem.title = T("app.quit")
         slider.toolTip = T("brightness.tooltip")
+        timeoutItem.title = T("idle.timeout.title")
+        for (index, option) in timeoutChoices.enumerated() {
+            option.title = T(timeoutOptions[index].key)
+        }
         for option in languageOptions {
             if let code = option.representedObject as? String {
                 option.title = code == "system" ? T("language.system") :
@@ -198,12 +244,16 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     }
 
     private func refreshMenu() {
-        let level = powered ? Int((brightness * 100).rounded()) : 0
+        let level = effectiveLevel() > 0 ? Int((brightness * 100).rounded()) : 0
         levelItem.title = "\(T("brightness.label")): \(level)%"
         powerItem.title = powered ? T("power.off") : T("power.on")
-        slider.doubleValue = powered ? brightness * 100 : 0
+        slider.doubleValue = Double(level)
+        idleStatusItem.title = idleOff ? T("idle.status.off") : T("idle.status.active")
         loginItem.state = FileManager.default.fileExists(atPath: agentURL.path) ? .on : .off
-        statusItem.button?.toolTip = "\(T("brightness.tooltip")): \(powered ? "\(level)%" : T("power.off.label"))"
+        statusItem.button?.toolTip = "\(T("brightness.tooltip")): \(level)%"
+        for option in timeoutChoices {
+            option.state = (option.representedObject as? Int) == timeoutSeconds ? .on : .off
+        }
         switch touchBarState {
         case .starting: touchBarItem.title = T("touchbar.starting")
         case .listening: touchBarItem.title = T("touchbar.listening")
@@ -234,6 +284,104 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         refreshMenu()
     }
 
+    @objc private func selectTimeout(_ sender: NSMenuItem) {
+        guard let seconds = sender.representedObject as? Int,
+              timeoutOptions.contains(where: { $0.seconds == seconds }) else { return }
+        timeoutSeconds = seconds
+        UserDefaults.standard.set(seconds, forKey: "idleTimeoutSeconds")
+        updateIdleState()
+        refreshMenu()
+    }
+
+    private func effectiveLevel() -> Double {
+        return (powered && !idleOff && !sleeping) ? brightness : 0
+    }
+
+    // Quartz reports time since the last HID input, even while this menu bar
+    // app is not frontmost. No key data is stored, captured or transmitted.
+    private func systemIdleSeconds() -> TimeInterval? {
+        guard let anyInput = CGEventType(rawValue: UInt32.max) else { return nil }
+        let seconds = CGEventSource.secondsSinceLastEventType(
+            .combinedSessionState, eventType: anyInput)
+        return seconds.isFinite && seconds >= 0 ? seconds : nil
+    }
+
+    private func registerLocalAdjustment() {
+        lastLocalAdjustmentUptime = ProcessInfo.processInfo.systemUptime
+        if idleOff {
+            idleOff = false
+            scheduleWrite(delay: 0)
+        }
+    }
+
+    private func startIdleMonitoring() {
+        // Common run-loop modes keep the timer responsive while a menu is open.
+        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateIdleState()
+        }
+        idleTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        updateIdleState()
+    }
+
+    private func updateIdleState() {
+        let shouldTurnOff: Bool
+        if !powered || timeoutSeconds == 0 || sleeping {
+            shouldTurnOff = false
+        } else if let idle = systemIdleSeconds() {
+            let sinceAdjustment = lastLocalAdjustmentUptime > 0
+                ? max(0, ProcessInfo.processInfo.systemUptime - lastLocalAdjustmentUptime)
+                : idle
+            shouldTurnOff = min(idle, sinceAdjustment) >= Double(timeoutSeconds)
+        } else {
+            // Do not turn the lights off if macOS cannot report idle time.
+            shouldTurnOff = false
+        }
+        if idleOff != shouldTurnOff {
+            idleOff = shouldTurnOff
+            refreshMenu()
+            scheduleWrite(delay: 0)
+        }
+    }
+
+    private func watchSystemPowerState() {
+        let center = NSWorkspace.shared.notificationCenter
+        center.addObserver(self, selector: #selector(systemWillSleep(_:)),
+                           name: NSWorkspace.willSleepNotification, object: nil)
+        center.addObserver(self, selector: #selector(systemDidWake(_:)),
+                           name: NSWorkspace.didWakeNotification, object: nil)
+        center.addObserver(self, selector: #selector(sessionResigned(_:)),
+                           name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+        center.addObserver(self, selector: #selector(sessionActivated(_:)),
+                           name: NSWorkspace.sessionDidBecomeActiveNotification, object: nil)
+    }
+
+    @objc private func systemWillSleep(_ notification: Notification) {
+        sleeping = true
+        refreshMenu()
+        scheduleWrite(delay: 0)
+    }
+
+    @objc private func systemDidWake(_ notification: Notification) {
+        sleeping = false
+        registerLocalAdjustment()
+        updateIdleState()
+        scheduleWrite(delay: 0.2)
+    }
+
+    @objc private func sessionResigned(_ notification: Notification) {
+        // Lock/fast user switching: avoid illuminating an unattended keyboard.
+        sleeping = true
+        scheduleWrite(delay: 0)
+    }
+
+    @objc private func sessionActivated(_ notification: Notification) {
+        sleeping = false
+        registerLocalAdjustment()
+        updateIdleState()
+        scheduleWrite(delay: 0.2)
+    }
+
     @objc private func sliderMoved(_ sender: NSSlider) {
         let step = Int((sender.doubleValue / 10).rounded())
         if step <= 0 {
@@ -242,12 +390,14 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             powered = true
             brightness = Double(step) / 10.0
         }
+        registerLocalAdjustment()
         save()
         scheduleWrite(delay: 0.08)
     }
 
     @objc private func togglePower() {
         powered.toggle()
+        registerLocalAdjustment()
         save()
         scheduleWrite(delay: 0)
     }
@@ -264,6 +414,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             brightness = Double(step) / 10.0
             powered = true
         }
+        registerLocalAdjustment()
         save()
         scheduleWrite(delay: 0.02)
     }
@@ -271,7 +422,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     // Coalesce repeated changes; at most one HID helper runs at a time.
     private func scheduleWrite(delay: TimeInterval) {
         pending?.cancel()
-        let target = powered ? brightness : 0.0
+        let target = effectiveLevel()
         let work = DispatchWorkItem { [weak self] in self?.performWrite(target) }
         pending = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
@@ -322,6 +473,18 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     // AppKit status-bar menu tracking loop or whether the menu is currently open.
     // Only NX_SYSDEFINED illumination media key events are processed.
     private func listenForIlluminationKeys() {
+        // A passive global monitor supplements the session event tap. This is
+        // useful when macOS temporarily disables taps after sleep or permissions.
+        fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
+            guard event.subtype.rawValue == 8 else { return }
+            let code = (event.data1 >> 16) & 0xffff
+            let state = (event.data1 >> 8) & 0xff
+            if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
+                DispatchQueue.main.async { [weak self] in
+                    self?.handleIllumination(code: code)
+                }
+            }
+        }
         let worker = Thread { [weak self] in
             self?.runIlluminationEventTap()
         }
@@ -372,20 +535,18 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.touchBarState = .accessDenied
-                self.fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] e in
-                    guard e.subtype.rawValue == 8 else { return }
-                    let code = (e.data1 >> 16) & 0xffff
-                    let state = (e.data1 >> 8) & 0xff
-                    if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
-                        self?.handleIllumination(code: code)
-                    }
-                }
+                // The passive NSEvent monitor (if permitted) remains active.
                 self.refreshMenu()
             }
         }
     }
 
     private func handleIllumination(code: Int) {
+        // Prevent the global monitor and event tap acting on the same key-down.
+        let now = ProcessInfo.processInfo.systemUptime
+        if code == lastIlluminationCode && now - lastIlluminationUptime < 0.065 { return }
+        lastIlluminationCode = code
+        lastIlluminationUptime = now
         switch code {
         case illuminationUp: changeBrightness(by: 0.1)
         case illuminationDown: changeBrightness(by: -0.1)
@@ -431,6 +592,9 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     }
     @objc private func quitApp() {
         pending?.cancel()
+        idleTimer?.invalidate()
+        if let monitor = fallbackMonitor { NSEvent.removeMonitor(monitor) }
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
         NSApplication.shared.terminate(nil)
     }
 }

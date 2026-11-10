@@ -21,3 +21,13 @@
 "hid.success" = "HID : commande acceptée";
 "hid.error" = "HID : erreur";
 "hid.launchfailed" = "HID : lancement impossible";
+"idle.timeout.title" = "Éteindre le rétroéclairage après inactivité";
+"idle.never" = "Jamais";
+"idle.15s" = "15 secondes";
+"idle.30s" = "30 secondes";
+"idle.1m" = "1 minute";
+"idle.5m" = "5 minutes";
+"idle.10m" = "10 minutes";
+"idle.30m" = "30 minutes";
+"idle.status.off" = "Rétroéclairage suspendu : inactivité";
+"idle.status.active" = "Arrêt automatique activé";

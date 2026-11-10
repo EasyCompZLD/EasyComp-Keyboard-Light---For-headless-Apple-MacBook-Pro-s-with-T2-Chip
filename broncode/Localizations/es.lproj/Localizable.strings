@@ -21,3 +21,13 @@
 "hid.success" = "HID: comando aceptado";
 "hid.error" = "HID: error";
 "hid.launchfailed" = "HID: no se pudo iniciar";
+"idle.timeout.title" = "Apagar la luz del teclado tras inactividad";
+"idle.never" = "Nunca";
+"idle.15s" = "15 segundos";
+"idle.30s" = "30 segundos";
+"idle.1m" = "1 minuto";
+"idle.5m" = "5 minutos";
+"idle.10m" = "10 minutos";
+"idle.30m" = "30 minutos";
+"idle.status.off" = "Luz apagada por inactividad";
+"idle.status.active" = "Apagado automático activado";
