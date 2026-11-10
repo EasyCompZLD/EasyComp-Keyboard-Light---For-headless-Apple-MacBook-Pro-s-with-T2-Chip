@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+*.app/
+*.dSYM/
+*.xcarchive/
+*.ipa
+
+# Local build output and user logs
+build/
+.build/
+DerivedData/
+*.log
+*.tmp
+*.swp
+
+# Editors
+.vscode/
+.idea/
+
+# Avoid leaking local certificates or keys
+*.p12
+*.p8
+*.mobileprovision
+*.key
+*.pem
