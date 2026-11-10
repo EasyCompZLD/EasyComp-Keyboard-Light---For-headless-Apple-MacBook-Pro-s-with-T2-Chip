@@ -24,3 +24,6 @@ DerivedData/
 *.mobileprovision
 *.key
 *.pem
+
+# Local release artifacts
+/dist/
