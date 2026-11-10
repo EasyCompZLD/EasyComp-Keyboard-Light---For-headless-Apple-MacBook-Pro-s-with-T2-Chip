@@ -1,93 +1,160 @@
 #!/bin/bash
-# EasyComp Keyboard Light - lokale broncode bouwen en installeren.
-# Alleen voor macOS (Intel MacBookPro16,1 / A2141).
+# EasyComp Keyboard Light v1.2.0-beta6: safe, locally compiled installation.
+# Public entry point for CLI users; GUI wizard calls this script as a child.
+# Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
+source "$HERE/scripts/cli-i18n.sh"
+source "$HERE/scripts/developer-tools.sh"
 APP="$HOME/Applications/EasyComp Keyboard Light.app"
-CONTENTS="$APP/Contents"
-LABEL="nl.easycompzeeland.KeyboardLight"
+LABEL='nl.easycompzeeland.KeyboardLight'
 AGENT="$HOME/Library/LaunchAgents/$LABEL.plist"
-TMPDIR_BUILD="$(mktemp -d "${TMPDIR:-/tmp}/ecz-keyboardlight.XXXXXXXX")"
-trap 'rm -rf "$TMPDIR_BUILD"' EXIT
+USER_APPS="$HOME/Applications"
+mkdir -p "$USER_APPS"
+WORK="$(mktemp -d "$USER_APPS/.ecz-kbl-build.XXXXXXXX")"
+STAGE_APP="$WORK/EasyComp Keyboard Light.app"
+CONTENTS="$STAGE_APP/Contents"
+BACKUP_APP="$WORK/previous.app"
+PREVIOUS_AGENT="$WORK/previous-agent.plist"
+INSTALL_LOG="$WORK/install.log"
+PROBE_LOG="$WORK/probe.log"
+: > "$INSTALL_LOG"
+CURRENT_STAGE='Environment checks'
+FAILURE_REASON=''
+SWAPPED=0
+AGENT_CHANGED=0
+HAD_OLD_APP=0
+HAD_OLD_AGENT=0
 
-if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo 'Fout: dit installatieprogramma is alleen voor macOS.' >&2
-  exit 1
-fi
-if [[ "$(id -u)" == "0" ]]; then
-  echo 'Voer de installer uit als gewone gebruiker, niet met sudo.' >&2
-  exit 1
-fi
-MODEL="$(sysctl -n hw.model 2>/dev/null || true)"
-if [[ "$MODEL" != "MacBookPro16,1" ]]; then
-  echo "Niet ondersteund model: $MODEL (verwacht: MacBookPro16,1)." >&2
-  exit 1
-fi
-if ! xcrun --find clang >/dev/null 2>&1 || ! xcrun --find swiftc >/dev/null 2>&1; then
-  echo 'Apple Command Line Tools ontbreken. Installeer ze met:' >&2
-  echo '  xcode-select --install' >&2
-  exit 1
-fi
-if [[ ! -f "$HERE/broncode/HIDBacklight.c" || ! -f "$HERE/broncode/EasyCompKeyboardLight.swift" || ! -f "$HERE/broncode/Info.plist" || ! -d "$HERE/Assets/AppIcon.iconset" ]]; then
-  echo 'Broncode ontbreekt. Pak eerst de volledige ZIP uit.' >&2
-  exit 1
-fi
-if ! command -v iconutil >/dev/null 2>&1; then
-  echo "iconutil ontbreekt; dit is standaard aanwezig op macOS." >&2
-  exit 1
-fi
-for lang in en nl de fr es it pt pl; do
-  if [[ ! -f "$HERE/broncode/Localizations/$lang.lproj/Localizable.strings" ]]; then
-    echo "Vertaling ontbreekt: $lang" >&2
-    exit 1
+cleanup() {
+  local result=$?
+  trap - EXIT
+  set +e
+  if (( result != 0 )); then
+    # Recover previous app and LaunchAgent on a post-swap failure.
+    if (( SWAPPED == 1 )); then
+      echo 'Herstel: vorige installatie terugzetten...'
+      /bin/launchctl bootout "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || true
+      rm -rf "$APP"
+      if (( HAD_OLD_APP == 1 )); then
+        mv "$BACKUP_APP" "$APP" || echo 'WAARSCHUWING: oude app kon niet automatisch worden teruggezet.' >&2
+      fi
+      if (( HAD_OLD_AGENT == 1 )); then
+        cp "$PREVIOUS_AGENT" "$AGENT" || true
+      else
+        rm -f "$AGENT"
+      fi
+      if (( HAD_OLD_AGENT == 1 )) && [[ -e "$AGENT" ]]; then
+        /bin/launchctl bootstrap "gui/$(id -u)" "$AGENT" >/dev/null 2>&1 || true
+      fi
+    fi
+    echo
+    echo 'INSTALLATION NOT COMPLETED. Creating local developer diagnostic report...'
+    if [[ -f "$HERE/Probleemrapport.command" ]]; then
+      /bin/bash "$HERE/Probleemrapport.command" --installer-failure \
+          "${FAILURE_REASON:-$CURRENT_STAGE}" "$result" "$INSTALL_LOG" "$PROBE_LOG" || true
+    else
+      echo 'Diagnostic generator missing: Probleemrapport.command' >&2
+    fi
   fi
+  rm -rf "$WORK"
+  exit "$result"
+}
+trap cleanup EXIT
+
+fail() {
+  FAILURE_REASON="$1"
+  printf 'Fout: %s\n' "$FAILURE_REASON" >&2
+  printf 'Failure: %s\n' "$FAILURE_REASON" >>"$INSTALL_LOG"
+  exit "${2:-1}"
+}
+run_step() {
+  CURRENT_STAGE="$1"
+  shift
+  printf '>> %s\n' "$CURRENT_STAGE"
+  local out="$WORK/step.log" code=0
+  "$@" >"$out" 2>&1 || code=$?
+  cat "$out"
+  {
+    printf '=== %s (exit %s) ===\n' "$CURRENT_STAGE" "$code"
+    cat "$out"
+    printf '\n'
+  } >> "$INSTALL_LOG"
+  if (( code != 0 )); then
+    FAILURE_REASON="$CURRENT_STAGE (exit $code)"
+    exit "$code"
+  fi
+}
+
+[[ "$(uname -s)" == 'Darwin' ]] || fail 'Deze installer werkt alleen op macOS.'
+[[ "$(id -u)" != '0' ]] || fail 'Start als gewone gebruiker, niet via sudo.'
+MODEL="$(sysctl -n hw.model 2>/dev/null || true)"
+[[ "$(uname -m)" == 'x86_64' ]] || fail 'Een Intel MacBook met T2-chip is vereist.'
+case "$MODEL" in
+  MacBookPro16,1) : ;;
+  MacBookPro15,*|MacBookPro16,*|MacBookAir8,*|MacBookAir9,1)
+    if [[ "${1:-}" != '--experimental' ]]; then
+      fail "Experimenteel Mac-model $MODEL; gebruik de wizard of Installeer.command --experimental."
+    fi
+    echo "WAARSCHUWING: testondersteuning voor $MODEL; geen bevestigde compatibiliteit."
+    ;;
+  *) fail "Niet-ondersteund Mac-model: $MODEL. Gebruik Probleemrapport.command." ;;
+esac
+CURRENT_STAGE='Check / install Apple developer prerequisites'
+if ! ecz_require_developer_tools --install-if-missing; then
+  fail 'Apple developer tools could not be prepared. Review the preceding diagnostics (Xcode path, first-launch requirements or Apple CLT install).'
+fi
+if [[ ! -f "$HERE/broncode/HIDBacklight.c" || ! -f "$HERE/broncode/EasyCompKeyboardLight.swift" || \
+      ! -f "$HERE/broncode/Info.plist" || ! -d "$HERE/Assets/AppIcon.iconset" ]]; then
+   fail 'Broncode/appicon ontbreekt. Pak eerst het volledige project uit.'
+fi
+[[ -x /usr/bin/iconutil ]] || fail 'iconutil ontbreekt (onderdeel van macOS).'
+for lang in en nl de fr es it pt pl; do
+  [[ -f "$HERE/broncode/Localizations/$lang.lproj/Localizable.strings" ]] || fail "Vertaling ontbreekt: $lang"
 done
 
-printf '\n== EasyComp Keyboard Light ==\n'
-echo 'Stap 1/4: de bekende T2-HID-driver compileren...'
-xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
-  "$HERE/broncode/HIDBacklight.c" -o "$TMPDIR_BUILD/ecz-a2141-backlight"
-
-# Stop voordat iets wordt geïnstalleerd als het apparaat niet het bewezen protocol heeft.
-"$TMPDIR_BUILD/ecz-a2141-backlight" probe > "$TMPDIR_BUILD/probe.log" 2>&1 || {
-  cat "$TMPDIR_BUILD/probe.log"
-  echo 'Fout: HID-probe mislukt. Niets geïnstalleerd.' >&2
-  exit 1
-}
-if ! grep -q 'Protocolcontrole: OK' "$TMPDIR_BUILD/probe.log"; then
-  cat "$TMPDIR_BUILD/probe.log"
-  echo 'Fout: HID-protocol wijkt af. Niets geïnstalleerd.' >&2
-  exit 1
+printf '\n== EasyComp Keyboard Light 1.2.0-beta6 ==\n'
+echo "ECZ_STEP:1"
+echo "$(ecz_t boot.compile)"
+run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
+  "$HERE/broncode/HIDBacklight.c" -o "$WORK/ecz-t2-backlight"
+CURRENT_STAGE='Read-only HID protocol probe'
+PROBE_STATUS=0
+"$WORK/ecz-t2-backlight" probe >"$PROBE_LOG" 2>&1 || PROBE_STATUS=$?
+cat "$PROBE_LOG"
+{
+  echo "=== HID probe (exit $PROBE_STATUS) ==="
+  cat "$PROBE_LOG"
+} >> "$INSTALL_LOG"
+if (( PROBE_STATUS != 0 )); then
+  fail "HID-protocol niet bevestigd: probe exit $PROBE_STATUS. Geen LED-commando verstuurd." "$PROBE_STATUS"
 fi
+grep -q 'Protocolcontrole: OK' "$PROBE_LOG" || fail 'Geen valide HID-reportdescriptor; veilig gestopt.'
 
-echo 'Stap 2/4: de native menubalkapp compileren...'
-xcrun swiftc -O -framework AppKit -framework CoreGraphics \
-  "$HERE/broncode/EasyCompKeyboardLight.swift" \
-  -o "$TMPDIR_BUILD/EasyCompKeyboardLight"
+echo "ECZ_STEP:2"
+echo "$(ecz_t boot.bundle)"
+run_step 'Compile Swift app' /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
+  "$HERE/broncode/EasyCompKeyboardLight.swift" -o "$WORK/EasyCompKeyboardLight"
 
-echo 'Stap 3/4: appicoon en 8 talen installeren...'
-# Maak een echte Finder/Dock .icns, volledig offline, vanuit de meegeleverde iconset.
-iconutil -c icns "$HERE/Assets/AppIcon.iconset" -o "$TMPDIR_BUILD/AppIcon.icns"
+echo "ECZ_STEP:3"
+echo "$(ecz_t boot.save)"
+run_step 'Generate app icon' /usr/bin/iconutil -c icns "$HERE/Assets/AppIcon.iconset" -o "$WORK/AppIcon.icns"
 mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"
-cp "$TMPDIR_BUILD/AppIcon.icns" "$CONTENTS/Resources/AppIcon.icns"
+cp "$WORK/AppIcon.icns" "$CONTENTS/Resources/AppIcon.icns"
 cp -R "$HERE/broncode/Localizations/"*.lproj "$CONTENTS/Resources/"
-cp "$TMPDIR_BUILD/ecz-a2141-backlight" "$CONTENTS/MacOS/ecz-a2141-backlight"
-cp "$TMPDIR_BUILD/EasyCompKeyboardLight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
+cp "$WORK/ecz-t2-backlight" "$CONTENTS/MacOS/ecz-t2-backlight"
+cp "$WORK/EasyCompKeyboardLight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
 cp "$HERE/broncode/Info.plist" "$CONTENTS/Info.plist"
-/usr/bin/plutil -lint "$CONTENTS/Info.plist" >/dev/null
-chmod 755 "$CONTENTS/MacOS/ecz-a2141-backlight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
-# Ad-hoc ondertekening: app is lokaal gebouwd, zonder Apple Developer-certificaat.
-/usr/bin/codesign --force --deep --sign - "$APP" > /dev/null
+chmod 755 "$CONTENTS/MacOS/ecz-t2-backlight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
+run_step 'Validate Info.plist' /usr/bin/plutil -lint "$CONTENTS/Info.plist"
+run_step 'Ad-hoc sign staged app' /usr/bin/codesign --force --deep --sign - "$STAGE_APP"
 
-echo 'Stap 4/4: automatisch starten bij aanmelden...'
+CURRENT_STAGE='Prepare login agent'
 mkdir -p "$HOME/Library/LaunchAgents"
-# Als de app eerder door launchd werd gestart, eerst de oude job ontladen.
-/bin/launchctl bootout "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || true
-# HTML/XML-escapen van het volledige pad (ook voor spaties, &, <, >, dubbele quotes).
-APP_EXEC="$CONTENTS/MacOS/EasyCompKeyboardLight"
+APP_EXEC="$APP/Contents/MacOS/EasyCompKeyboardLight"
 ESCAPED_EXEC="$(printf '%s' "$APP_EXEC" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')"
-cat > "$AGENT" <<EOF
+cat > "$WORK/agent.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
@@ -97,16 +164,39 @@ cat > "$AGENT" <<EOF
   <key>KeepAlive</key><false/>
   <key>LimitLoadToSessionType</key><string>Aqua</string>
 </dict></plist>
-EOF
-/usr/bin/plutil -lint "$AGENT"
-if /bin/launchctl bootstrap "gui/$(id -u)" "$AGENT"; then
-  echo 'De menubalkapp is gestart via launchd.'
-else
-  echo 'launchd kon de app niet meteen starten. Ik probeer open...'
-  /usr/bin/open "$APP"
+PLIST
+run_step 'Validate LaunchAgent' /usr/bin/plutil -lint "$WORK/agent.plist"
+
+echo "ECZ_STEP:4"
+echo "$(ecz_t boot.open)"
+CURRENT_STAGE='Replace previous installation'
+if [[ -d "$APP" ]]; then
+  HAD_OLD_APP=1
 fi
-printf '\nGeïnstalleerd: %s\n' "$APP"
-echo 'Klik rechtsboven op het toetsenbordicoon voor helderheid, aan/uit, taal en autostart.'
-echo 'Het Finder-appicoon is geïnstalleerd; taal wordt automatisch gekozen op basis van macOS.'
-echo 'Voor de bestaande Touch Bar-knoppen kan Toetsmonitoring-toestemming nodig zijn.'
-echo 'De app gebruikt geen sudo, SIP-wijzigingen of kernel-extensies.'
+if [[ -f "$AGENT" ]]; then
+  HAD_OLD_AGENT=1
+  cp "$AGENT" "$PREVIOUS_AGENT"
+fi
+/bin/launchctl bootout "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || true
+if (( HAD_OLD_APP == 1 )); then mv "$APP" "$BACKUP_APP"; fi
+# Mark rollback active only once any previous app has moved successfully.
+SWAPPED=1
+mv "$STAGE_APP" "$APP"
+cp "$WORK/agent.plist" "$AGENT"
+AGENT_CHANGED=1
+# Explicit language launchers choose the installed app's initial menu language.
+# Automatic system-language launch does not overwrite any prior app preference.
+if [[ -n "${ECZ_INSTALL_LANGUAGE:-}" ]]; then
+  /usr/bin/defaults write nl.easycompzeeland.KeyboardLight AppLanguage -string "$ECZ_LANGUAGE" || true
+fi
+CURRENT_STAGE='Start launch agent'
+if ! /bin/launchctl bootstrap "gui/$(id -u)" "$AGENT"; then
+  echo 'launchctl bootstrap failed; trying direct launch...'
+  run_step 'Launch app via open fallback' /usr/bin/open "$APP"
+fi
+# The installation is now complete. Discard old app backup only after success.
+rm -rf "$BACKUP_APP"
+SWAPPED=0
+printf '\nInstallatie voltooid: %s\n' "$APP"
+echo 'De menubalkapp gebruikt dezelfde bewezen A2141 HID-reports als v1.1.0.'
+echo 'Toetsmonitoring-toestemming kan nodig zijn voor Touch Bar-bediening.'
