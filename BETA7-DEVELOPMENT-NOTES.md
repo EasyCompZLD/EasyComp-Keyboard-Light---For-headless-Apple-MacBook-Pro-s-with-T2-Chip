@@ -2,6 +2,10 @@
 
 Status: **testing build**, not a production release. Do not replace the existing beta6 release asset until the Mac hardware checks pass.
 
+## Review update — 11 November 2026
+
+See [development review](DEVELOPMENT-REVIEW-2026-11-11.md) for the confirmed brightness-step defect, event-monitor and write-queue fixes, current automated results and Apple behavior comparison. See [hardware acceptance](HARDWARE-ACCEPTANCE.md) for the isolated Intel test app and physical validation matrix. This supersedes the earlier validation counts below; beta7 is still not a release.
+
 ## Changes
 
 - User-configurable keyboard backlight idle timeout: Never, 15 seconds, 30 seconds (default), 1 minute, 5 minutes, 10 minutes or 30 minutes.

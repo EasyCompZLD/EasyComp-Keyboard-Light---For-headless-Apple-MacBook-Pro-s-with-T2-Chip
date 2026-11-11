@@ -31,6 +31,6 @@ class KeyboardIdleAndTouchBarTests(unittest.TestCase):
         src=(ROOT/'broncode/EasyCompKeyboardLight.swift').read_text()
         self.assertIn('NSEvent.addGlobalMonitorForEvents(matching: .systemDefined)',src)
         self.assertIn('CGEvent.tapCreate(tap: .cgSessionEventTap',src)
-        self.assertIn('lastIlluminationUptime',src)
+        self.assertIn('illuminationEvents.accept(code: code, timestamp: timestamp)',src)
 
 if __name__=='__main__': unittest.main()

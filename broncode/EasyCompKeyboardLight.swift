@@ -4,8 +4,9 @@
 import AppKit
 import CoreGraphics
 import Foundation
+import Darwin
 
-private let agentLabel = "nl.easycompzeeland.KeyboardLight"
+private let agentLabel = Bundle.main.bundleIdentifier ?? "nl.easycompzeeland.KeyboardLight"
 private let illuminationUp = 21
 private let illuminationDown = 22
 private let illuminationToggle = 23
@@ -47,6 +48,60 @@ private final class LanguageManager {
     }
 }
 
+// Pure policy shared by the app and executable regression tests.
+enum BacklightPolicy {
+    static func effectiveLevel(powered: Bool, brightness: Double, idleOff: Bool,
+                               sleeping: Bool, sessionActive: Bool) -> Double {
+        (powered && !idleOff && !sleeping && sessionActive) ? brightness : 0
+    }
+    static func step(current: Double, delta: Double) -> Int {
+        Int((max(0, min(1, current + delta)) * 10).rounded())
+    }
+    static func idleOff(powered: Bool, timeout: Int, suspended: Bool,
+                        idle: TimeInterval?, sinceAdjustment: TimeInterval?) -> Bool {
+        guard powered, timeout > 0, !suspended,
+              let idle = idle, idle.isFinite, idle >= 0 else { return false }
+        return min(idle, sinceAdjustment ?? idle) >= Double(timeout)
+    }
+}
+
+// Deduplicate delivery through multiple monitors by the original event timestamp,
+// not the delivery time: genuine rapid presses and auto-repeat must survive.
+struct IlluminationEvents {
+    private var recent: [(Int, TimeInterval)] = []
+    mutating func accept(code: Int, timestamp: TimeInterval) -> Bool {
+        guard [21, 22, 23].contains(code), timestamp.isFinite else { return false }
+        if recent.contains(where: { $0.0 == code && abs($0.1 - timestamp) < 0.000001 }) { return false }
+        recent.append((code, timestamp))
+        if recent.count > 32 { recent.removeFirst() }
+        return true
+    }
+}
+
+// Main-thread write coordination. A generation change invalidates hardware state
+// even if an older helper completes successfully after wake or session changes.
+struct BacklightWrites {
+    private(set) var busy = false
+    private var requested = false
+    private var generation: UInt64 = 0
+    private var lastLevel: Double?
+    mutating func invalidate() { generation &+= 1; lastLevel = nil }
+    mutating func begin(level: Double) -> UInt64? {
+        if busy { requested = true; return nil }
+        guard lastLevel != level else { return nil }
+        busy = true
+        requested = false
+        return generation
+    }
+    mutating func complete(level: Double, generation: UInt64, succeeded: Bool) -> Bool {
+        busy = false
+        lastLevel = succeeded && generation == self.generation ? level : nil
+        let again = requested
+        requested = false
+        return again
+    }
+}
+
 final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let menu = NSMenu()
@@ -76,20 +131,22 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         (1800, "idle.30m")
     ]
     private var languageOptions = [NSMenuItem]()
-    private var tap: CFMachPort?
-    private var tapSource: CFRunLoopSource?
     private var monitorThread: Thread?
     private var fallbackMonitor: Any?
+    private var localMonitor: Any?
     private var idleTimer: Timer?
     private var timeoutSeconds = 30 // User-configurable; 0 means never.
     private var idleOff = false
     private var sleeping = false
+    private var sessionActive = true
+    private var terminating = false
     private var lastLocalAdjustmentUptime: TimeInterval = 0
-    private var lastIlluminationCode = -1
-    private var lastIlluminationUptime: TimeInterval = 0
+    private var illuminationEvents = IlluminationEvents()
+    private let eventDiagnostics = CommandLine.arguments.contains("--diagnose-events")
     private var pending: DispatchWorkItem?
     private var activeProcess: Process?
-    private var queuedLevel: Double?
+    private var writes = BacklightWrites()
+    private var helperWatchdog: DispatchWorkItem?
     private enum HIDState { case ready, succeeded, failed(Int32), couldNotStart, autostartFailed }
     private enum TouchBarState { case starting, listening, accessDenied, keyReceived }
     private var hidState: HIDState = .ready
@@ -248,7 +305,11 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         levelItem.title = "\(T("brightness.label")): \(level)%"
         powerItem.title = powered ? T("power.off") : T("power.on")
         slider.doubleValue = Double(level)
-        idleStatusItem.title = idleOff ? T("idle.status.off") : T("idle.status.active")
+        let idleStatusKey = !powered ? "idle.status.manualoff"
+            : (sleeping || !sessionActive) ? "idle.status.suspended"
+            : timeoutSeconds == 0 ? "idle.status.disabled"
+            : idleOff ? "idle.status.off" : "idle.status.active"
+        idleStatusItem.title = T(idleStatusKey)
         loginItem.state = FileManager.default.fileExists(atPath: agentURL.path) ? .on : .off
         statusItem.button?.toolTip = "\(T("brightness.tooltip")): \(level)%"
         for option in timeoutChoices {
@@ -294,7 +355,8 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     }
 
     private func effectiveLevel() -> Double {
-        return (powered && !idleOff && !sleeping) ? brightness : 0
+        BacklightPolicy.effectiveLevel(powered: powered, brightness: brightness,
+                                      idleOff: idleOff, sleeping: sleeping, sessionActive: sessionActive)
     }
 
     // Quartz reports time since the last HID input, even while this menu bar
@@ -325,18 +387,11 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     }
 
     private func updateIdleState() {
-        let shouldTurnOff: Bool
-        if !powered || timeoutSeconds == 0 || sleeping {
-            shouldTurnOff = false
-        } else if let idle = systemIdleSeconds() {
-            let sinceAdjustment = lastLocalAdjustmentUptime > 0
-                ? max(0, ProcessInfo.processInfo.systemUptime - lastLocalAdjustmentUptime)
-                : idle
-            shouldTurnOff = min(idle, sinceAdjustment) >= Double(timeoutSeconds)
-        } else {
-            // Do not turn the lights off if macOS cannot report idle time.
-            shouldTurnOff = false
-        }
+        let sinceAdjustment = lastLocalAdjustmentUptime > 0
+            ? max(0, ProcessInfo.processInfo.systemUptime - lastLocalAdjustmentUptime) : nil
+        let shouldTurnOff = BacklightPolicy.idleOff(
+            powered: powered, timeout: timeoutSeconds, suspended: sleeping || !sessionActive,
+            idle: systemIdleSeconds(), sinceAdjustment: sinceAdjustment)
         if idleOff != shouldTurnOff {
             idleOff = shouldTurnOff
             refreshMenu()
@@ -358,25 +413,29 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
 
     @objc private func systemWillSleep(_ notification: Notification) {
         sleeping = true
+        writes.invalidate()
         refreshMenu()
         scheduleWrite(delay: 0)
     }
 
     @objc private func systemDidWake(_ notification: Notification) {
         sleeping = false
+        writes.invalidate() // Hardware state may have changed during sleep.
         registerLocalAdjustment()
         updateIdleState()
         scheduleWrite(delay: 0.2)
     }
 
     @objc private func sessionResigned(_ notification: Notification) {
-        // Lock/fast user switching: avoid illuminating an unattended keyboard.
-        sleeping = true
+        // Session activation is independent of the physical sleep state.
+        sessionActive = false
+        refreshMenu()
         scheduleWrite(delay: 0)
     }
 
     @objc private func sessionActivated(_ notification: Notification) {
-        sleeping = false
+        sessionActive = true
+        writes.invalidate()
         registerLocalAdjustment()
         updateIdleState()
         scheduleWrite(delay: 0.2)
@@ -406,8 +465,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
 
     private func changeBrightness(by delta: Double) {
         let current = powered ? brightness : 0.0
-        let next = max(0.0, min(1.0, (current + delta) * 10.0))
-        let step = Int(next.rounded())
+        let step = BacklightPolicy.step(current: current, delta: delta)
         if step == 0 {
             powered = false
         } else {
@@ -421,23 +479,23 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
 
     // Coalesce repeated changes; at most one HID helper runs at a time.
     private func scheduleWrite(delay: TimeInterval) {
+        guard !terminating else { return }
         pending?.cancel()
-        let target = effectiveLevel()
-        let work = DispatchWorkItem { [weak self] in self?.performWrite(target) }
+        let work = DispatchWorkItem { [weak self] in self?.performWrite() }
         pending = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
-    private func performWrite(_ level: Double) {
-        if activeProcess != nil {
-            queuedLevel = level
-            return
-        }
+    private func performWrite() {
+        guard !terminating else { return }
+        let level = effectiveLevel() // Never replay a stale queued on-command after sleep/off.
+        guard let generation = writes.begin(level: level) else { return }
         let task = Process()
         task.executableURL = helperURL
         task.arguments = level <= 0 ? ["off"] : ["on", String(level)]
-        task.standardOutput = FileHandle.nullDevice
+        // The helper writes its bounded protocol diagnostics to stdout.
         let errorPipe = Pipe()
+        task.standardOutput = errorPipe
         task.standardError = errorPipe
         activeProcess = task
         task.terminationHandler = { [weak self] ended in
@@ -446,6 +504,9 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.activeProcess = nil
+                self.helperWatchdog?.cancel()
+                let again = self.writes.complete(level: level, generation: generation,
+                                                succeeded: ended.terminationStatus == 0)
                 if ended.terminationStatus == 0 {
                     self.hidState = .succeeded
                 } else {
@@ -453,15 +514,23 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
                     NSLog("EasyComp Keyboard Light: HID error %@", info.trimmingCharacters(in: .whitespacesAndNewlines))
                 }
                 self.refreshMenu()
-                if let newest = self.queuedLevel {
-                    self.queuedLevel = nil
-                    self.performWrite(newest)
-                }
+                if again { self.scheduleWrite(delay: 0) }
             }
         }
         do {
             try task.run()
+            let watchdog = DispatchWorkItem {
+                guard task.isRunning else { return }
+                NSLog("EasyComp Keyboard Light: HID helper exceeded 5 seconds")
+                task.terminate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    if task.isRunning { kill(task.processIdentifier, SIGKILL) }
+                }
+            }
+            helperWatchdog = watchdog
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: watchdog)
         } catch {
+            _ = writes.complete(level: level, generation: generation, succeeded: false)
             activeProcess = nil
             hidState = .couldNotStart
             refreshMenu()
@@ -469,84 +538,93 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    // Run the event tap on a dedicated CFRunLoop. It must not depend on the
-    // AppKit status-bar menu tracking loop or whether the menu is currently open.
-    // Only NX_SYSDEFINED illumination media key events are processed.
-    private func listenForIlluminationKeys() {
-        // A passive global monitor supplements the session event tap. This is
-        // useful when macOS temporarily disables taps after sleep or permissions.
-        fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
-            guard event.subtype.rawValue == 8 else { return }
-            let code = (event.data1 >> 16) & 0xffff
-            let state = (event.data1 >> 8) & 0xff
-            if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
-                DispatchQueue.main.async { [weak self] in
-                    self?.handleIllumination(code: code)
-                }
+    private func receiveIllumination(_ event: NSEvent, source: String) {
+        guard event.type == .systemDefined, event.subtype.rawValue == 8 else { return }
+        let code = (event.data1 >> 16) & 0xffff
+        let state = (event.data1 >> 8) & 0xff
+        guard state == 0x0a, [illuminationUp, illuminationDown, illuminationToggle].contains(code) else { return }
+        let timestamp = event.timestamp
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, !self.terminating else { return }
+            if self.eventDiagnostics {
+                NSLog("EasyComp illumination: source=%@ code=%d timestamp=%.6f", source, code, timestamp)
             }
+            self.handleIllumination(code: code, timestamp: timestamp)
         }
-        let worker = Thread { [weak self] in
-            self?.runIlluminationEventTap()
+    }
+
+    private func listenForIlluminationKeys() {
+        fallbackMonitor = NSEvent.addGlobalMonitorForEvents(matching: .systemDefined) { [weak self] event in
+            self?.receiveIllumination(event, source: "global")
         }
+        // A global AppKit monitor excludes events delivered to this application.
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .systemDefined) { [weak self] event in
+            self?.receiveIllumination(event, source: "local")
+            return event
+        }
+        let worker = Thread { [weak self] in self?.runIlluminationEventTap() }
         worker.name = "EasyComp Keyboard Light – Touch Bar events"
         worker.qualityOfService = .userInitiated
         monitorThread = worker
         worker.start()
     }
 
+    // All tap resources belong exclusively to this worker. Retry after a failed
+    // creation or invalidation, including permission changes and wake/session changes.
     private func runIlluminationEventTap() {
         let mask: CGEventMask = CGEventMask(1) << 14 // NX_SYSDEFINED
-        let cb: CGEventTapCallBack = { _, kind, event, userInfo in
-            if kind == .tapDisabledByTimeout || kind == .tapDisabledByUserInput {
-                if let userInfo = userInfo {
-                    let owner = Unmanaged<KeyboardLightApp>.fromOpaque(userInfo).takeUnretainedValue()
-                    if let port = owner.tap { CGEvent.tapEnable(tap: port, enable: true) }
-                }
-                return Unmanaged.passUnretained(event)
-            }
-            guard kind.rawValue == 14,
-                  let e = NSEvent(cgEvent: event),
-                  e.type == .systemDefined,
-                  e.subtype.rawValue == 8,
-                  let userInfo = userInfo else { return Unmanaged.passUnretained(event) }
-            let code = (e.data1 >> 16) & 0xffff
-            let state = (e.data1 >> 8) & 0xff
-            if state == 0x0a && (code == illuminationUp || code == illuminationDown || code == illuminationToggle) {
-                let owner = Unmanaged<KeyboardLightApp>.fromOpaque(userInfo).takeUnretainedValue()
-                DispatchQueue.main.async { owner.handleIllumination(code: code) }
-            }
+        let callback: CGEventTapCallBack = { _, kind, event, userInfo in
+            guard kind.rawValue == 14, let userInfo = userInfo,
+                  let e = NSEvent(cgEvent: event) else { return Unmanaged.passUnretained(event) }
+            let owner = Unmanaged<KeyboardLightApp>.fromOpaque(userInfo).takeUnretainedValue()
+            owner.receiveIllumination(e, source: "tap")
             return Unmanaged.passUnretained(event)
         }
-        tap = CGEvent.tapCreate(tap: .cgSessionEventTap,
-                                place: .headInsertEventTap, options: .listenOnly,
-                                eventsOfInterest: mask, callback: cb,
-                                userInfo: Unmanaged.passUnretained(self).toOpaque())
-        if let port = tap, let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, port, 0) {
-            tapSource = source
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, CFRunLoopMode.commonModes)
-            CGEvent.tapEnable(tap: port, enable: true)
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.touchBarState = .listening
-                self.refreshMenu()
+        var port: CFMachPort?
+        var source: CFRunLoopSource?
+        var lastListening: Bool?
+        let loop = CFRunLoopGetCurrent()
+        while !Thread.current.isCancelled {
+            if let current = port, !CFMachPortIsValid(current) {
+                if let old = source { CFRunLoopRemoveSource(loop, old, .commonModes) }
+                source = nil
+                port = nil
             }
-            CFRunLoopRun() // independent of status-menu open/close
-        } else {
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.touchBarState = .accessDenied
-                // The passive NSEvent monitor (if permitted) remains active.
-                self.refreshMenu()
+            if port == nil {
+                port = CGEvent.tapCreate(tap: .cgSessionEventTap,
+                    place: .headInsertEventTap, options: .listenOnly,
+                    eventsOfInterest: mask, callback: callback,
+                    userInfo: Unmanaged.passUnretained(self).toOpaque())
+                if let current = port {
+                    source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, current, 0)
+                    if let source = source { CFRunLoopAddSource(loop, source, .commonModes) }
+                    else { CFMachPortInvalidate(current); port = nil }
+                }
+            }
+            if let current = port { CGEvent.tapEnable(tap: current, enable: true) }
+            let listening = port.map { CGEvent.tapIsEnabled(tap: $0) } ?? false
+            if lastListening != listening {
+                lastListening = listening
+                let permitted = CGPreflightListenEventAccess()
+                NSLog("EasyComp illumination monitor: listening=%d listenAccess=%d", listening ? 1 : 0, permitted ? 1 : 0)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, !self.terminating else { return }
+                    self.touchBarState = listening ? .listening : .accessDenied
+                    self.refreshMenu()
+                }
+            }
+            if source != nil {
+                CFRunLoopRunInMode(.defaultMode, 1, false)
+            } else {
+                Thread.sleep(forTimeInterval: 1)
             }
         }
+        if let source = source { CFRunLoopRemoveSource(loop, source, .commonModes) }
+        if let port = port { CFMachPortInvalidate(port) }
     }
 
-    private func handleIllumination(code: Int) {
-        // Prevent the global monitor and event tap acting on the same key-down.
-        let now = ProcessInfo.processInfo.systemUptime
-        if code == lastIlluminationCode && now - lastIlluminationUptime < 0.065 { return }
-        lastIlluminationCode = code
-        lastIlluminationUptime = now
+    private func handleIllumination(code: Int, timestamp: TimeInterval) {
+        guard illuminationEvents.accept(code: code, timestamp: timestamp) else { return }
         switch code {
         case illuminationUp: changeBrightness(by: 0.1)
         case illuminationDown: changeBrightness(by: -0.1)
@@ -590,17 +668,25 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             NSLog("EasyComp Keyboard Light: launch agent error %@", error.localizedDescription)
         }
     }
-    @objc private func quitApp() {
+    func applicationWillTerminate(_ notification: Notification) {
+        terminating = true
         pending?.cancel()
         idleTimer?.invalidate()
+        helperWatchdog?.cancel()
+        activeProcess?.terminate()
+        monitorThread?.cancel()
         if let monitor = fallbackMonitor { NSEvent.removeMonitor(monitor) }
+        if let monitor = localMonitor { NSEvent.removeMonitor(monitor) }
         NSWorkspace.shared.notificationCenter.removeObserver(self)
-        NSApplication.shared.terminate(nil)
     }
+    @objc private func quitApp() { NSApplication.shared.terminate(nil) }
 }
 
+#if !ECZ_TESTS
 let application = NSApplication.shared
 let delegate = KeyboardLightApp()
 application.delegate = delegate
 application.setActivationPolicy(.accessory)
 application.run()
+
+#endif

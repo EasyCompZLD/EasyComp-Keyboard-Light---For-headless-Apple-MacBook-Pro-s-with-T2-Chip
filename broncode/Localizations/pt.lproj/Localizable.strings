@@ -31,3 +31,6 @@
 "idle.30m" = "30 minutos";
 "idle.status.off" = "Iluminação suspensa por inatividade";
 "idle.status.active" = "Desligar automaticamente ativado";
+"idle.status.manualoff" = "Iluminação desligada manualmente";
+"idle.status.suspended" = "Iluminação em pausa: suspensão ou sessão inativa";
+"idle.status.disabled" = "Desligamento automático desativado";

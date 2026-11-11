@@ -31,3 +31,6 @@
 "idle.30m" = "30 Minuten";
 "idle.status.off" = "Beleuchtung pausiert: inaktiv";
 "idle.status.active" = "Automatische Abschaltung aktiviert";
+"idle.status.manualoff" = "Beleuchtung manuell ausgeschaltet";
+"idle.status.suspended" = "Beleuchtung pausiert: Ruhezustand oder inaktive Sitzung";
+"idle.status.disabled" = "Automatische Abschaltung deaktiviert";

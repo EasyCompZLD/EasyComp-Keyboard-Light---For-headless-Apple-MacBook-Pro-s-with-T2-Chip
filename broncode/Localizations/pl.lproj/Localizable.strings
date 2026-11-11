@@ -31,3 +31,6 @@
 "idle.30m" = "30 minut";
 "idle.status.off" = "Podświetlenie wyłączone: brak aktywności";
 "idle.status.active" = "Automatyczne wyłączanie włączone";
+"idle.status.manualoff" = "Podświetlenie wyłączone ręcznie";
+"idle.status.suspended" = "Podświetlenie wstrzymane: uśpienie lub nieaktywna sesja";
+"idle.status.disabled" = "Automatyczne wyłączanie nieaktywne";

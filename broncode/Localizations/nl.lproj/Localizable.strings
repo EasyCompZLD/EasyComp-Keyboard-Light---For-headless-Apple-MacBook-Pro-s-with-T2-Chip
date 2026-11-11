@@ -31,3 +31,6 @@
 "idle.30m" = "30 minuten";
 "idle.status.off" = "Verlichting uit: geen activiteit";
 "idle.status.active" = "Automatische uitschakeling ingeschakeld";
+"idle.status.manualoff" = "Verlichting handmatig uit";
+"idle.status.suspended" = "Verlichting gepauzeerd: sluimerstand of inactieve sessie";
+"idle.status.disabled" = "Automatisch uitschakelen uitgeschakeld";

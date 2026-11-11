@@ -31,3 +31,6 @@
 "idle.30m" = "30 minutos";
 "idle.status.off" = "Luz apagada por inactividad";
 "idle.status.active" = "Apagado automático activado";
+"idle.status.manualoff" = "Iluminación apagada manualmente";
+"idle.status.suspended" = "Iluminación en pausa: reposo o sesión inactiva";
+"idle.status.disabled" = "Apagado automático desactivado";

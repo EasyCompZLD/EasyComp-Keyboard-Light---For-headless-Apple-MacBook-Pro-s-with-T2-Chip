@@ -1,6 +1,6 @@
 """Validate multilingual launchers, resource completeness, HID code unchanged, and safety."""
 from pathlib import Path
-import os, re, subprocess, tempfile, unittest
+import os, re, subprocess, tempfile, unittest, unicodedata
 ROOT=Path(__file__).resolve().parents[1]
 LANGUAGES={
     'en':'English','nl':'Nederlands','de':'Deutsch','fr':'Français',
@@ -21,7 +21,8 @@ class TestMultilingualInstall(unittest.TestCase):
         self.assertTrue(all(s == sets[0] for s in sets))
     def test_every_language_has_all_clickable_actions(self):
         for code,name in LANGUAGES.items():
-            folder=ROOT/'Languages'/name
+            folder=next(p for p in (ROOT/'Languages').iterdir()
+                        if unicodedata.normalize('NFC', p.name) == name)
             files=list(folder.glob('*.command'))
             self.assertEqual(5,len(files),name)
             for f in files:

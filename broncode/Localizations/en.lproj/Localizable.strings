@@ -31,3 +31,6 @@
 "idle.30m" = "30 minutes";
 "idle.status.off" = "Backlight paused: inactive";
 "idle.status.active" = "Automatic idle-off enabled";
+"idle.status.manualoff" = "Backlight manually off";
+"idle.status.suspended" = "Backlight paused: sleep or inactive session";
+"idle.status.disabled" = "Automatic idle-off disabled";

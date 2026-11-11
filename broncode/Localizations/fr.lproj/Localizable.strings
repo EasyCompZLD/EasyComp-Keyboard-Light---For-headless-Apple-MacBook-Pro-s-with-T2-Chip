@@ -31,3 +31,6 @@
 "idle.30m" = "30 minutes";
 "idle.status.off" = "Rétroéclairage suspendu : inactivité";
 "idle.status.active" = "Arrêt automatique activé";
+"idle.status.manualoff" = "Éclairage éteint manuellement";
+"idle.status.suspended" = "Éclairage en pause : veille ou session inactive";
+"idle.status.disabled" = "Extinction automatique désactivée";
