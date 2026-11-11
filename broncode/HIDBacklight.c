@@ -1,5 +1,5 @@
 /*
- * EasyComp Keyboard Light v1.2.0-beta4
+ * EasyComp Keyboard Light v1.2.0-beta development
  * Backlight backend; no SMC or kernel modifications.
  *
  * IMPORTANT regression fix: do not open an IOHIDManager for all Apple HID
@@ -19,6 +19,7 @@
 #include <IOKit/hid/IOHIDElement.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <stdint.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,15 +95,42 @@ static int butterfly_descriptor(IOHIDDeviceRef d) {
     CFRelease(a);
     return output && feature;
 }
+/* Issue #2: this macOS input descriptor permits a read-only investigation,
+ * not the inference that feature 0xBF or output 0xB0 is supported.
+ * Keep the existing write descriptor gate unchanged pending hardware evidence.
+ */
+static int issue2_read_candidate(IOHIDDeviceRef d) {
+    if(number(d,CFSTR(kIOHIDPrimaryUsagePageKey))!=1 ||
+       number(d,CFSTR(kIOHIDPrimaryUsageKey))!=6)return 0;
+    CFArrayRef a=IOHIDDeviceCopyMatchingElements(d,NULL,0);
+    if(!a)return 0;
+    int found=0;
+    for(CFIndex i=0;i<CFArrayGetCount(a);i++){
+        IOHIDElementRef e=(IOHIDElementRef)CFArrayGetValueAtIndex(a,i);
+        IOHIDElementType t=IOHIDElementGetType(e);
+        if((t==kIOHIDElementTypeInput_Misc || t==kIOHIDElementTypeInput_Button ||
+            t==kIOHIDElementTypeInput_Axis) &&
+           IOHIDElementGetUsagePage(e)==0xff00 && IOHIDElementGetUsage(e)==0xf &&
+           IOHIDElementGetReportID(e)==0xbf && IOHIDElementGetReportSize(e)==120 &&
+           IOHIDElementGetReportCount(e)==15 && IOHIDElementGetLogicalMin(e)==0 &&
+           IOHIDElementGetLogicalMax(e)==255)found=1;
+    }
+    CFRelease(a);
+    return found;
+}
 static uint16_t read16(const uint8_t *p) {return (uint16_t)(p[0]|((uint16_t)p[1]<<8));}
 static void put16(uint8_t *p,uint16_t n){p[0]=(uint8_t)n;p[1]=(uint8_t)(n>>8);}
 static void put32(uint8_t *p,uint32_t n){for(int i=0;i<4;i++)p[i]=(uint8_t)(n>>(8*i));}
 static int butterfly_config(IOHIDDeviceRef d,int *off,int *minB,int *maxB){
     uint8_t rep[64]={0};rep[0]=0xbf;CFIndex size=sizeof(rep);
     IOReturn r=IOHIDDeviceGetReport(d,kIOHIDReportTypeFeature,0xbf,rep,&size);
+    printf("Butterfly GetReport 0xBF: status=0x%08x length=%ld\n",(unsigned)r,(long)size);
     if(r!=kIOReturnSuccess){printf("Butterfly read-only configuration error: 0x%08x\n",(unsigned)r);return 0;}
-    if(size<8 || rep[0]!=0xbf || rep[1]!=1)return 0;
+    if(size<8 || size>(CFIndex)sizeof(rep) || rep[0]!=0xbf || rep[1]!=1){
+        puts("Butterfly configuration structure/version mismatch.");return 0;
+    }
     *off=read16(rep+2);*minB=read16(rep+4);*maxB=read16(rep+6);
+    printf("Butterfly configuration: off=%d min=%d max=%d\n",*off,*minB,*maxB);
     return *minB>0 && *maxB>=*minB && *off<*minB;
 }
 static int set_report(IOHIDDeviceRef d,IOHIDReportType kind,const uint8_t *data,CFIndex n){
@@ -159,6 +187,26 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
     for(CFIndex i=0;i<n;i++){
         IOHIDDeviceRef d=devs[i];
         int minB=0,maxB=0,off=0;
+        if(pid==0x027d){
+            if(!strcmp(mode,"probe") || !strcmp(mode,"diagnose")){
+                describe(d);
+                if(issue2_read_candidate(d)){
+                    *seen=1;
+                    r=IOHIDDeviceOpen(d,0);
+                    printf("Issue #2 read-only HIDDeviceOpen: 0x%08x\n",(unsigned)r);
+                    if(r!=kIOReturnSuccess){rc=-6;continue;}
+                    int valid=butterfly_config(d,&off,&minB,&maxB);
+                    IOHIDDeviceClose(d,0);
+                    puts(valid ? "Read-only configuration valid; output protocol still unvalidated." :
+                                 "Read-only configuration failed; no write permitted.");
+                    rc=valid?-9:-7;
+                }
+            }else{
+                puts("Issue #2 PID 05ac:027d: LED writes disabled pending hardware protocol validation.");
+                rc=-9;
+            }
+            continue;
+        }
         int magic=(pid==MAGIC_PID && magic_usage(d) && inspect_magic(d,&minB,&maxB));
         int butterfly=(pid!=MAGIC_PID && butterfly_usage(d) && butterfly_descriptor(d));
         if(!magic && !butterfly){
@@ -195,7 +243,7 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
             rc=set_report(d,kIOHIDReportTypeOutput,output,6)?0:-8;
         }
         IOHIDDeviceClose(d,0);
-        if(rc==0)break;
+        if(rc==0 || rc==-8)break; // Do not try another device after a partial write.
     }
     free(devs);if(set)CFRelease(set);
     IOHIDManagerClose(manager,0);CFRelease(manager);
@@ -210,23 +258,27 @@ int main(int argc,char **argv){
     if(!strcmp(mode,"on")){
         const char *s=argc>2?argv[2]:"0.5";char *end=NULL;
         level=strtod(s,&end);
-        if(!end || end==s || *end || level<0.1 || level>1.0){fputs("Invalid brightness.\n",stderr);return 2;}
+        if(!end || end==s || *end || !isfinite(level) || level<0.1 || level>1.0){fputs("Invalid brightness.\n",stderr);return 2;}
     }
     /* Specific PIDs only: never open IOHIDManager against all Apple devices. */
-    const int pids[]={MAGIC_PID,0x0340,0x027c,0x0276};
+    const int pids[]={MAGIC_PID,0x0340,0x027c,0x0276,0x027d};
     int diagnostic=!strcmp(mode,"diagnose");
     int seen=0,found=-5,lastError=-5;
     for(size_t i=0;i<sizeof(pids)/sizeof(pids[0]);i++){
         /* For normal operation, do not probe further once validated. */
         int r=try_pid(pids[i],mode,level,&seen);
         if(r==0){found=0;if(!diagnostic)break;}
-        else if(r!=-5)lastError=r;
+        else if(r!=-5){lastError=r;if(r==-8)break;}
     }
     if(found==0)return 0;
+    if(lastError==-8){
+        puts("HID write failed; one or more LED commands may have been sent.");return 8;
+    }
     puts("No supported backlight interface could be validated; no LED command sent.");
     if(lastError==-4)return 4;
     if(lastError==-6)return 6;
     if(lastError==-7)return 7;
     if(lastError==-8)return 8;
+    if(lastError==-9)return 9;
     return 5;
 }

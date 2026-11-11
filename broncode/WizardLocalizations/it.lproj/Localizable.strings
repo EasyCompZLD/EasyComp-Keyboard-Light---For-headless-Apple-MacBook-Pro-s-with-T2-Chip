@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light — setup wizard 1.2.0-beta6 — it */
+/* EasyComp Keyboard Light development beta — it */
 "wizard.title" = "Installazione guidata";
 "wizard.subtitle" = "Installazione guidata %@  •  macOS / Intel T2";
 "wizard.intro" = "Modello Mac: %@  •  Architettura: %@\nLa procedura guidata verifica l’hardware, compila l’app localmente e avvia l’utilità nella barra dei menu. Le impostazioni esistenti restano invariate.";
@@ -33,3 +33,22 @@
 "wizard.copied" = "Rapporto copiato. Controllalo prima di pubblicarlo.";
 "wizard.busy" = "Installazione o diagnostica ancora in corso. Chiudi al termine.";
 "wizard.languageLabel" = "Lingua";
+"wizard.chooseLanguage" = "Scegli la lingua";
+"wizard.languageFirst" = "Scegli una lingua per continuare con la configurazione.";
+"wizard.continue" = "Continua";
+"wizard.update" = "Aggiorna";
+"wizard.openApp" = "Apri app";
+"wizard.uninstall" = "Disinstalla";
+"wizard.checkBuild" = "Verifica build";
+"wizard.showDetails" = "Mostra dettagli";
+"wizard.hideDetails" = "Nascondi dettagli";
+"wizard.overview" = "Installa o aggiorna l’app della barra dei menu. Le impostazioni saranno conservate.\n\nServe aiuto? Crea qui un rapporto diagnostico. Nessun invio automatico.\n\nQui puoi anche aprire o disinstallare l’app.";
+"wizard.checkingBuild" = "Verifica della build…";
+"wizard.buildDone" = "Verifica della build completata.";
+"wizard.uninstalling" = "Disinstallazione…";
+"wizard.uninstallDone" = "App e avvio automatico rimossi. Impostazioni conservate.";
+"wizard.uninstallTitle" = "Disinstallare EasyComp Keyboard Light?";
+"wizard.uninstallBody" = "L’app verrà chiusa. L’app e il suo avvio automatico saranno rimossi. Le impostazioni saranno conservate.";
+"wizard.quitFirst" = "Chiudi l’app di illuminazione della tastiera e riprova.";
+"wizard.actionFailed" = "Azione non completata";
+"wizard.actionFailedBody" = "Consulta i dettagli dell’errore o crea un rapporto diagnostico.";

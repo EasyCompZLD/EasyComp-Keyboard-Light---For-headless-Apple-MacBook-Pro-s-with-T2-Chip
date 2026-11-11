@@ -27,3 +27,7 @@ DerivedData/
 
 # Local release artifacts
 /dist/
+
+# Python regression-test caches
+__pycache__/
+*.py[cod]

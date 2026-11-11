@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light — setup wizard 1.2.0-beta6 — nl */
+/* EasyComp Keyboard Light development beta — nl */
 "wizard.title" = "Installatiewizard";
 "wizard.subtitle" = "Installatiewizard %@  •  macOS / Intel T2";
 "wizard.intro" = "Mac-model: %@  •  Architectuur: %@\nDe wizard controleert de hardware, bouwt de app lokaal en start het menubalkprogramma. Bestaande instellingen blijven behouden.";
@@ -33,3 +33,22 @@
 "wizard.copied" = "Rapport gekopieerd. Controleer het vóór plaatsen in een openbaar issue.";
 "wizard.busy" = "Installatie of diagnose is nog bezig. Sluit na afloop.";
 "wizard.languageLabel" = "Taal";
+"wizard.chooseLanguage" = "Kies je taal";
+"wizard.languageFirst" = "Kies een taal om door te gaan naar de installatie.";
+"wizard.continue" = "Doorgaan";
+"wizard.update" = "Bijwerken";
+"wizard.openApp" = "App openen";
+"wizard.uninstall" = "Verwijderen";
+"wizard.checkBuild" = "Build controleren";
+"wizard.showDetails" = "Details tonen";
+"wizard.hideDetails" = "Details verbergen";
+"wizard.overview" = "Installeer of werk de menubalkapp bij. Je instellingen blijven bewaard.\n\nHulp nodig? Maak hier een probleemrapport. Er wordt niets automatisch verstuurd.\n\nJe kunt de app hier ook openen of verwijderen.";
+"wizard.checkingBuild" = "Build controleren…";
+"wizard.buildDone" = "Buildcontrole voltooid.";
+"wizard.uninstalling" = "Verwijderen…";
+"wizard.uninstallDone" = "App en automatisch opstarten verwijderd. Instellingen bewaard.";
+"wizard.uninstallTitle" = "EasyComp Keyboard Light verwijderen?";
+"wizard.uninstallBody" = "De app wordt afgesloten. De app en automatisch opstarten worden verwijderd. Je opgeslagen instellingen blijven bewaard.";
+"wizard.quitFirst" = "Sluit de toetsenbordverlichtingsapp af en probeer opnieuw.";
+"wizard.actionFailed" = "Actie niet voltooid";
+"wizard.actionFailedBody" = "Open de details voor de foutmelding. Je kunt ook een probleemrapport maken.";

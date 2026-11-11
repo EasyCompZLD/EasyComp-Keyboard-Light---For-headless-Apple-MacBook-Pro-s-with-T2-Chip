@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — nl */
+/* EasyComp Keyboard Light development beta — nl */
 "brightness.label" = "Helderheid";
 "brightness.tooltip" = "Toetsenbordverlichting";
 "brightness.up" = "Helderder (+10%)";
@@ -21,3 +21,16 @@
 "hid.success" = "HID: opdracht geaccepteerd";
 "hid.error" = "HID: fout";
 "hid.launchfailed" = "HID: starten mislukt";
+"idle.timeout.title" = "Toetsenbordverlichting uit na inactiviteit";
+"idle.never" = "Nooit";
+"idle.15s" = "15 seconden";
+"idle.30s" = "30 seconden";
+"idle.1m" = "1 minuut";
+"idle.5m" = "5 minuten";
+"idle.10m" = "10 minuten";
+"idle.30m" = "30 minuten";
+"idle.status.off" = "Verlichting uit: geen activiteit";
+"idle.status.active" = "Automatische uitschakeling ingeschakeld";
+"idle.status.manualoff" = "Verlichting handmatig uit";
+"idle.status.suspended" = "Verlichting gepauzeerd: sluimerstand of inactieve sessie";
+"idle.status.disabled" = "Automatisch uitschakelen uitgeschakeld";

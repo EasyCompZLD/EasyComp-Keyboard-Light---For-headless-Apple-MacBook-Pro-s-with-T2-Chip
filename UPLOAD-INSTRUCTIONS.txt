@@ -1,13 +1,3 @@
-Beta6 repository upload repair
-==============================
-These TEN files were missing from the repository main branch at issue #1.
-Upload the included files to the SAME relative paths in the root of the repo.
-The .github directory is hidden on macOS Finder; it contains the issue template and CI workflow.
-
-CRITICAL: Updating main does NOT retroactively update GitHub's auto-generated
-Source code ZIP for an existing v1.2.0-beta6 tag. For that release,
-upload EasyComp-Keyboard-Light-v1.2.0-beta6-COMPLETE-Release.zip
-to GitHub Release > Edit > Assets, and link users to that asset.
-Alternatively create a new tag/release AFTER committing the missing files.
-Do not replace the currently published tag by force-pushing.
-Run the script with normal user permissions, never sudo.
+Current development uses the existing Git repository and dev/beta branch.
+See BETA-DEVELOPMENT.md for the workflow. Do not upload loose files or publish automatically.
+Old upload instructions are preserved in docs/history/UPLOAD-INSTRUCTIONS.txt.

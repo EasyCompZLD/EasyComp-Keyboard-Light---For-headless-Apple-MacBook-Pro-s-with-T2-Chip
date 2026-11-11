@@ -13,12 +13,18 @@ fi
 ecz_require_developer_tools --check-only || exit 1
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/ecz-kbl-build.XXXXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
+# Keep compiler caches inside the disposable build directory.
+export CLANG_MODULE_CACHE_PATH="$TMP/clang-cache"
+export SWIFT_MODULECACHE_PATH="$TMP/swift-cache"
+cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" \
+  "$HERE/broncode/InstallWizard.swift" "$TMP/"
 /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
-  "$HERE/broncode/HIDBacklight.c" -o "$TMP/ecz-t2-backlight"
+  "$TMP/HIDBacklight.c" -o "$TMP/ecz-t2-backlight"
 /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
-  "$HERE/broncode/EasyCompKeyboardLight.swift" -o "$TMP/EasyCompKeyboardLight"
-/usr/bin/xcrun swiftc -framework AppKit "$HERE/broncode/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
+  "$TMP/EasyCompKeyboardLight.swift" -o "$TMP/EasyCompKeyboardLight"
+/usr/bin/xcrun swiftc -framework AppKit "$TMP/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
 /usr/bin/plutil -lint "$HERE/broncode/Info.plist"
+/usr/bin/plutil -lint "$HERE/broncode/SetupInfo.plist"
 for lang in en nl de fr es it pt pl; do
   /usr/bin/plutil -lint "$HERE/broncode/Localizations/$lang.lproj/Localizable.strings"
   /usr/bin/plutil -lint "$HERE/broncode/WizardLocalizations/$lang.lproj/Localizable.strings"

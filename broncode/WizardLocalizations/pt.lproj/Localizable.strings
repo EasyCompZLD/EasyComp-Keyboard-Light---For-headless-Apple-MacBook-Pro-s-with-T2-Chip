@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light — setup wizard 1.2.0-beta6 — pt */
+/* EasyComp Keyboard Light development beta — pt */
 "wizard.title" = "Assistente de instalação";
 "wizard.subtitle" = "Assistente de instalação %@  •  macOS / Intel T2";
 "wizard.intro" = "Modelo do Mac: %@  •  Arquitetura: %@\nO assistente verifica o hardware, compila a aplicação localmente e inicia o utilitário da barra de menus. As definições existentes são preservadas.";
@@ -33,3 +33,22 @@
 "wizard.copied" = "Relatório copiado. Reveja-o antes de publicar.";
 "wizard.busy" = "A instalação ou diagnóstico ainda decorre. Feche quando terminar.";
 "wizard.languageLabel" = "Idioma";
+"wizard.chooseLanguage" = "Escolha o idioma";
+"wizard.languageFirst" = "Escolha um idioma para continuar a configuração.";
+"wizard.continue" = "Continuar";
+"wizard.update" = "Atualizar";
+"wizard.openApp" = "Abrir app";
+"wizard.uninstall" = "Desinstalar";
+"wizard.checkBuild" = "Verificar build";
+"wizard.showDetails" = "Mostrar detalhes";
+"wizard.hideDetails" = "Ocultar detalhes";
+"wizard.overview" = "Instale ou atualize a app da barra de menus. As definições serão mantidas.\n\nPrecisa de ajuda? Crie aqui um relatório de diagnóstico. Nada é enviado automaticamente.\n\nTambém pode abrir ou desinstalar a app aqui.";
+"wizard.checkingBuild" = "A verificar a build…";
+"wizard.buildDone" = "Verificação da build concluída.";
+"wizard.uninstalling" = "A desinstalar…";
+"wizard.uninstallDone" = "App e início automático removidos. Definições mantidas.";
+"wizard.uninstallTitle" = "Desinstalar EasyComp Keyboard Light?";
+"wizard.uninstallBody" = "A app será fechada. A app e o início automático serão removidos. As definições serão mantidas.";
+"wizard.quitFirst" = "Feche a app de iluminação do teclado e tente novamente.";
+"wizard.actionFailed" = "Ação não concluída";
+"wizard.actionFailedBody" = "Consulte os detalhes do erro ou crie um relatório de diagnóstico.";

@@ -12,15 +12,16 @@ jobs:
       - name: Validate shell scripts and build app assets
         shell: bash
         run: |
-          bash -n Start-Installatie.command
+          bash -n Start.command
           bash -n Installeer.command
           bash -n Verwijder.command
           bash -n Controleer-build.command
           bash -n Probleemrapport.command
           bash -n Diagnoseer-T2-Mac.command
-          find Languages -type f -name "*.command" -print0 | xargs -0 -n1 bash -n
-          bash -n Install.command
+          find legacy/Languages -type f -name "*.command" -print0 | xargs -0 -n1 bash -n
+          bash -n legacy/Install.command
           bash -n scripts/cli-i18n.sh
           bash -n scripts/developer-tools.sh
+          bash -n scripts/build-beta.sh
           python3 -m unittest discover -s tests -v
           bash Controleer-build.command

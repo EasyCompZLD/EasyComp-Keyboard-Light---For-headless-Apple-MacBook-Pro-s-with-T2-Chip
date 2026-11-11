@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — en */
+/* EasyComp Keyboard Light development beta — en */
 "brightness.label" = "Brightness";
 "brightness.tooltip" = "Keyboard backlight";
 "brightness.up" = "Brighter (+10%)";
@@ -21,3 +21,16 @@
 "hid.success" = "HID: command accepted";
 "hid.error" = "HID: error";
 "hid.launchfailed" = "HID: could not start";
+"idle.timeout.title" = "Turn keyboard backlight off after inactivity";
+"idle.never" = "Never";
+"idle.15s" = "15 seconds";
+"idle.30s" = "30 seconds";
+"idle.1m" = "1 minute";
+"idle.5m" = "5 minutes";
+"idle.10m" = "10 minutes";
+"idle.30m" = "30 minutes";
+"idle.status.off" = "Backlight paused: inactive";
+"idle.status.active" = "Automatic idle-off enabled";
+"idle.status.manualoff" = "Backlight manually off";
+"idle.status.suspended" = "Backlight paused: sleep or inactive session";
+"idle.status.disabled" = "Automatic idle-off disabled";

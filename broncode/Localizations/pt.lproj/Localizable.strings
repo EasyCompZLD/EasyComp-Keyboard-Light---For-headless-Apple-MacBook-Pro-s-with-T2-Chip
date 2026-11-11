@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — pt */
+/* EasyComp Keyboard Light development beta — pt */
 "brightness.label" = "Brilho";
 "brightness.tooltip" = "Retroiluminação do teclado";
 "brightness.up" = "Mais brilho (+10%)";
@@ -21,3 +21,16 @@
 "hid.success" = "HID: comando aceite";
 "hid.error" = "HID: erro";
 "hid.launchfailed" = "HID: falha ao iniciar";
+"idle.timeout.title" = "Desligar a iluminação após inatividade";
+"idle.never" = "Nunca";
+"idle.15s" = "15 segundos";
+"idle.30s" = "30 segundos";
+"idle.1m" = "1 minuto";
+"idle.5m" = "5 minutos";
+"idle.10m" = "10 minutos";
+"idle.30m" = "30 minutos";
+"idle.status.off" = "Iluminação suspensa por inatividade";
+"idle.status.active" = "Desligar automaticamente ativado";
+"idle.status.manualoff" = "Iluminação desligada manualmente";
+"idle.status.suspended" = "Iluminação em pausa: suspensão ou sessão inativa";
+"idle.status.disabled" = "Desligamento automático desativado";

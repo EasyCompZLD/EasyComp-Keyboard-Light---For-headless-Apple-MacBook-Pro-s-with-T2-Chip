@@ -1,25 +1,19 @@
-# GitHub repository metadata - copy/paste
+# GitHub repository information
 
-**Suggested repository name:** `EasyComp-Keyboard-Light`
+**Existing repository:** [EasyCompZLD/EasyComp Keyboard Light](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip)
 
-**Project title:** EasyComp Keyboard Light - For headless Apple MacBook Pro’s with T2 Chip.
+**Suggested About description:** Keyboard backlight control for headless Intel T2 MacBooks, with a native multilingual setup GUI. No Terminal commands required. Hardware-proven HID method on MacBookPro16,1 / A2141; other models require validation.
 
-**Description (GitHub About):** Restore keyboard backlight control on headless Apple MacBook Pros with a T2 chip. Direct T2 USB-HID control bypasses the missing ambient light sensor dependency in macOS. Free, open-source and multilingual.
+**Suggested feature announcement:** No Terminal commands required — setup is now more user friendly. Choose your language and manage installation, updates, diagnostics and removal in one native window.
 
-**Website:** optional - leave blank if there is no dedicated project page.
+**Current development branch:** `dev/beta`
 
-**Topics (enter one at a time in GitHub):** macos, macbook-pro, headless-macbook, t2-chip, keyboard-backlight, touch-bar, hid, usb-hid, intel-mac, macos-tahoe, swift, open-source, easycomp-zeeland
+**Working version:** `1.2.0-beta`
 
-**Visibility:** Public
+**Last published release:** `v1.2.0-beta6`
 
-**License:** MIT (already included as LICENSE)
+Keep `main` and public releases unchanged until hardware acceptance and publication authorization. Pushing `dev/beta` uploads the development commits; it does not merge main or publish a release. [Release notes](GITHUB-RELEASE.md) remain a development draft.
 
-**Initial commit:** Initial public release v1.1.0
+The current demonstration uses `Assets/IMG_0919.gif`, with the full recording in `Assets/IMG_0919.webm`. Both are linked from README. Earlier demonstration files remain historical assets and are not used as the current demo.
 
-**Release tag:** v1.1.0
-
-**Release title:** EasyComp Keyboard Light v1.1.0
-
-**Release notes:** See GITHUB-RELEASE.md
-
-**Important:** Although the title refers broadly to T2 Macs, only MacBookPro16,1 / A2141 has been verified. Mark v1.1.0 as a pre-release until the updated version is successfully built and tested on-device.
+No repository metadata, release, tag or GitHub page is changed automatically by editing this file.
