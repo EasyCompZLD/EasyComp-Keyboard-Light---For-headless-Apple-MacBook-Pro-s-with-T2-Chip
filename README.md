@@ -4,6 +4,8 @@
 
 A native macOS menu bar app for keyboard backlight control on headless Intel MacBooks with an Apple T2 chip. Swift + C, eight languages, no kernel extensions or SIP changes.
 
+**No Terminal commands required — setup is now more user friendly.**
+
 **One development beta:** `1.2.0-beta` on `dev/beta`. The last published release remains `v1.2.0-beta6`. Current changes are local development and still require hardware acceptance.
 
 ## Start here
@@ -62,4 +64,4 @@ Use **Diagnostic report** in Setup. Reports stay local and are never uploaded au
 
 Only run one keyboard-light controller at a time. Setup asks the running controller to quit before updating or uninstalling and waits for it to exit. Uninstall keeps saved preferences.
 
-[License](LICENSE) · [Demonstration](Assets/EasyComp-KeyboardLight-Demo.gif) · [GitHub Releases](../../releases)
+[License](LICENSE) · [Previous demonstration](Assets/EasyComp-KeyboardLight-Demo.gif) · [GitHub Releases](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases)
