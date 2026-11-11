@@ -14,6 +14,6 @@
 
 Keep `main` and public releases unchanged until hardware acceptance and publication authorization. Pushing `dev/beta` uploads the development commits; it does not merge main or publish a release. [Release notes](GITHUB-RELEASE.md) remain a development draft.
 
-The previous demo remains in `Assets/EasyComp-KeyboardLight-Demo.gif` until the new GUI recording is ready. Replace that file only with the finished recording, then review the staged GIF change before committing.
+The current demonstration uses `Assets/IMG_0919.gif`, with the full recording in `Assets/IMG_0919.webm`. Both are linked from README. Earlier demonstration files remain historical assets and are not used as the current demo.
 
 No repository metadata, release, tag or GitHub page is changed automatically by editing this file.

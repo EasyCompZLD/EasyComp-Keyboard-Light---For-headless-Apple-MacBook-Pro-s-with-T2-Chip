@@ -23,6 +23,12 @@ The same window lets you open the installed app, create/copy a local diagnostic 
 
 The download contains **one setup app**. Backend scripts are bundled inside it. For developers using this source checkout, **Start.command** is the single source-based starter; it compiles the GUI first if needed. Previous language-specific starters are preserved under `legacy/`, not required for normal use.
 
+## Demonstration
+
+![EasyComp Keyboard Light demonstration](Assets/IMG_0919.gif)
+
+[Watch or download the full video (WebM)](Assets/IMG_0919.webm)
+
 ## Features and current limits
 
 - Manual power and brightness, with remembered settings and 10% steps.
@@ -64,4 +70,4 @@ Use **Diagnostic report** in Setup. Reports stay local and are never uploaded au
 
 Only run one keyboard-light controller at a time. Setup asks the running controller to quit before updating or uninstalling and waits for it to exit. Uninstall keeps saved preferences.
 
-[License](LICENSE) · [Previous demonstration](Assets/EasyComp-KeyboardLight-Demo.gif) · [GitHub Releases](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases)
+[License](LICENSE) · [GitHub Releases](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases)
