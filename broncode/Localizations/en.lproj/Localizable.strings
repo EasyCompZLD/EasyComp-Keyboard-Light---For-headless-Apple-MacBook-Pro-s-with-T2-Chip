@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — en */
+/* EasyComp Keyboard Light development beta — en */
 "brightness.label" = "Brightness";
 "brightness.tooltip" = "Keyboard backlight";
 "brightness.up" = "Brighter (+10%)";

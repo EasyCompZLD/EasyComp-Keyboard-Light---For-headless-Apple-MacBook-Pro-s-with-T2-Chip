@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — nl */
+/* EasyComp Keyboard Light development beta — nl */
 "brightness.label" = "Helderheid";
 "brightness.tooltip" = "Toetsenbordverlichting";
 "brightness.up" = "Helderder (+10%)";

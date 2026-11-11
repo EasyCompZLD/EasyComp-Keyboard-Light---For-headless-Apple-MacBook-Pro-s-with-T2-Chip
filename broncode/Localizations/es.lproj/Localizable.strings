@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light v1.1.0 — es */
+/* EasyComp Keyboard Light development beta — es */
 "brightness.label" = "Brillo";
 "brightness.tooltip" = "Retroiluminación del teclado";
 "brightness.up" = "Más brillo (+10 %)";

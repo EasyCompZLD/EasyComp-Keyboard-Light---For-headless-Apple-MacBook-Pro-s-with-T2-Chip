@@ -24,6 +24,7 @@ cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" 
   "$TMP/EasyCompKeyboardLight.swift" -o "$TMP/EasyCompKeyboardLight"
 /usr/bin/xcrun swiftc -framework AppKit "$TMP/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
 /usr/bin/plutil -lint "$HERE/broncode/Info.plist"
+/usr/bin/plutil -lint "$HERE/broncode/SetupInfo.plist"
 for lang in en nl de fr es it pt pl; do
   /usr/bin/plutil -lint "$HERE/broncode/Localizations/$lang.lproj/Localizable.strings"
   /usr/bin/plutil -lint "$HERE/broncode/WizardLocalizations/$lang.lproj/Localizable.strings"

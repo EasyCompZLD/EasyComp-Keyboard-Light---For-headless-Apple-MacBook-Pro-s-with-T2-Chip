@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light — setup wizard 1.2.0-beta6 — en */
+/* EasyComp Keyboard Light development beta — en */
 "wizard.title" = "Setup Wizard";
 "wizard.subtitle" = "Setup Wizard %@  •  macOS / Intel T2";
 "wizard.intro" = "Mac model: %@  •  Architecture: %@\nThe wizard checks your hardware, builds the app locally and starts the menu bar utility. Existing settings will be preserved.";
@@ -33,3 +33,22 @@
 "wizard.copied" = "Report copied. Review it before posting in a public issue.";
 "wizard.busy" = "An installation or diagnosis is still running. Close after it finishes.";
 "wizard.languageLabel" = "Language";
+"wizard.chooseLanguage" = "Choose your language";
+"wizard.languageFirst" = "Select a language to continue to setup.";
+"wizard.continue" = "Continue";
+"wizard.update" = "Update";
+"wizard.openApp" = "Open app";
+"wizard.uninstall" = "Uninstall";
+"wizard.checkBuild" = "Check build";
+"wizard.showDetails" = "Show details";
+"wizard.hideDetails" = "Hide details";
+"wizard.overview" = "Install or update the menu bar app. Your settings are kept.\n\nNeed help? Create a diagnostic report here. Nothing is uploaded automatically.\n\nYou can also open or uninstall the app from this window.";
+"wizard.checkingBuild" = "Checking build…";
+"wizard.buildDone" = "Build check completed.";
+"wizard.uninstalling" = "Uninstalling…";
+"wizard.uninstallDone" = "App and login startup removed. Settings kept.";
+"wizard.uninstallTitle" = "Uninstall EasyComp Keyboard Light?";
+"wizard.uninstallBody" = "The app will close. The app and its login startup will be removed. Your saved settings will be kept.";
+"wizard.quitFirst" = "Close the keyboard light app and try again.";
+"wizard.actionFailed" = "Action could not be completed";
+"wizard.actionFailedBody" = "Open the details for the error. You can also create a diagnostic report.";

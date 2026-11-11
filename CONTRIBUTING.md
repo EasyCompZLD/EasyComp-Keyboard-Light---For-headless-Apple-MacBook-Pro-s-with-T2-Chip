@@ -10,6 +10,10 @@ Thanks for helping improve this small open-source project.
 - Share concise diagnostics, with **serial numbers, hardware UUIDs, account names, tokens and personal data redacted**.
 - Only MacBookPro16,1 / A2141 is currently supported. Reports from other T2 Macs are welcome as research, not evidence of compatibility.
 
+## Development
+
+Use `dev/beta` and follow [the single beta workflow](BETA-DEVELOPMENT.md). All regression tests target macOS; retain the cumulative HID, installer, localization and runtime coverage.
+
 ## Pull requests
 
 - Keep hardware handling conservative and preserve descriptor checks before HID feature writes.

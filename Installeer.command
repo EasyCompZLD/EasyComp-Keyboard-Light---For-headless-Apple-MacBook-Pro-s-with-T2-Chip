@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.0-beta6: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.0-beta: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -114,11 +114,15 @@ for lang in en nl de fr es it pt pl; do
   [[ -f "$HERE/broncode/Localizations/$lang.lproj/Localizable.strings" ]] || fail "Vertaling ontbreekt: $lang"
 done
 
-printf '\n== EasyComp Keyboard Light 1.2.0-beta6 ==\n'
+# Compile stable local snapshots even when the checkout is on an SMB share.
+export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
+export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
+cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
+printf '\n== EasyComp Keyboard Light 1.2.0-beta ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
-  "$HERE/broncode/HIDBacklight.c" -o "$WORK/ecz-t2-backlight"
+  "$WORK/HIDBacklight.c" -o "$WORK/ecz-t2-backlight"
 CURRENT_STAGE='Read-only HID protocol probe'
 PROBE_STATUS=0
 "$WORK/ecz-t2-backlight" probe >"$PROBE_LOG" 2>&1 || PROBE_STATUS=$?
@@ -135,7 +139,7 @@ grep -q 'Protocolcontrole: OK' "$PROBE_LOG" || fail 'Geen valide HID-reportdescr
 echo "ECZ_STEP:2"
 echo "$(ecz_t boot.bundle)"
 run_step 'Compile Swift app' /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
-  "$HERE/broncode/EasyCompKeyboardLight.swift" -o "$WORK/EasyCompKeyboardLight"
+  "$WORK/EasyCompKeyboardLight.swift" -o "$WORK/EasyCompKeyboardLight"
 
 echo "ECZ_STEP:3"
 echo "$(ecz_t boot.save)"

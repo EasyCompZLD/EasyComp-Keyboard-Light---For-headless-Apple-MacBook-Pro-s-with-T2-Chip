@@ -1,3 +1,5 @@
+> Historical review of the earlier beta7 work. Current development is consolidated on `dev/beta`; see [the single beta workflow](BETA-DEVELOPMENT.md). The old build names and counts below describe that earlier review.
+
 # Development review — 11 November 2026
 
 Base: beta7 commit `b5762d2`, following installer fix `073cdac`. Work remains local on `dev/beta7-timeout-touchbar-20261111-review`; main and public releases are unchanged.

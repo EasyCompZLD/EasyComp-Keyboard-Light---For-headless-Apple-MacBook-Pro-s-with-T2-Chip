@@ -1,4 +1,4 @@
-// EasyComp Keyboard Light v1.2.0-beta7 development
+// EasyComp Keyboard Light v1.2.0-beta development
 // Native menu bar utility for compatible headless Intel T2 MacBooks (beta).
 // HID hardware control is delegated to the separately verified C helper.
 import AppKit
