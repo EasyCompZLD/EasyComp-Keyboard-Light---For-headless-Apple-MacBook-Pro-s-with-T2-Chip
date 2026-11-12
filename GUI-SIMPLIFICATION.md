@@ -1,5 +1,7 @@
 # Single-beta GUI consolidation
 
+Historical implementation record for commit `8962fc2`. The version and 33-test result below describe that revision. For current behavior, compatibility and verification results, see [development status](BETA-DEVELOPMENT.md) and [integration acceptance](BETA7.1-ACCEPTANCE.md).
+
 The active development branch is `dev/beta`, working version `1.2.0-beta`. Existing changes are cumulative; scheduling and the complete lock policy remain on the same backlog. The earlier beta7 branch and documentation are archived rather than maintained as separate active versions.
 
 ## User workflow
