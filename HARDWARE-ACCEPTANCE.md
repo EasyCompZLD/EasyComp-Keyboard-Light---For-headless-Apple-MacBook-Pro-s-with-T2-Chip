@@ -56,12 +56,11 @@ Compare one short test with the menu open, menu closed and another app frontmost
 
 ## Issue #2 — MacBookPro15,4
 
-The [second report](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6810254280) is now received: one keyboard candidate, successful BF feature read, 8 bytes, ID BF/version 1, off 0/minimum 32/maximum 512. It does not separately list the device-open status or numeric IOKit status, nor does it validate output or visible LEDs.
+The tester has now confirmed two visible minimum-light/off cycles on Sequoia 15.8.3, with successful opens, an 8-byte BF/version-1 configuration (off 0, min 32, max 512), and successful B0 values 32 and 0. See [the hardware report](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957).
 
-Use [the separately packaged compatibility test](ISSUE2-COMPATIBILITY.md) for the next opt-in hardware stage. It logs those statuses explicitly, starts with a new read-only probe and keeps the LED test locked until the tester reviews and confirms it. The ordinary application/installer remains blocked for PID `027d`.
-The updated helper recognizes the reported `05ac:027d` keyboard input descriptor for read-only `probe`/`diagnose`. It does not infer output support from an input element. Even a valid configuration returns exit 9 (protocol pending), **not** installer acceptance. Exit 6 identifies device-open failure, 7 configuration/feature-request failure and 5 no validated interface; manager-open errors use 4. PID `027b` is not added without hardware evidence. The original strict Butterfly write gate remains for existing candidates.
+Beta7.1 integrates this exact model/interface/configuration behind strict gates; normal `probe`/`diagnose` remains read-only and can now return installer success for this validated configuration. Missing or ambiguous interfaces return 5, manager access errors 4, device-open errors 6, configuration failures 7 and output failures 8. Other product/model exceptions are not broadened.
 
-Do not give the tester a GUI/LED build before reviewing and confirming their probe results. The isolated compatibility build permits a controlled minimum-light pulse only after that confirmation. An isolated opt-in `027d` LED test is now provided; no physical LED test has been performed by this development session. Keep issue #2 open.
+Follow [beta7.1 acceptance](BETA7.1-ACCEPTANCE.md) to test the integrated installation, full brightness range, settings and idle/sleep behavior. Those checks are pending; minimum/off confirmation alone does not close issue #2. The [isolated research tool](ISSUE2-COMPATIBILITY.md) remains available as historical evidence/reproduction, not the standard installer.
 
 ## Previous test-app cleanup and rollback
 

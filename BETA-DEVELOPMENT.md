@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.0-beta` (see `VERSION`)
+**Working version:** `1.2.0-beta7.1` (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
@@ -21,9 +21,9 @@ There is one maintained Swift + C codebase and one cumulative macOS regression s
 - Serialized/coalesced HID writes, stale-command protection, helper watchdog and diagnostics.
 - Local/global illumination-event monitors plus a recovering background event tap.
 - Native installer, staging/rollback, prerequisite handling and eight interface languages.
-- Issue #2 PID `027d` read-only diagnostics. LED writes remain blocked pending protocol validation.
+- Issue #2 integration for MacBookPro15,4: exact PID/primary descriptor, unique interface and BF-v1/0/32/512 validation before normal B0 brightness/off writes. Minimum/off was physically confirmed; the integrated installer/full range remain in acceptance.
 
-Implementation does not imply hardware acceptance. Original Touch Bar event emission and the updated sleep/input behavior still need physical testing. MacBookPro15,4 compatibility is not confirmed; the second tester report confirms the BF configuration (0/32/512), while output and physical LEDs remain unverified. See [the isolated compatibility test](ISSUE2-COMPATIBILITY.md).
+Implementation does not imply complete hardware acceptance. The tester confirmed two visible minimum/off cycles and successful IOKit results on MacBookPro15,4 / Sequoia 15.8.3. Beta7.1 integrates that exact protocol. See [integrated acceptance](BETA7.1-ACCEPTANCE.md) for installation and full-range checks. Touch Bar, idle/sleep and other models still need their own physical validation.
 
 ## One workflow
 
@@ -47,7 +47,7 @@ Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) before installation/release
 These items are planned work on the same beta, rather than a separate beta8 codebase:
 
 1. Finish A2141 acceptance of timeout, activity sources, monitor permissions, Touch Bar and sleep/session behavior.
-2. Run the isolated Issue #2 compatibility test after the tester reviews its fresh probe. The second report confirms BF configuration reads; integrate into the normal beta only after output and physical LED validation.
+2. Complete beta7.1 integrated installation/full-range acceptance after the successful isolated minimum/off test. Keep issue #2 open until follow-up passes.
 3. Add manual, local sunset/sunrise and custom-schedule modes, including intervals across midnight. Location requires permission; no online API or account.
 4. Complete lock/unlock behavior: normal timeout by default, optional immediate off, permitted activity on the lock screen where macOS allows it, and persistent manual off.
 
@@ -57,10 +57,10 @@ Ambient-light adaptation remains unsupported without a reliable data source. No 
 
 `archive/beta7-20261110` preserves the former branch pointer; it is not an active development branch. Previous notes and release/upload instructions are retained in [docs/history](docs/history/). The [dated technical review](DEVELOPMENT-REVIEW-2026-11-11.md) records the earlier investigation and validation.
 
-The published `v1.2.0-beta6` release and `main` remain unchanged. Do not create a new release/tag, push, merge to main or close issue #2 without the required hardware acceptance and explicit publication instruction. Future beta fixes and agreed additions accumulate here; build numbers/commit hashes distinguish test builds without introducing parallel beta variants.
+The preceding published `v1.2.0-beta7` release and `main` remain unchanged; beta7.1 is a separate compatibility prerelease. Do not create a new release/tag, push, merge to main or close issue #2 without the required hardware acceptance and explicit publication instruction. Future beta fixes and agreed additions accumulate here; build numbers/commit hashes distinguish test builds without introducing parallel beta variants.
 
 ## GUI consolidation
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation: 35 macOS tests passed (including 38 mocked HID scenarios for the isolated Issue #2 tool) with no failures or skips; native build, eight app/eight setup language tables and shell syntax passed. Hardware/end-to-end installation acceptance is still pending.
+Latest local validation for beta7.1: 36 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. Integrated installation/full-range acceptance is still pending.

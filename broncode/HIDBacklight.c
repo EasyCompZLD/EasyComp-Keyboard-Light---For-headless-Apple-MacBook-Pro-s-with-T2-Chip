@@ -20,6 +20,7 @@
 #include <IOKit/hid/IOHIDKeys.h>
 #include <stdint.h>
 #include <math.h>
+#include <sys/sysctl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -95,12 +96,18 @@ static int butterfly_descriptor(IOHIDDeviceRef d) {
     CFRelease(a);
     return output && feature;
 }
-/* Issue #2: this macOS input descriptor permits a read-only investigation,
- * not the inference that feature 0xBF or output 0xB0 is supported.
- * Keep the existing write descriptor gate unchanged pending hardware evidence.
+/* MacBookPro15,4 exception validated by issuecomment-6825954957:
+ * BF configuration read and B0 minimum/off were physically confirmed twice.
+ * Other products retain the original descriptor requirements.
  */
+static int issue2_model(void) {
+    char model[128]={0};size_t length=sizeof(model)-1;
+    return sysctlbyname("hw.model",model,&length,NULL,0)==0 && !strcmp(model,"MacBookPro15,4");
+}
 static int issue2_read_candidate(IOHIDDeviceRef d) {
-    if(number(d,CFSTR(kIOHIDPrimaryUsagePageKey))!=1 ||
+    if(number(d,CFSTR(kIOHIDVendorIDKey))!=APPLE_VID ||
+       number(d,CFSTR(kIOHIDProductIDKey))!=0x027d ||
+       number(d,CFSTR(kIOHIDPrimaryUsagePageKey))!=1 ||
        number(d,CFSTR(kIOHIDPrimaryUsageKey))!=6)return 0;
     CFArrayRef a=IOHIDDeviceCopyMatchingElements(d,NULL,0);
     if(!a)return 0;
@@ -113,10 +120,10 @@ static int issue2_read_candidate(IOHIDDeviceRef d) {
            IOHIDElementGetUsagePage(e)==0xff00 && IOHIDElementGetUsage(e)==0xf &&
            IOHIDElementGetReportID(e)==0xbf && IOHIDElementGetReportSize(e)==120 &&
            IOHIDElementGetReportCount(e)==15 && IOHIDElementGetLogicalMin(e)==0 &&
-           IOHIDElementGetLogicalMax(e)==255)found=1;
+           IOHIDElementGetLogicalMax(e)==255)found++;
     }
     CFRelease(a);
-    return found;
+    return found==1;
 }
 static uint16_t read16(const uint8_t *p) {return (uint16_t)(p[0]|((uint16_t)p[1]<<8));}
 static void put16(uint8_t *p,uint16_t n){p[0]=(uint8_t)n;p[1]=(uint8_t)(n>>8);}
@@ -137,6 +144,45 @@ static int set_report(IOHIDDeviceRef d,IOHIDReportType kind,const uint8_t *data,
     IOReturn r=IOHIDDeviceSetReport(d,kind,data[0],data,n);
     printf("SetReport ID 0x%02x: 0x%08x\n",data[0],(unsigned)r);
     return r==kIOReturnSuccess;
+}
+/* Reuse the existing Butterfly output structure and normalization. */
+static int write_butterfly(IOHIDDeviceRef d,const char *mode,double level,int off,int minB,int maxB){
+    uint16_t val=(uint16_t)(!strcmp(mode,"off")?off:(int)(maxB*level+0.5));
+    if(strcmp(mode,"off") && val<(uint16_t)minB)val=(uint16_t)minB;
+    uint8_t output[6]={0xb0,1,0,0,0,0};put16(output+2,val);
+    printf("Butterfly requested brightness: %u (off %d, range %d..%d)\n",val,off,minB,maxB);
+    return set_report(d,kIOHIDReportTypeOutput,output,6)?0:-8;
+}
+static int issue2_config(IOHIDDeviceRef d){
+    uint8_t rep[64]={0xbf};CFIndex size=sizeof(rep);
+    IOReturn r=IOHIDDeviceGetReport(d,kIOHIDReportTypeFeature,0xbf,rep,&size);
+    printf("MacBookPro15,4 GetReport 0xBF: status=0x%08x\n",(unsigned)r);
+    if(r!=kIOReturnSuccess){puts("Configuration read failed; no LED command permitted.");return 0;}
+    printf("MacBookPro15,4 returned configuration length=%ld\n",(long)size);
+    if(size!=8 || rep[0]!=0xbf || rep[1]!=1 || read16(rep+2)!=0 ||
+       read16(rep+4)!=32 || read16(rep+6)!=512){
+        puts("Configuration differs from the validated BF/version-1/0/32/512 report; no LED command permitted.");return 0;
+    }
+    return 1;
+}
+static int try_issue2(IOHIDDeviceRef *devices,CFIndex count,const char *mode,double level,int *seen){
+    IOHIDDeviceRef selected=NULL;int candidates=0;
+    for(CFIndex i=0;i<count;i++)if(issue2_read_candidate(devices[i])){selected=devices[i];candidates++;}
+    printf("MacBookPro15,4 strict matching candidates: %d\n",candidates);
+    if(candidates!=1){puts("No unique validated Butterfly interface; no LED command sent.");return -5;}
+    *seen=1;
+    IOReturn r=IOHIDDeviceOpen(selected,0);
+    printf("MacBookPro15,4 HIDDeviceOpen: 0x%08x\n",(unsigned)r);
+    if(r!=kIOReturnSuccess)return -6;
+    int rc=-7;
+    if(issue2_config(selected)){
+        puts("Protocolcontrole: OK (brightness 32..512)");
+        if(!strcmp(mode,"probe") || !strcmp(mode,"diagnose")){
+            puts("Read-only protocol check completed. No LED commands sent.");rc=0;
+        }else rc=write_butterfly(selected,mode,level,0,32,512);
+    }
+    IOHIDDeviceClose(selected,0);
+    return rc;
 }
 static void describe(IOHIDDeviceRef d){
     printf("Candidate Apple 05ac:%04x primary %04x/%04x\n",
@@ -164,12 +210,23 @@ static void describe(IOHIDDeviceRef d){
  * This is deliberate: broad Apple HID matching broke v1.2.0-beta2 on A2141.
  */
 static int try_pid(int pid,const char *mode,double level,int *seen){
+    if(pid==0x027d && !issue2_model()){
+        puts("PID 05ac:027d support is restricted to the validated MacBookPro15,4 model.");return -5;
+    }
     IOHIDManagerRef manager=IOHIDManagerCreate(kCFAllocatorDefault,0);
     if(!manager)return -3;
     CFMutableDictionaryRef match=CFDictionaryCreateMutable(kCFAllocatorDefault,0,
              &kCFTypeDictionaryKeyCallBacks,&kCFTypeDictionaryValueCallBacks);
+    if(!match){CFRelease(manager);return -3;}
     set_number(match,CFSTR(kIOHIDVendorIDKey),APPLE_VID);
     set_number(match,CFSTR(kIOHIDProductIDKey),pid);
+    if(pid==0x027d){
+        set_number(match,CFSTR(kIOHIDPrimaryUsagePageKey),1);
+        set_number(match,CFSTR(kIOHIDPrimaryUsageKey),6);
+    }
+    if(CFDictionaryGetCount(match)!=(pid==0x027d?4:2)){
+        CFRelease(match);CFRelease(manager);return -3;
+    }
     IOHIDManagerSetDeviceMatching(manager,match);
     CFRelease(match);
     IOReturn r=IOHIDManagerOpen(manager,0);
@@ -184,29 +241,10 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
     if(n && !devs){if(set)CFRelease(set);IOHIDManagerClose(manager,0);CFRelease(manager);return -3;}
     if(n)CFSetGetValues(set,(const void **)devs);
     int rc=-5;
+    if(pid==0x027d){rc=try_issue2(devs,n,mode,level,seen);goto cleanup;}
     for(CFIndex i=0;i<n;i++){
         IOHIDDeviceRef d=devs[i];
         int minB=0,maxB=0,off=0;
-        if(pid==0x027d){
-            if(!strcmp(mode,"probe") || !strcmp(mode,"diagnose")){
-                describe(d);
-                if(issue2_read_candidate(d)){
-                    *seen=1;
-                    r=IOHIDDeviceOpen(d,0);
-                    printf("Issue #2 read-only HIDDeviceOpen: 0x%08x\n",(unsigned)r);
-                    if(r!=kIOReturnSuccess){rc=-6;continue;}
-                    int valid=butterfly_config(d,&off,&minB,&maxB);
-                    IOHIDDeviceClose(d,0);
-                    puts(valid ? "Read-only configuration valid; output protocol still unvalidated." :
-                                 "Read-only configuration failed; no write permitted.");
-                    rc=valid?-9:-7;
-                }
-            }else{
-                puts("Issue #2 PID 05ac:027d: LED writes disabled pending hardware protocol validation.");
-                rc=-9;
-            }
-            continue;
-        }
         int magic=(pid==MAGIC_PID && magic_usage(d) && inspect_magic(d,&minB,&maxB));
         int butterfly=(pid!=MAGIC_PID && butterfly_usage(d) && butterfly_descriptor(d));
         if(!magic && !butterfly){
@@ -237,14 +275,12 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
                     set_report(d,kIOHIDReportTypeFeature,light,9))?0:-8;
             }
         }else{
-            uint16_t val=(uint16_t)(!strcmp(mode,"off")?off:(int)(maxB*level+0.5));
-            if(strcmp(mode,"off") && val<(uint16_t)minB)val=(uint16_t)minB;
-            uint8_t output[6]={0xb0,1,0,0,0,0};put16(output+2,val);
-            rc=set_report(d,kIOHIDReportTypeOutput,output,6)?0:-8;
+            rc=write_butterfly(d,mode,level,off,minB,maxB);
         }
         IOHIDDeviceClose(d,0);
         if(rc==0 || rc==-8)break; // Do not try another device after a partial write.
     }
+cleanup:
     free(devs);if(set)CFRelease(set);
     IOHIDManagerClose(manager,0);CFRelease(manager);
     return rc;
@@ -279,6 +315,6 @@ int main(int argc,char **argv){
     if(lastError==-6)return 6;
     if(lastError==-7)return 7;
     if(lastError==-8)return 8;
-    if(lastError==-9)return 9;
+    if(lastError==-3)return 3;
     return 5;
 }

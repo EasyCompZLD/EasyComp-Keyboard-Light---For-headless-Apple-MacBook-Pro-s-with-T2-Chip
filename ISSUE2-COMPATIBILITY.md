@@ -1,3 +1,5 @@
+> Status update: the tester confirmed two minimum/off cycles in [comment 6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957). Beta7.1 now integrates the exact protocol into the regular backend; see [integrated acceptance](BETA7.1-ACCEPTANCE.md). The instructions below describe the original isolated tool at commit `5f2de80`, not the new production gate.
+
 # Issue #2 — isolated Butterfly compatibility test
 
 **Research tool, not an installer or a compatibility claim.** The regular beta and production HID helper still refuse LED writes to PID `027d`. This experiment is built separately from the same `dev/beta` checkout. It does not create a second development beta or change A2141 control.
