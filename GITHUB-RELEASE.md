@@ -6,7 +6,7 @@ Choose your language first, then install/update, open the app, review diagnostic
 
 There is no new approved release. The active source is `1.2.0-beta` on `dev/beta`; see [development status](BETA-DEVELOPMENT.md).
 
-The combined beta includes the native eight-language installer, conservative HID control, configurable idle timeout and restoration, fixed brightness steps, improved background illumination-event monitoring and read-only Issue #2 diagnostics. Touch Bar operation and Butterfly support must not be advertised as validated before physical acceptance.
+The combined beta includes the native eight-language installer, conservative HID control, configurable idle timeout and restoration, fixed brightness steps, improved background illumination-event monitoring and read-only Issue #2 diagnostics. The MacBookPro15,4 follow-up confirms a BF configuration read with range 32–512. A separate opt-in compatibility tool is available for a controlled LED experiment; production writes to this model remain blocked. Touch Bar operation and Butterfly output/LED support must not be advertised as validated before physical acceptance.
 
 Complete [hardware acceptance](HARDWARE-ACCEPTANCE.md) and prepare versioned notes before an explicitly authorized publication. Do not use this draft to publish automatically. Published beta6 notes remain in [the history directory](docs/history/GITHUB-RELEASE.md).
 

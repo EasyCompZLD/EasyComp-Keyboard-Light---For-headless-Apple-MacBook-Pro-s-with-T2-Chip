@@ -56,11 +56,12 @@ Compare one short test with the menu open, menu closed and another app frontmost
 
 ## Issue #2 — MacBookPro15,4
 
-Await `ECZ-KeyboardLight-Issue2-Followup.txt` from the already supplied read-only diagnostic. Check interface, open return status, GetReport status, successful report length, report ID/version and off/min/max values. A length left unchanged after a failed request is buffer capacity, not proof of a returned report.
+The [second report](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6810254280) is now received: one keyboard candidate, successful BF feature read, 8 bytes, ID BF/version 1, off 0/minimum 32/maximum 512. It does not separately list the device-open status or numeric IOKit status, nor does it validate output or visible LEDs.
 
+Use [the separately packaged compatibility test](ISSUE2-COMPATIBILITY.md) for the next opt-in hardware stage. It logs those statuses explicitly, starts with a new read-only probe and keeps the LED test locked until the tester reviews and confirms it. The ordinary application/installer remains blocked for PID `027d`.
 The updated helper recognizes the reported `05ac:027d` keyboard input descriptor for read-only `probe`/`diagnose`. It does not infer output support from an input element. Even a valid configuration returns exit 9 (protocol pending), **not** installer acceptance. Exit 6 identifies device-open failure, 7 configuration/feature-request failure and 5 no validated interface; manager-open errors use 4. PID `027b` is not added without hardware evidence. The original strict Butterfly write gate remains for existing candidates.
 
-Do not give the tester a GUI/LED build before reviewing and confirming their probe results. A later, separately reviewed compatibility build must permit a controlled LED test only after that confirmation. No `027d` LED test is provided or performed in this revision. Keep issue #2 open.
+Do not give the tester a GUI/LED build before reviewing and confirming their probe results. The isolated compatibility build permits a controlled minimum-light pulse only after that confirmation. An isolated opt-in `027d` LED test is now provided; no physical LED test has been performed by this development session. Keep issue #2 open.
 
 ## Previous test-app cleanup and rollback
 

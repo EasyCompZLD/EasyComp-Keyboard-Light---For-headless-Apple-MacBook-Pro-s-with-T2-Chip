@@ -41,7 +41,7 @@ The download contains **one setup app**. Backend scripts are bundled inside it. 
 |---|---|
 | MacBookPro16,1 / A2141 Magic HID method | Hardware-proven method; current beta changes need physical acceptance |
 | Original Touch Bar controls | Monitoring implemented; event emission and physical response still require testing |
-| MacBookPro15,4 / Issue #2 | Read-only diagnostics; writes disabled pending protocol validation |
+| MacBookPro15,4 / Issue #2 | BF configuration read confirmed; production writes remain disabled. [Isolated opt-in LED test](ISSUE2-COMPATIBILITY.md) awaits hardware results |
 | Other T2 models | Experimental; no compatibility claim without hardware evidence |
 | Ambient-light adjustment | Unsupported without a reliable sensor/data source |
 | Sunset/sunrise schedules and complete lock policy | Backlog within the same beta |

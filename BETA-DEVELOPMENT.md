@@ -23,7 +23,7 @@ There is one maintained Swift + C codebase and one cumulative macOS regression s
 - Native installer, staging/rollback, prerequisite handling and eight interface languages.
 - Issue #2 PID `027d` read-only diagnostics. LED writes remain blocked pending protocol validation.
 
-Implementation does not imply hardware acceptance. Original Touch Bar event emission and the updated sleep/input behavior still need physical testing. MacBookPro15,4 compatibility is not confirmed; the second tester report is still required.
+Implementation does not imply hardware acceptance. Original Touch Bar event emission and the updated sleep/input behavior still need physical testing. MacBookPro15,4 compatibility is not confirmed; the second tester report confirms the BF configuration (0/32/512), while output and physical LEDs remain unverified. See [the isolated compatibility test](ISSUE2-COMPATIBILITY.md).
 
 ## One workflow
 
@@ -47,7 +47,7 @@ Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) before installation/release
 These items are planned work on the same beta, rather than a separate beta8 codebase:
 
 1. Finish A2141 acceptance of timeout, activity sources, monitor permissions, Touch Bar and sleep/session behavior.
-2. Review the second Issue #2 report; develop a controlled compatibility test only if the report supports a safe protocol choice.
+2. Run the isolated Issue #2 compatibility test after the tester reviews its fresh probe. The second report confirms BF configuration reads; integrate into the normal beta only after output and physical LED validation.
 3. Add manual, local sunset/sunrise and custom-schedule modes, including intervals across midnight. Location requires permission; no online API or account.
 4. Complete lock/unlock behavior: normal timeout by default, optional immediate off, permitted activity on the lock screen where macOS allows it, and persistent manual off.
 
@@ -63,4 +63,4 @@ The published `v1.2.0-beta6` release and `main` remain unchanged. Do not create 
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation: 33 macOS tests passed with no failures or skips; native build, eight app/eight setup language tables and shell syntax passed. Hardware/end-to-end installation acceptance is still pending.
+Latest local validation: 35 macOS tests passed (including 38 mocked HID scenarios for the isolated Issue #2 tool) with no failures or skips; native build, eight app/eight setup language tables and shell syntax passed. Hardware/end-to-end installation acceptance is still pending.

@@ -23,6 +23,15 @@ cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" 
 /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
   "$TMP/EasyCompKeyboardLight.swift" -o "$TMP/EasyCompKeyboardLight"
 /usr/bin/xcrun swiftc -framework AppKit "$TMP/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
+# The standalone Issue #2 experiment is checked only when its sources are present.
+# The normal packaged setup intentionally does not contain this research tool.
+if [[ -f "$HERE/broncode/Issue2ButterflyTest.c" && -f "$HERE/broncode/Issue2CompatibilityTest.swift" ]]; then
+  cp "$HERE/broncode/Issue2ButterflyTest.c" "$HERE/broncode/Issue2CompatibilityTest.swift" "$TMP/"
+  /usr/bin/xcrun clang -O2 -Wall -Wextra -Werror -framework IOKit -framework CoreFoundation \
+    "$TMP/Issue2ButterflyTest.c" -o "$TMP/Issue2Helper"
+  /usr/bin/xcrun swiftc -framework AppKit "$TMP/Issue2CompatibilityTest.swift" -o "$TMP/Issue2CompatibilityTest"
+  /usr/bin/plutil -lint "$HERE/broncode/Issue2TestInfo.plist"
+fi
 /usr/bin/plutil -lint "$HERE/broncode/Info.plist"
 /usr/bin/plutil -lint "$HERE/broncode/SetupInfo.plist"
 for lang in en nl de fr es it pt pl; do
