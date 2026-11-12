@@ -6,7 +6,7 @@ A native macOS menu bar app for keyboard backlight control on headless Intel Mac
 
 **No Terminal commands required — setup is now more user friendly.**
 
-**One development beta:** `1.2.0-beta` on `dev/beta`. The last published release remains `v1.2.0-beta6`. Current changes are local development and still require hardware acceptance.
+**One development beta:** `1.2.0-beta7.1` on `dev/beta`. The preceding published beta is `v1.2.0-beta7`. Current changes are local development and still require hardware acceptance.
 
 ## Start here
 
@@ -41,12 +41,12 @@ The download contains **one setup app**. Backend scripts are bundled inside it. 
 |---|---|
 | MacBookPro16,1 / A2141 Magic HID method | Hardware-proven method; current beta changes need physical acceptance |
 | Original Touch Bar controls | Monitoring implemented; event emission and physical response still require testing |
-| MacBookPro15,4 / Issue #2 | Read-only diagnostics; writes disabled pending protocol validation |
+| MacBookPro15,4 / Issue #2 | Minimum/off physically confirmed on Sequoia 15.8.3; beta7.1 integrates the protocol. [Installer/full-range follow-up](BETA7.1-ACCEPTANCE.md) pending |
 | Other T2 models | Experimental; no compatibility claim without hardware evidence |
 | Ambient-light adjustment | Unsupported without a reliable sensor/data source |
 | Sunset/sunrise schedules and complete lock policy | Backlog within the same beta |
 
-No LED commands are allowed for an unvalidated interface. The proven A2141 report bytes and installer rollback protections are retained. See [Issue #2](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2) for the pending Butterfly investigation.
+No LED commands are allowed for an unvalidated interface. The proven A2141 report bytes and installer rollback protections are retained. See [Issue #2](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2) for the Butterfly hardware evidence and pending integrated acceptance.
 
 ## Development and testing
 

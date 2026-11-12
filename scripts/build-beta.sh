@@ -52,7 +52,7 @@ codesign --verify --deep --strict "$SETUP"
 OUT="$HERE/dist/beta"
 mkdir -p "$OUT"
 {
-  echo "$(cat "$HERE/VERSION") — development build; not a release. Universal setup, Intel T2 controller, macOS 13 or later."
+  echo "$(cat "$HERE/VERSION") — prerelease candidate; not a stable release. Universal setup, Intel T2 controller, macOS 13 or later."
   git -C "$HERE" rev-parse HEAD
   git -C "$HERE" branch --show-current
   (cd "$WORK" && shasum -a 256 HIDBacklight.c EasyCompKeyboardLight.swift InstallWizard.swift)
@@ -66,5 +66,5 @@ ditto -x -k "$OUT/.beta-candidate.zip" "$WORK/verify"
 codesign --verify --deep --strict "$WORK/verify/$(basename "$SETUP")"
 mv -f "$OUT/.beta-candidate.zip" "$OUT/EasyComp-Keyboard-Light-Beta.zip"
 cp -X "$WORK/BUILD-INFO.txt" "$HERE/HARDWARE-ACCEPTANCE.md" "$OUT/"
-shasum -a 256 "$OUT/EasyComp-Keyboard-Light-Beta.zip" > "$OUT/SHA256SUMS.txt"
+(cd "$OUT" && shasum -a 256 EasyComp-Keyboard-Light-Beta.zip > SHA256SUMS.txt)
 echo "Development beta built (not installed or started): $OUT"

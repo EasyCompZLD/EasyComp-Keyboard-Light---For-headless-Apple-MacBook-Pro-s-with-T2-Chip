@@ -107,16 +107,17 @@ class LocalizationCompletenessTests(unittest.TestCase):
                                  re.findall(r'%(?:[0-9]+\$)?[@dfius]', table[key]), key)
 
 class Issue2SafetyTests(unittest.TestCase):
-    def test_new_pid_can_never_reach_write_protocol(self):
+    def test_confirmed_pid_retains_specific_model_interface_and_config_gates(self):
         src = (ROOT/'broncode/HIDBacklight.c').read_text()
-        branch = src.split('if(pid==0x027d){', 1)[1].split('int magic=', 1)[0]
-        self.assertIn('!strcmp(mode,"probe") || !strcmp(mode,"diagnose")', branch)
-        self.assertIn('issue2_read_candidate(d)', branch)
-        self.assertIn('rc=valid?-9:-7;', branch)
-        self.assertNotIn('set_report(', branch)
-        self.assertTrue(branch.rstrip().endswith('continue;\n        }'))
+        self.assertIn('pid==0x027d && !issue2_model()', src)
+        self.assertIn('candidates!=1', src)
+        self.assertIn('size!=8 || rep[0]!=0xbf || rep[1]!=1', src)
+        self.assertIn('read16(rep+2)!=0', src)
+        self.assertIn('read16(rep+4)!=32 || read16(rep+6)!=512', src)
+        self.assertIn('butterfly_usage(d) && butterfly_descriptor(d)', src)
         candidate = src.split('static int issue2_read_candidate', 1)[1].split('static uint16_t', 1)[0]
-        for expected in ['kIOHIDPrimaryUsagePageKey', 'kIOHIDPrimaryUsageKey',
+        for expected in ['kIOHIDVendorIDKey', 'kIOHIDProductIDKey',
+                         'kIOHIDPrimaryUsagePageKey', 'kIOHIDPrimaryUsageKey',
                          'IOHIDElementGetReportID(e)==0xbf', 'IOHIDElementGetReportSize(e)==120',
-                         'IOHIDElementGetReportCount(e)==15']:
+                         'IOHIDElementGetReportCount(e)==15', 'return found==1']:
             self.assertIn(expected, candidate)
