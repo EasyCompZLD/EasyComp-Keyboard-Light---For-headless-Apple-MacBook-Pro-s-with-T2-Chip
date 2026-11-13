@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Close the keyboard light app and try again.";
 "wizard.actionFailed" = "Action could not be completed";
 "wizard.actionFailedBody" = "Open the details for the error. You can also create a diagnostic report.";
+
+"wizard.updateRefused" = "Automatic update was refused. Check the installed version, update preference and supported model.";

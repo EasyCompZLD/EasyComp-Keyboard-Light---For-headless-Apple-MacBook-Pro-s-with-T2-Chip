@@ -1,10 +1,11 @@
-// EasyComp Keyboard Light — native multilingual setup wizard v1.2.0.
+// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.1.
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
+import Darwin
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
-private let versionText = "1.2.0"
+private let versionText = "1.2.1-dev.1"
 
 private final class WizardLanguage {
     static let supported: [(code: String, nativeName: String)] = [
@@ -45,6 +46,40 @@ private final class WizardLanguage {
 
 enum SetupOperation { case install, report, build, uninstall }
 
+// Kernel-held advisory lock: released automatically if a Setup process crashes.
+// One user's Setup windows must not replace/remove the same app concurrently.
+final class SetupInstallLock {
+    private var descriptor: Int32 = -1
+    func acquire(at url: URL) -> Bool {
+        guard descriptor < 0 else { return false }
+        let fd = Darwin.open(url.path, O_CREAT | O_RDWR | O_NOFOLLOW | O_CLOEXEC, mode_t(0o600))
+        guard fd >= 0 else { return false }
+        guard flock(fd, LOCK_EX | LOCK_NB) == 0 else { Darwin.close(fd); return false }
+        descriptor = fd
+        return true
+    }
+    func release() {
+        if descriptor >= 0 { Darwin.close(descriptor); descriptor = -1 }
+    }
+    deinit { release() }
+}
+
+enum SetupUpdatePolicy {
+    static func canInstall(requested: String, packaged: String, installed: String,
+                           automatic: Bool, enabled: Bool, knownModel: Bool) -> Bool {
+        func version(_ value: String) -> [Int]? {
+            let fields = value.split(separator: ".", omittingEmptySubsequences: false)
+            guard fields.count == 3, fields.allSatisfy({ !$0.isEmpty && $0.count <= 8 && ($0.count == 1 || $0.first != "0") && $0.allSatisfy({ $0.isASCII && $0.isNumber }) }) else { return nil }
+            let numbers = fields.compactMap { Int($0) }
+            return numbers.count == 3 ? numbers : nil
+        }
+        let local = installed.split(separator: "-", maxSplits: 1)
+        guard knownModel, !automatic || enabled, requested == packaged,
+              let remote = version(requested), let base = local.first, let current = version(String(base)) else { return false }
+        return current.lexicographicallyPrecedes(remote) || (remote == current && local.count == 2)
+    }
+}
+
 final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private let project: URL
     private let language: WizardLanguage
@@ -78,6 +113,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var startedAt = Date()
     private var statusKey = "ready"
     private var lastExitCode: Int32 = 0
+    private let installLock = SetupInstallLock()
+    private let unattendedUpdate = CommandLine.arguments.contains("--automatic-update") || CommandLine.arguments.contains("--confirmed-update")
 
     init(projectDirectory: String, languageCode: String?) {
         project = URL(fileURLWithPath: projectDirectory, isDirectory: true)
@@ -202,7 +239,11 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
             try? Data("window-ready".utf8).write(to: readyMarker, options: .atomic)
         }
         #if !ECZ_TESTS
-        DispatchQueue.main.async { [weak self] in self?.chooseInitialLanguage() }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if self.unattendedUpdate { self.beginVerifiedUpdate() }
+            else { self.chooseInitialLanguage() }
+        }
         #endif
     }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
@@ -309,6 +350,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         if busy { return }
         let file = project.appendingPathComponent(script)
         guard FileManager.default.fileExists(atPath: file.path) else {
+            installLock.release()
             showError(F("missing", script))
             return
         }
@@ -340,6 +382,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         // DEVELOPER_DIR from the Finder session will be repaired there.
         if explicitLanguage { environment["ECZ_INSTALL_LANGUAGE"] = language.code }
         else { environment.removeValue(forKey: "ECZ_INSTALL_LANGUAGE") }
+        if unattendedUpdate && operation == .install { environment["ECZ_PRESERVE_LOGIN_STATE"] = "1" }
+        else { environment.removeValue(forKey: "ECZ_PRESERVE_LOGIN_STATE") }
         p.environment = environment
         let output = Pipe()
         p.standardOutput = output
@@ -407,7 +451,17 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
                       }
     }
     private func didFinish(statusCode: Int32, operation: SetupOperation) {
+        installLock.release()
         running = nil
+        if unattendedUpdate && operation == .install && statusCode == 0 {
+            NSApp.terminate(nil)
+            return
+        }
+        if unattendedUpdate && operation == .install && statusCode != 0,
+           NSRunningApplication.runningApplications(withBundleIdentifier: "nl.easycompzeeland.KeyboardLight").isEmpty {
+            // The previous controller was stopped for installation. Reopen the retained/rolled-back app.
+            NSWorkspace.shared.openApplication(at: installedApp, configuration: NSWorkspace.OpenConfiguration()) { _, _ in }
+        }
         progress.stopAnimation(nil)
         reportURL = (operation == .report || (operation == .install && statusCode != 0))
             ? discoverReport() : nil
@@ -475,6 +529,22 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         }
         prepareControllerStop(operation: .install, arguments: supported ? [] : ["--experimental"])
     }
+    private func beginVerifiedUpdate() {
+        let requested = CommandLine.arguments.first(where: { $0.hasPrefix("--update-version=") }).map { String($0.dropFirst("--update-version=".count)) } ?? ""
+        let packaged = Bundle.main.object(forInfoDictionaryKey: "ECZDevelopmentVersion") as? String ?? ""
+        let existing = Bundle(url: installedApp)
+        let installed = existing?.object(forInfoDictionaryKey: "ECZDevelopmentVersion") as? String
+            ?? existing?.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        let enabled = UserDefaults(suiteName: "nl.easycompzeeland.KeyboardLight")?.bool(forKey: "automaticUpdates") ?? false
+        guard architecture == "x86_64", SetupUpdatePolicy.canInstall(requested: requested, packaged: packaged,
+                installed: installed, automatic: CommandLine.arguments.contains("--automatic-update"),
+                enabled: enabled, knownModel: modelName == "MacBookPro16,1" || modelName == "MacBookPro15,4") else {
+            showError(T("updateRefused"))
+            return
+        }
+        explicitLanguage = false // Preserve the installed app's exact language preference, including system default.
+        prepareControllerStop(operation: .install, arguments: [])
+    }
     @objc private func makeReport() { start("Probleemrapport.command", arguments: [], operation: .report) }
     @objc private func checkBuild() { start("Controleer-build.command", arguments: [], operation: .build) }
     @objc private func openInstalledApp() {
@@ -502,6 +572,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     }
     private func prepareControllerStop(operation: SetupOperation, arguments: [String]) {
         guard !busy else { return }
+        let lockURL = FileManager.default.temporaryDirectory.appendingPathComponent("ecz-keyboardlight-setup.lock")
+        guard installLock.acquire(at: lockURL) else { showError(T("busy")); return }
         preparingControllerStop = true
         setBusy(true)
         statusKey = operation == .install ? "installing" : "uninstalling"
@@ -515,6 +587,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
             preparingControllerStop = false
             start(operation == .install ? "Installeer.command" : "Verwijder.command", arguments: arguments, operation: operation)
         } else if attempt >= 50 {
+            installLock.release()
             preparingControllerStop = false
             setBusy(false)
             statusKey = "ready"
@@ -551,7 +624,9 @@ let fallbackProject = FileManager.default.fileExists(atPath: bundledProject.path
     ? bundledProject : Bundle.main.bundleURL.deletingLastPathComponent()
 let dir = CommandLine.arguments.count > 1 && !CommandLine.arguments[1].hasPrefix("-")
     ? CommandLine.arguments[1] : fallbackProject.path
-let requested = CommandLine.arguments.count > 3 ? CommandLine.arguments[3] : nil
+let requested = CommandLine.arguments.first(where: { $0.hasPrefix("--update-language=") })
+    .map { String($0.dropFirst("--update-language=".count)) }
+    ?? (CommandLine.arguments.count > 3 && !CommandLine.arguments[3].hasPrefix("--") ? CommandLine.arguments[3] : nil)
 let delegate = InstallationWizard(projectDirectory: dir, languageCode: requested)
 app.delegate = delegate
 app.run()

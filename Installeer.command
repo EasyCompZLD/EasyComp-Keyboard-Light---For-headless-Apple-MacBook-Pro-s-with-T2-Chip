@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.0: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.1-dev.1: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -118,7 +118,7 @@ done
 export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
 cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
-printf '\n== EasyComp Keyboard Light 1.2.0 ==\n'
+printf '\n== EasyComp Keyboard Light 1.2.1-dev.1 ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
@@ -186,16 +186,20 @@ if (( HAD_OLD_APP == 1 )); then mv "$APP" "$BACKUP_APP"; fi
 # Mark rollback active only once any previous app has moved successfully.
 SWAPPED=1
 mv "$STAGE_APP" "$APP"
-cp "$WORK/agent.plist" "$AGENT"
-AGENT_CHANGED=1
+if [[ "${ECZ_PRESERVE_LOGIN_STATE:-0}" != '1' ]] || (( HAD_OLD_AGENT == 1 )); then
+  cp "$WORK/agent.plist" "$AGENT"
+  AGENT_CHANGED=1
+fi
 # Explicit language launchers choose the installed app's initial menu language.
 # Automatic system-language launch does not overwrite any prior app preference.
 if [[ -n "${ECZ_INSTALL_LANGUAGE:-}" ]]; then
   /usr/bin/defaults write nl.easycompzeeland.KeyboardLight AppLanguage -string "$ECZ_LANGUAGE" || true
 fi
 CURRENT_STAGE='Start launch agent'
-if ! /bin/launchctl bootstrap "gui/$(id -u)" "$AGENT"; then
-  echo 'launchctl bootstrap failed; trying direct launch...'
+if [[ -f "$AGENT" ]] && /bin/launchctl bootstrap "gui/$(id -u)" "$AGENT"; then
+  :
+else
+  echo 'Starting app directly: login item disabled or launch agent unavailable...'
   run_step 'Launch app via open fallback' /usr/bin/open "$APP"
 fi
 # The installation is now complete. Discard old app backup only after success.

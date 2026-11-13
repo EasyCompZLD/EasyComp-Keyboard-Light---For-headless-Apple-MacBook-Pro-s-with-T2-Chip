@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Podświetlenie wyłączone ręcznie";
 "idle.status.suspended" = "Podświetlenie wstrzymane: uśpienie lub nieaktywna sesja";
 "idle.status.disabled" = "Automatyczne wyłączanie nieaktywne";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Automatycznie instaluj stabilne aktualizacje";
+"update.check" = "Sprawdź aktualizacje…";
+"update.ready" = "Aktualizacje: gotowe";
+"update.checking" = "Aktualizacje: sprawdzanie…";
+"update.current" = "Aktualizacje: bieżąca wersja";
+"update.failed" = "Aktualizacje: błąd sprawdzania lub instalacji";
+"update.installing" = "Aktualizacje: instalowanie…";
+"update.available" = "Dostępna jest wersja %@";
+"update.installBody" = "Zweryfikowana aktualizacja użyje Setup do zamknięcia aplikacji, bezpiecznej instalacji i ponownego uruchomienia. Ustawienia zostaną zachowane.";
+"update.install" = "Zainstaluj aktualizację";
+"update.later" = "Później";

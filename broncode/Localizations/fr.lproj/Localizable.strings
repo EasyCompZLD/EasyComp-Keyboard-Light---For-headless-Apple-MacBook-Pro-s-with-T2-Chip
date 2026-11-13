@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Éclairage éteint manuellement";
 "idle.status.suspended" = "Éclairage en pause : veille ou session inactive";
 "idle.status.disabled" = "Extinction automatique désactivée";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Installer automatiquement les mises à jour stables";
+"update.check" = "Rechercher des mises à jour…";
+"update.ready" = "Mises à jour : prêt";
+"update.checking" = "Mises à jour : vérification…";
+"update.current" = "Mises à jour : à jour";
+"update.failed" = "Mises à jour : échec de vérification ou installation";
+"update.installing" = "Mises à jour : installation…";
+"update.available" = "La version %@ est disponible";
+"update.installBody" = "La mise à jour vérifiée utilise Setup pour fermer l’app, installer et la relancer. Vos réglages sont conservés.";
+"update.install" = "Installer la mise à jour";
+"update.later" = "Plus tard";

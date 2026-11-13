@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.0` (see `VERSION`)
+**Working version:** `1.2.1-dev.1` (unreleased; published stable is `1.2.0`) (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
@@ -11,6 +11,10 @@
 **Current package:** `dist/release/EasyComp-Keyboard-Light.zip`
 
 There is one maintained Swift + C codebase and one cumulative macOS regression suite. The previous beta7 work and its review fixes are already in this branch. Existing production preferences are retained through the same app identity and preference keys. The build script no longer creates a separate Beta7 Test app or preference domain.
+
+## Next update
+
+I am adding optional automatic GitHub stable updates. This is unreleased work, separate from the published 1.2.0 archive. See [update behavior and acceptance](AUTO-UPDATES.md).
 
 ## Current implementation
 
@@ -63,4 +67,4 @@ I approved stable `v1.2.0` publication on 13 November 2026; see [release scope](
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation for stable 1.2.0: 36 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.
+Latest local validation for unreleased 1.2.1: 38 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.

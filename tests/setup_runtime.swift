@@ -65,3 +65,29 @@ let setup = InstallationWizard(projectDirectory: projectPath, languageCode: "en"
 setup.applicationDidFinishLaunching(Notification(name: NSApplication.didFinishLaunchingNotification))
 let preview = ProcessInfo.processInfo.environment["ECZ_GUI_PREVIEW"].map { URL(fileURLWithPath: $0) }
 setup.verifySetup(previewDirectory: preview)
+
+func updateGate(_ requested: String = "1.3.0", _ packaged: String = "1.3.0", _ installed: String = "1.2.0", _ automatic: Bool = true, _ enabled: Bool = true, _ known: Bool = true) -> Bool {
+    SetupUpdatePolicy.canInstall(requested: requested, packaged: packaged, installed: installed, automatic: automatic, enabled: enabled, knownModel: known)
+}
+precondition(updateGate())
+precondition(!updateGate("1.3.0", "1.3.0", "1.3.0"))
+precondition(!updateGate("1.3.0", "1.3.0", "1.4.0"))
+precondition(updateGate("1.3.0", "1.3.0", "1.3.0-dev.1"))
+precondition(!updateGate("1.3.0", "1.2.0"))
+precondition(!updateGate("1.3.0", "1.3.0", "1.2.0", true, false))
+precondition(updateGate("1.3.0", "1.3.0", "1.2.0", false, false))
+precondition(!updateGate("1.3.0", "1.3.0", "1.2.0", true, true, false))
+precondition(!updateGate("1.3.0", "1.3.0", ""))
+precondition(!updateGate("1.3.0-beta1", "1.3.0-beta1"))
+print("10 Setup update handoff policy assertions passed; no installation.")
+
+let lockURL = FileManager.default.temporaryDirectory.appendingPathComponent("ecz-lock-fixture-" + UUID().uuidString)
+let firstLock = SetupInstallLock()
+let secondLock = SetupInstallLock()
+precondition(firstLock.acquire(at: lockURL))
+precondition(!secondLock.acquire(at: lockURL))
+firstLock.release()
+precondition(secondLock.acquire(at: lockURL))
+secondLock.release()
+try? FileManager.default.removeItem(at: lockURL)
+print("Setup cross-instance install lock assertions passed.")

@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Fermez l’app d’éclairage du clavier et réessayez.";
 "wizard.actionFailed" = "Action non terminée";
 "wizard.actionFailedBody" = "Consultez les détails de l’erreur ou créez un rapport de diagnostic.";
+
+"wizard.updateRefused" = "Mise à jour automatique refusée. Vérifiez la version installée, le réglage et le modèle pris en charge.";

@@ -8,7 +8,7 @@
 
 **Current development branch:** `dev/beta`
 
-**Working version:** `1.2.0`
+**Working version:** `1.2.1-dev.1` (unreleased; published stable: `1.2.0`)
 
 **Previous published beta:** `v1.2.0-beta7.1`
 
