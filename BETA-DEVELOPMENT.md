@@ -47,7 +47,7 @@ Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) before installation/release
 These items are planned work on the same beta, rather than a separate beta8 codebase:
 
 1. Finish A2141 acceptance of timeout, activity sources, monitor permissions, Touch Bar and sleep/session behavior.
-2. Record the successful beta7.1 tester follow-up and complete the remaining explicit checks listed in BETA7.1-ACCEPTANCE.md. Keep issue #2 open pending owner review; do not infer Touch Bar or every timeout mode from the general success report.
+2. Record the successful beta7.1 tester follow-up and complete the remaining explicit checks listed in BETA7.1-ACCEPTANCE.md. Keep issue #2 open pending my review; do not infer Touch Bar or every timeout mode from the general success report.
 3. Add manual, local sunset/sunrise and custom-schedule modes, including intervals across midnight. Location requires permission; no online API or account.
 4. Complete lock/unlock behavior: normal timeout by default, optional immediate off, permitted activity on the lock screen where macOS allows it, and persistent manual off.
 
@@ -57,7 +57,7 @@ Ambient-light adaptation remains unsupported without a reliable data source. No 
 
 `archive/beta7-20261110` preserves the former branch pointer; it is not an active development branch. Previous notes and release/upload instructions are retained in [docs/history](docs/history/). The [dated technical review](DEVELOPMENT-REVIEW-2026-11-11.md) records the earlier investigation and validation.
 
-The owner approved stable `v1.2.0` publication on 13 November 2026; see [release scope](RELEASE-ACCEPTANCE.md). Prior beta releases and `main` are preserved. Future release/tag, push, merge-to-main and issue-closure actions require the corresponding owner instruction. Future beta fixes and agreed additions accumulate here; build numbers/commit hashes distinguish test builds without introducing parallel beta variants.
+I approved stable `v1.2.0` publication on 13 November 2026; see [release scope](RELEASE-ACCEPTANCE.md). Prior beta releases and `main` are preserved. Future release/tag, push, merge-to-main and issue-closure actions require the corresponding owner instruction. Future beta fixes and agreed additions accumulate here; build numbers/commit hashes distinguish test builds without introducing parallel beta variants.
 
 ## GUI consolidation
 

@@ -62,7 +62,13 @@ These are developer commands; users use the Setup app. Automated tests target ma
 
 See [development workflow and backlog](BETA-DEVELOPMENT.md), [hardware acceptance](HARDWARE-ACCEPTANCE.md) and [contributing](CONTRIBUTING.md). Generated artifacts and caches stay out of Git. Previous beta notes are retained in [docs/history](docs/history/).
 
-The owner approved stable publication on 13 November 2026 using the recorded A2141 evidence and MacBookPro15,4 tester follow-up. [Release scope and acceptance limits](RELEASE-ACCEPTANCE.md) distinguish supported backlight operation from unconfirmed Touch Bar and edge cases. Future publication and merges require owner authorization.
+I approved stable publication on 13 November 2026 using the recorded A2141 evidence and MacBookPro15,4 tester follow-up. [Release scope and acceptance limits](RELEASE-ACCEPTANCE.md) distinguish supported backlight operation from unconfirmed Touch Bar and edge cases. Future publication and merges require my authorization.
+
+## Thanks to my testers
+
+- [@mjesticfalco](https://github.com/mjesticfalco) — thank you for the MacBookPro15,4 / Sequoia 15.8.3 reports, safe Butterfly protocol tests, and confirmation of the integrated app, brightness steps, idle timeout and wake response. Your testing helped me bring this model into the release.
+
+I test the original A2141 / MacBookPro16,1 through EasyComp Zeeland. I only list contributors whose testing is documented; I will add other testers when they contribute.
 
 ## Privacy and troubleshooting
 

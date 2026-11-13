@@ -1,6 +1,7 @@
 # Project instructions
 
 - Communicate with the repository owner in Dutch. Write public documentation, release notes and code comments in English.
+- Write public narrative and GitHub replies in the maintainer’s first-person voice (I/my), as authorized by the owner. Keep technical reference text neutral where appropriate. Credit verified testers in README and release notes; do not invent contributors.
 - Documentation is part of every relevant code change. Update behavior, version, compatibility, installation and workflow instructions in the same commit whenever possible; correct omissions in a follow-up commit.
 - Check README.md, GITHUB-RELEASE.md, BETA-DEVELOPMENT.md, BETA-RELEASE.md, CONTRIBUTING.md and the current hardware acceptance instructions for stale claims. Update affected translations when UI text changes.
 - Keep VERSION, application metadata and installer/report version labels consistent. A prepared local package is not evidence of a published release.

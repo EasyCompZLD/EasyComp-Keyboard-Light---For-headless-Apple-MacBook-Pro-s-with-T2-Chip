@@ -1,6 +1,6 @@
 # Beta7.1 integration acceptance
 
-Stable promotion: the owner approved version 1.2.0 on 13 November 2026 using the evidence below, without requesting further tester confirmation. See [stable release scope](RELEASE-ACCEPTANCE.md). Remaining checks below are still unconfirmed, not failed.
+Stable promotion: I approved version 1.2.0 on 13 November 2026 using the evidence below, without requesting further tester confirmation. See [stable release scope](RELEASE-ACCEPTANCE.md). Remaining checks below are still unconfirmed, not failed.
 
 The Issue #2 report [6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957) confirms the exact `MacBookPro15,4 / 05ac:027d / 0001:0006 / BF-v1 / 0:32:512` configuration, two accepted B0 32/0 sequences and visible minimum lighting followed by off. The normal backend now integrates that protocol behind those same strict model/interface/configuration gates.
 
@@ -16,7 +16,7 @@ Source: [mjesticfalco's beta7.1 follow-up](https://github.com/EasyCompZLD/EasyCo
 | Idle timeout | Working; selected duration and input device are not specified. |
 | Return from sleep | Backlight responds after sleep; exact level restoration and manual-off state are not specified. |
 
-Still unconfirmed: explicit manual off in the integrated app, app restart/login and preference persistence, 15/30-second timing separately, Never, restoration of the exact chosen brightness through each input device, manual-off protection across activity/sleep, lights going off before sleep, Touch Bar with menu open/closed/another app frontmost, session/lock/permission behavior and fresh A2141 regression. These are separate checks, not evidence that the tester encountered a defect. Keep issue #2 open pending owner review; do not request the entire successful test again.
+Still unconfirmed: explicit manual off in the integrated app, app restart/login and preference persistence, 15/30-second timing separately, Never, restoration of the exact chosen brightness through each input device, manual-off protection across activity/sleep, lights going off before sleep, Touch Bar with menu open/closed/another app frontmost, session/lock/permission behavior and fresh A2141 regression. These are separate checks, not evidence that the tester encountered a defect. Keep issue #2 open pending my review; do not request the entire successful test again.
 
 ## Tester follow-up checklist
 
@@ -39,7 +39,7 @@ The installer rollback and application state machine are unchanged; only release
 
 ## Release boundary
 
-This is a compatibility prerelease from the existing `dev/beta` branch, not a new development branch or stable release. Main and previous release assets must not be overwritten. Release publication requires the repository owner's instruction; no issue comment or tester message is sent automatically.
+This is a compatibility prerelease from the existing `dev/beta` branch, not a new development branch or stable release. Main and previous release assets must not be overwritten. Release publication requires the my instruction; no issue comment or tester message is sent automatically.
 
 ## Local verification
 
