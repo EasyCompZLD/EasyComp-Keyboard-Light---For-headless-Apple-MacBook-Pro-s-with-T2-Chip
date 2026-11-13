@@ -1,10 +1,10 @@
-# Hardware acceptance — current development beta
+# Hardware acceptance — current release
 
 Status: **partial physical validation recorded; remaining checks are listed below**. Do not release, tag, merge to main, or claim Butterfly/Touch Bar compatibility from compilation alone.
 
-## A2141 test — the single beta
+## A2141 regression matrix
 
-Build from the official checkout with `bash scripts/build-beta.sh`. The current package is `dist/beta/EasyComp-Keyboard-Light-Beta.zip`, containing one universal **EasyComp Keyboard Light Setup.app** with its backend bundled internally. The build signs and verifies the archive without installing, starting a controller or sending HID commands.
+Build from the official checkout with `bash scripts/build-release.sh`. The current package is `dist/release/EasyComp-Keyboard-Light.zip`, containing one universal **EasyComp Keyboard Light Setup.app** with its backend bundled internally. The build signs and verifies the archive without installing, starting a controller or sending HID commands.
 
 1. Back up the currently installed app before an experimental update. Quit any historical Beta7 Test app and disable its startup if necessary.
 2. Copy the ZIP to a local folder and extract it. Avoid extracting onto the network share: SMB Finder metadata can invalidate code signatures.
@@ -14,7 +14,9 @@ Build from the official checkout with `bash scripts/build-beta.sh`. The current 
 6. After functional acceptance, test Uninstall: cancellation must leave the app untouched; confirmation must stop the controller, remove the app/autostart and retain saved settings. Test restoration from your backup if needed.
 7. Record model, OS/build, source hashes from `BUILD-INFO.txt`, permission states, expected/actual light behavior and helper error codes. Do not publish serial numbers or account information. The package is ad-hoc signed and not notarized; local building does not publish a release.
 
-The standard app identity `nl.easycompzeeland.KeyboardLight` and existing preference keys are retained. This is the same development beta, not a separate test preference domain. Source-checkout users can double-click `Start.command`; it must build the same GUI and launch it from a local Application Support folder.
+Stable publication was approved by the owner on 13 November 2026 on the evidence documented in [release acceptance](RELEASE-ACCEPTANCE.md). Unchecked matrix rows remain unchecked; release approval is not a claim that every row passed.
+
+The standard app identity `nl.easycompzeeland.KeyboardLight` and existing preference keys are retained. This is the same application, not a separate test preference domain. Source-checkout users can double-click `Start.command`; it must build the same GUI and launch it from a local Application Support folder.
 
 ## Acceptance matrix
 

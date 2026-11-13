@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light 1.2.0-beta7.1
+# EasyComp Keyboard Light 1.2.0
 # First-run bootstrap: compile a REAL native Mach-O .app on this Mac, then open it.
 # This .command is the entry point for new installations and keeps an error log.
 set -Eeuo pipefail
@@ -49,7 +49,7 @@ trap finish EXIT
 # Terminal output is also recorded locally. This bootstrap intentionally never
 # sends the report or any collected information to GitHub.
 exec > >(tee -a "$LOG") 2>&1
-printf '\n== EasyComp Keyboard Light 1.2.0-beta7.1 — %s ==\n' "$(ecz_t boot.title)"
+printf '\n== EasyComp Keyboard Light 1.2.0 — %s ==\n' "$(ecz_t boot.title)"
 printf 'Opstartlog / startup log: %s\n' "$LOG"
 
 if [[ "$(uname -s)" != Darwin ]]; then

@@ -1,11 +1,14 @@
-# EasyComp Keyboard Light v1.2.0-beta7.1 — Butterfly compatibility update
+# EasyComp Keyboard Light v1.2.0 — Stable keyboard backlight release
 
 **No Terminal commands required — choose your language and use one native Setup app.**
 
-This prerelease integrates the MacBookPro15,4 Butterfly backlight protocol into the regular app and installer. Previously the installer stopped because PID `05ac:027d` was not accepted as a writable backlight interface.
+This stable release includes the MacBookPro15,4 Butterfly backlight protocol into the regular app and installer. Previously the installer stopped because PID `05ac:027d` was not accepted as a writable backlight interface.
+
+The repository owner approved promotion from beta7.1 on 13 November 2026 after the successful MacBookPro15,4 follow-up. The proven HID protocol bytes and lighting state machine are unchanged. Stable release status covers manual backlight control, the timeout implementation and the native setup workflow; it does not certify original Touch Bar controls or every sleep/session edge case.
 
 ## What changed
 
+- MacBookPro16,1 and MacBookPro15,4 are recognized models in Setup and the installer; other candidate T2 models still require experimental confirmation and protocol validation.
 - The normal read-only installer probe can now accept the exact MacBookPro15,4 interface validated in issue #2. No separate test app is needed for normal installation.
 - Support is restricted to model `MacBookPro15,4`, Apple `05ac:027d`, primary keyboard usage `0001/0006`, the observed BF input descriptor and exactly one matching interface.
 - Every operation re-reads configuration `BF`, requiring exactly 8 bytes, version 1 and values off 0/minimum 32/maximum 512. Mismatched, inaccessible or ambiguous interfaces are refused.
@@ -20,16 +23,16 @@ This prerelease integrates the MacBookPro15,4 Butterfly backlight protocol into 
 
 ## Install and test
 
-1. Download `EasyComp-Keyboard-Light-Beta.zip`, extract it locally and open **EasyComp Keyboard Light Setup.app**.
-2. Choose your language and Install/Update. A non-A2141 model still requires the experimental compatibility confirmation. The installer validates the HID interface before installing or starting the controller.
+1. Download `EasyComp-Keyboard-Light.zip`, extract it locally and open **EasyComp Keyboard Light Setup.app**.
+2. Choose your language and Install/Update. Other candidate T2 models still require the experimental compatibility confirmation; model recognition alone never bypasses HID validation. The installer validates the HID interface before installing or starting the controller.
 3. On MacBookPro15,4, verify manual off/on and each 10% step, then idle restoration, app restart and sleep/wake. Share the local diagnostic report and actual observations in issue #2.
 
-Keep a backup of the previously installed app before experimental testing. Existing preferences are retained. The development app is ad-hoc signed, not notarized; use the normal macOS opening approval if prompted.
+Keep a backup of the previously installed app before updating. Existing preferences are retained. The app is ad-hoc signed, not notarized; use the normal macOS opening approval if prompted.
 
 The ZIP contains one universal Setup app with its backend bundled internally. The actual lighting controller is for Intel T2 Macs. `BUILD-INFO.txt` records the commit/source hashes, and `SHA256SUMS.txt` identifies the package.
 
 ## GUI workflow demonstration
 
-![EasyComp Keyboard Light demonstration](https://raw.githubusercontent.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/v1.2.0-beta7.1/Assets/IMG_0919.gif)
+![EasyComp Keyboard Light demonstration](https://raw.githubusercontent.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/v1.2.0/Assets/IMG_0919.gif)
 
-[Full video (WebM)](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/blob/v1.2.0-beta7.1/Assets/IMG_0919.webm?raw=true)
+[Full video (WebM)](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/blob/v1.2.0/Assets/IMG_0919.webm?raw=true)

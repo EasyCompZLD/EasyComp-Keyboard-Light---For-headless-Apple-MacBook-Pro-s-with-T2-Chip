@@ -1,5 +1,5 @@
 /*
- * EasyComp Keyboard Light v1.2.0-beta development
+ * EasyComp Keyboard Light v1.2.0
  * Backlight backend; no SMC or kernel modifications.
  *
  * IMPORTANT regression fix: do not open an IOHIDManager for all Apple HID

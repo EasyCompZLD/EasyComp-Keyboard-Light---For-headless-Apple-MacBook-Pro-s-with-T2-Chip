@@ -1,6 +1,6 @@
-# Testing the current development beta
+# Testing the current release
 
-Use the [single beta workflow](BETA-DEVELOPMENT.md) for automated macOS checks and the single current package. Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) for the actual A2141 test matrix and Issue #2 protocol gate.
+Use the [single development workflow](BETA-DEVELOPMENT.md) for automated macOS checks and the single current package. Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) for the actual A2141 test matrix and Issue #2 protocol gate.
 
 Open the packaged Setup app, choose a language and use the GUI actions. Source users have one starter: `Start.command`. The old language-specific launchers live in `legacy/`.
 

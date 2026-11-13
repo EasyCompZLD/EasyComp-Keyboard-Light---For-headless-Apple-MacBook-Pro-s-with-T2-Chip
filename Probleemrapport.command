@@ -15,7 +15,7 @@ REASON="${2:-Not provided}"
 EXIT_CODE="${3:-N/A}"
 INSTALL_LOG="${4:-}"
 PROBE_LOG="${5:-}"
-REPORT_VERSION="1.2.0-beta7.1"
+REPORT_VERSION="1.2.0"
 
 # Reject any unexpected internal invocation rather than interpreting arguments as commands.
 if [[ "$MODE" != manual && "$MODE" != --installer-failure ]]; then

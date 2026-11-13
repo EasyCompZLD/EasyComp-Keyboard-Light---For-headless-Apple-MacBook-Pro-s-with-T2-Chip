@@ -8,7 +8,7 @@ Thanks for helping improve this small open-source project.
 - Check your macOS version and whether the display/ALS is physically disconnected.
 - Describe what works: menu controls, actual keyboard LEDs, Touch Bar illumination buttons, login startup.
 - Share concise diagnostics, with **serial numbers, hardware UUIDs, account names, tokens and personal data redacted**.
-- MacBookPro16,1 / A2141 has proven Magic-HID operation. MacBookPro15,4 has tester-reported beta7.1 compilation/app launch, backlight, idle timeout and wake response. Brightness steps appear functional but some differences are hard to distinguish; remaining acceptance checks are recorded separately. See [the current acceptance record](BETA7.1-ACCEPTANCE.md). Other T2 models remain research candidates.
+- MacBookPro16,1 / A2141 has proven Magic-HID operation. MacBookPro15,4 has tester-reported beta7.1 compilation/app launch, backlight, idle timeout and wake response. Brightness steps appear functional but some differences are hard to distinguish; remaining acceptance checks are recorded separately. See [the stable release scope](RELEASE-ACCEPTANCE.md) and [tester acceptance record](BETA7.1-ACCEPTANCE.md). Other T2 models remain research candidates.
 
 ## Development
 

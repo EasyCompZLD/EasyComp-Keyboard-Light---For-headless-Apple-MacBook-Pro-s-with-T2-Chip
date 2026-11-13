@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.0-beta7.1: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.0: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -92,7 +92,7 @@ run_step() {
 MODEL="$(sysctl -n hw.model 2>/dev/null || true)"
 [[ "$(uname -m)" == 'x86_64' ]] || fail 'Een Intel MacBook met T2-chip is vereist.'
 case "$MODEL" in
-  MacBookPro16,1) : ;;
+  MacBookPro16,1|MacBookPro15,4) : ;;
   MacBookPro15,*|MacBookPro16,*|MacBookAir8,*|MacBookAir9,1)
     if [[ "${1:-}" != '--experimental' ]]; then
       fail "Experimenteel Mac-model $MODEL; gebruik de wizard of Installeer.command --experimental."
@@ -118,7 +118,7 @@ done
 export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
 cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
-printf '\n== EasyComp Keyboard Light 1.2.0-beta7.1 ==\n'
+printf '\n== EasyComp Keyboard Light 1.2.0 ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \

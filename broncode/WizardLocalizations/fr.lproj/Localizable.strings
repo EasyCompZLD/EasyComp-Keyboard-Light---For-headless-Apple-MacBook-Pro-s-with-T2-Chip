@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light development beta — fr */
+/* EasyComp Keyboard Light v1.2.0 — fr */
 "wizard.title" = "Assistant d’installation";
 "wizard.subtitle" = "Assistant d’installation %@  •  macOS / Intel T2";
 "wizard.intro" = "Modèle du Mac : %@  •  Architecture : %@\nL’assistant vérifie le matériel, compile l’application localement et lance l’utilitaire de barre des menus. Vos réglages sont conservés.";
@@ -26,8 +26,8 @@
 "wizard.failedBody" = "L’application existante est conservée dans la mesure du possible. Un rapport local décrit l’erreur. Vérifiez-le avant de le partager.";
 "wizard.unsupported" = "Ce Mac (%@) n’est pas pris en charge. Utilisez Rapport de diagnostic pour recueillir des informations sans modification.";
 "wizard.betaTitle" = "Compatibilité expérimentale : %@";
-"wizard.betaBody" = "Le rétroéclairage n’a pas encore été confirmé sur ce modèle T2. Le descripteur HID est vérifié avant toute commande. Sans correspondance valide, aucune commande LED n’est envoyée. Essayer la bêta ?";
-"wizard.yes" = "Oui, tester";
+"wizard.betaBody" = "Le rétroéclairage n’a pas encore été confirmé sur ce modèle T2. Le descripteur HID est vérifié avant toute commande. Sans correspondance valide, aucune commande LED n’est envoyée. Essayer la prise en charge expérimentale ?";
+"wizard.yes" = "Essayer";
 "wizard.cancel" = "Annuler";
 "wizard.reportMissing" = "Rapport indisponible. Créez un rapport de diagnostic.";
 "wizard.copied" = "Rapport copié. Vérifiez-le avant publication dans un ticket public.";

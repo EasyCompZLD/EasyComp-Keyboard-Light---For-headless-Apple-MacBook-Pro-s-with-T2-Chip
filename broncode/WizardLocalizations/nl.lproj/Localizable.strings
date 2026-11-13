@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light development beta — nl */
+/* EasyComp Keyboard Light v1.2.0 — nl */
 "wizard.title" = "Installatiewizard";
 "wizard.subtitle" = "Installatiewizard %@  •  macOS / Intel T2";
 "wizard.intro" = "Mac-model: %@  •  Architectuur: %@\nDe wizard controleert de hardware, bouwt de app lokaal en start het menubalkprogramma. Bestaande instellingen blijven behouden.";
@@ -26,8 +26,8 @@
 "wizard.failedBody" = "Je bestaande app blijft waar mogelijk behouden. Het lokale ontwikkelrapport bevat de fout. Controleer het vóór delen op GitHub.";
 "wizard.unsupported" = "Deze Mac (%@) wordt niet ondersteund. Gebruik Probleemrapport voor veilige, alleen-lezen diagnostiek.";
 "wizard.betaTitle" = "Experimentele ondersteuning: %@";
-"wizard.betaBody" = "Voor dit T2-model is de verlichting nog niet bevestigd. De installer controleert eerst de HID-reportdescriptor. Zonder geldige match worden geen LED-commando’s verstuurd. De bèta proberen?";
-"wizard.yes" = "Ja, testen";
+"wizard.betaBody" = "Voor dit T2-model is de verlichting nog niet bevestigd. De installer controleert eerst de HID-reportdescriptor. Zonder geldige match worden geen LED-commando’s verstuurd. Experimentele ondersteuning proberen?";
+"wizard.yes" = "Experimenteel testen";
 "wizard.cancel" = "Annuleren";
 "wizard.reportMissing" = "Rapport niet beschikbaar. Maak eerst een Probleemrapport.";
 "wizard.copied" = "Rapport gekopieerd. Controleer het vóór plaatsen in een openbaar issue.";

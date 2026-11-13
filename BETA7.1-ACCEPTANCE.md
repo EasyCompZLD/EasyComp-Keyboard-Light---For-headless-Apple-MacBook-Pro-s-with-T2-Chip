@@ -1,5 +1,7 @@
 # Beta7.1 integration acceptance
 
+Stable promotion: the owner approved version 1.2.0 on 13 November 2026 using the evidence below, without requesting further tester confirmation. See [stable release scope](RELEASE-ACCEPTANCE.md). Remaining checks below are still unconfirmed, not failed.
+
 The Issue #2 report [6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957) confirms the exact `MacBookPro15,4 / 05ac:027d / 0001:0006 / BF-v1 / 0:32:512` configuration, two accepted B0 32/0 sequences and visible minimum lighting followed by off. The normal backend now integrates that protocol behind those same strict model/interface/configuration gates.
 
 ## Hardware follow-up — 13 November 2026
