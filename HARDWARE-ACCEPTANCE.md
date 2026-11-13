@@ -1,10 +1,10 @@
-# Hardware acceptance — current development beta
+# Hardware acceptance — current release
 
-Status: **pending physical validation**. Do not release, tag, merge to main, or claim Butterfly/Touch Bar compatibility from compilation alone.
+Status: **partial physical validation recorded; remaining checks are listed below**. Do not release, tag, merge to main, or claim Butterfly/Touch Bar compatibility from compilation alone.
 
-## A2141 test — the single beta
+## A2141 regression matrix
 
-Build from the official checkout with `bash scripts/build-beta.sh`. The current package is `dist/beta/EasyComp-Keyboard-Light-Beta.zip`, containing one universal **EasyComp Keyboard Light Setup.app** with its backend bundled internally. The build signs and verifies the archive without installing, starting a controller or sending HID commands.
+Build from the official checkout with `bash scripts/build-release.sh`. The current package is `dist/release/EasyComp-Keyboard-Light.zip`, containing one universal **EasyComp Keyboard Light Setup.app** with its backend bundled internally. The build signs and verifies the archive without installing, starting a controller or sending HID commands.
 
 1. Back up the currently installed app before an experimental update. Quit any historical Beta7 Test app and disable its startup if necessary.
 2. Copy the ZIP to a local folder and extract it. Avoid extracting onto the network share: SMB Finder metadata can invalidate code signatures.
@@ -12,9 +12,11 @@ Build from the official checkout with `bash scripts/build-beta.sh`. The current 
 4. Click Install/Update. Setup checks compatibility, obtains experimental-model confirmation when required, stops the existing controller and invokes the established installer with its read-only protocol probe, staging and rollback. An invalid probe must stop installation before GUI/controller startup or LED commands. If developer tools are missing, approve Apple's official dialog; do not type commands into Terminal.
 5. Test Diagnostic report, Copy report and Show details. Reports stay local. Test the optional build check under details. Open app is enabled only when the installed app exists.
 6. After functional acceptance, test Uninstall: cancellation must leave the app untouched; confirmation must stop the controller, remove the app/autostart and retain saved settings. Test restoration from your backup if needed.
-7. Record model, OS/build, source hashes from `BUILD-INFO.txt`, permission states, expected/actual light behavior and helper error codes. Do not publish serial numbers or account information. The package is ad-hoc signed, not notarized or published.
+7. Record model, OS/build, source hashes from `BUILD-INFO.txt`, permission states, expected/actual light behavior and helper error codes. Do not publish serial numbers or account information. The package is ad-hoc signed and not notarized; local building does not publish a release.
 
-The standard app identity `nl.easycompzeeland.KeyboardLight` and existing preference keys are retained. This is the same development beta, not a separate test preference domain. Source-checkout users can double-click `Start.command`; it must build the same GUI and launch it from a local Application Support folder.
+Stable publication was approved by the owner on 13 November 2026 on the evidence documented in [release acceptance](RELEASE-ACCEPTANCE.md). Unchecked matrix rows remain unchecked; release approval is not a claim that every row passed.
+
+The standard app identity `nl.easycompzeeland.KeyboardLight` and existing preference keys are retained. This is the same application, not a separate test preference domain. Source-checkout users can double-click `Start.command`; it must build the same GUI and launch it from a local Application Support folder.
 
 ## Acceptance matrix
 
@@ -60,7 +62,7 @@ The tester has now confirmed two visible minimum-light/off cycles on Sequoia 15.
 
 Beta7.1 integrates this exact model/interface/configuration behind strict gates; normal `probe`/`diagnose` remains read-only and can now return installer success for this validated configuration. Missing or ambiguous interfaces return 5, manager access errors 4, device-open errors 6, configuration failures 7 and output failures 8. Other product/model exceptions are not broadened.
 
-Follow [beta7.1 acceptance](BETA7.1-ACCEPTANCE.md) to test the integrated installation, full brightness range, settings and idle/sleep behavior. Those checks are pending; minimum/off confirmation alone does not close issue #2. The [isolated research tool](ISSUE2-COMPATIBILITY.md) remains available as historical evidence/reproduction, not the standard installer.
+The [beta7.1 follow-up](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6838177188) reports normal compilation, menu bar app launch, working backlight and idle timeout, and response after sleep. The tester is quite sure the 10–100% steps work, while noting difficulty distinguishing some levels. See [beta7.1 acceptance](BETA7.1-ACCEPTANCE.md) for remaining explicit checks. This report does not establish Touch Bar operation, every timeout mode, exact restoration or persistence; issue #2 is not closed automatically. The [isolated research tool](ISSUE2-COMPATIBILITY.md) remains available as historical evidence/reproduction, not the standard installer.
 
 ## Previous test-app cleanup and rollback
 

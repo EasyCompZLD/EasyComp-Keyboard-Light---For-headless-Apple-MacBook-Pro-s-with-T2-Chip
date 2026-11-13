@@ -1,4 +1,4 @@
-/* EasyComp Keyboard Light development beta — en */
+/* EasyComp Keyboard Light v1.2.0 — en */
 "wizard.title" = "Setup Wizard";
 "wizard.subtitle" = "Setup Wizard %@  •  macOS / Intel T2";
 "wizard.intro" = "Mac model: %@  •  Architecture: %@\nThe wizard checks your hardware, builds the app locally and starts the menu bar utility. Existing settings will be preserved.";
@@ -26,8 +26,8 @@
 "wizard.failedBody" = "Your existing app is preserved where possible. A local diagnostic report explains the problem. Review it before sharing on GitHub.";
 "wizard.unsupported" = "This Mac (%@) is unsupported. Use Diagnostic report to collect read-only compatibility details.";
 "wizard.betaTitle" = "Experimental compatibility: %@";
-"wizard.betaBody" = "Backlight support is not yet confirmed for this T2 model. The installer checks the HID report descriptor first. No LED commands are sent without a valid match. Try the beta?";
-"wizard.yes" = "Yes, try beta";
+"wizard.betaBody" = "Backlight support is not yet confirmed for this T2 model. The installer checks the HID report descriptor first. No LED commands are sent without a valid match. Try experimental support?";
+"wizard.yes" = "Try experimental support";
 "wizard.cancel" = "Cancel";
 "wizard.reportMissing" = "Report unavailable. Use Diagnostic report to create a new one.";
 "wizard.copied" = "Report copied. Review it before posting in a public issue.";

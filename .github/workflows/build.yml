@@ -23,6 +23,7 @@ jobs:
           bash -n scripts/cli-i18n.sh
           bash -n scripts/developer-tools.sh
           bash -n scripts/build-beta.sh
+          bash -n scripts/build-release.sh
           bash -n scripts/build-issue2-test.sh
           python3 -m unittest discover -s tests -v
           bash Controleer-build.command

@@ -1,5 +1,7 @@
 # Draft reply for issue #2 — not posted
 
+Historical draft for the isolated probe/pulse experiment, superseded by the [beta7.1 reply draft](ISSUE2-BETA7.1-REPLY-DRAFT.md). The tester has since confirmed visible minimum lighting followed by off; see [current integration acceptance](BETA7.1-ACCEPTANCE.md). The text below preserves the earlier state of the investigation.
+
 Hi @mjesticfalco,
 
 Thank you! Your follow-up confirms that macOS can read the expected Butterfly configuration: 8 bytes, version 1, off 0, minimum 32 and maximum 512.

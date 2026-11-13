@@ -1,10 +1,10 @@
-// EasyComp Keyboard Light — native multilingual setup wizard v1.2.0-beta7.1.
+// EasyComp Keyboard Light — native multilingual setup wizard v1.2.0.
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
-private let versionText = "1.2.0-beta7.1"
+private let versionText = "1.2.0"
 
 private final class WizardLanguage {
     static let supported: [(code: String, nativeName: String)] = [
@@ -457,7 +457,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         alert.runModal()
     }
     @objc private func install() {
-        let supported = modelName == "MacBookPro16,1"
+        let supported = modelName == "MacBookPro16,1" || modelName == "MacBookPro15,4"
         let potential = modelName.hasPrefix("MacBookPro15,") || modelName.hasPrefix("MacBookPro16,") ||
                         modelName.hasPrefix("MacBookAir8,") || modelName == "MacBookAir9,1"
         if architecture != "x86_64" || !potential {

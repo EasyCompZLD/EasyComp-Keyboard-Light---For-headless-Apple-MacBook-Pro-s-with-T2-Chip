@@ -1,7 +1,7 @@
-# EasyComp Keyboard Light — current beta
+# Current release and development
 
-The single working beta is `1.2.0-beta` on `dev/beta`. All implemented installer, HID, timeout, Touch Bar monitor and diagnostic changes are maintained together.
+The current stable version is **1.2.0**, recorded in [VERSION](VERSION). The source remains on the single maintained `dev/beta` branch; this historical branch name does not make the published release a prerelease.
 
-See [current status, workflow and backlog](BETA-DEVELOPMENT.md) and [hardware acceptance](HARDWARE-ACCEPTANCE.md). This is local development, not a published release. Touch Bar operation and new-model compatibility require physical validation. Scheduling and the full lock policy remain on the same beta's backlog.
+See [release notes](GITHUB-RELEASE.md), [release scope and acceptance](RELEASE-ACCEPTANCE.md), [development workflow](BETA-DEVELOPMENT.md) and [hardware matrix](HARDWARE-ACCEPTANCE.md). The owner approved stable publication on 13 November 2026. Original Touch Bar control remains unconfirmed. Scheduling and the full lock policy remain future work.
 
-The last public release is `v1.2.0-beta6`. Historical release notes are preserved in [docs/history](docs/history/).
+Published downloads are on [GitHub Releases](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases). Previous beta release assets and [historical notes](docs/history/) are preserved.
