@@ -553,11 +553,16 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     @objc private func toggleAutomaticUpdates() {
         let enabled = !UserDefaults.standard.bool(forKey: "automaticUpdates")
         UserDefaults.standard.set(enabled, forKey: "automaticUpdates")
-        if enabled { checkUpdates(manual: false) }
+        if enabled {
+            UserDefaults.standard.removeObject(forKey: "lastUpdateAttempt")
+            checkUpdates(manual: false)
+        }
         else {
             updateGeneration = UUID()
             updateTask?.cancel()
             // Keep the operation busy until its cleanup completes, so checks never overlap.
+            // After handoff there is no task left: disabling must also unlock manual checks.
+            if updateTask == nil { updateBusy = false }
             updateStatusKey = "update.ready"
         }
         refreshTranslations()

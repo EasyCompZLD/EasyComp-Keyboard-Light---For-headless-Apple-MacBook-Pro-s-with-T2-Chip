@@ -2,6 +2,7 @@
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
+import Darwin
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
 private let versionText = "1.2.1-dev.1"
@@ -44,6 +45,24 @@ private final class WizardLanguage {
 }
 
 enum SetupOperation { case install, report, build, uninstall }
+
+// Kernel-held advisory lock: released automatically if a Setup process crashes.
+// One user's Setup windows must not replace/remove the same app concurrently.
+final class SetupInstallLock {
+    private var descriptor: Int32 = -1
+    func acquire(at url: URL) -> Bool {
+        guard descriptor < 0 else { return false }
+        let fd = Darwin.open(url.path, O_CREAT | O_RDWR | O_NOFOLLOW | O_CLOEXEC, mode_t(0o600))
+        guard fd >= 0 else { return false }
+        guard flock(fd, LOCK_EX | LOCK_NB) == 0 else { Darwin.close(fd); return false }
+        descriptor = fd
+        return true
+    }
+    func release() {
+        if descriptor >= 0 { Darwin.close(descriptor); descriptor = -1 }
+    }
+    deinit { release() }
+}
 
 enum SetupUpdatePolicy {
     static func canInstall(requested: String, packaged: String, installed: String,
@@ -94,6 +113,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var startedAt = Date()
     private var statusKey = "ready"
     private var lastExitCode: Int32 = 0
+    private let installLock = SetupInstallLock()
     private let unattendedUpdate = CommandLine.arguments.contains("--automatic-update") || CommandLine.arguments.contains("--confirmed-update")
 
     init(projectDirectory: String, languageCode: String?) {
@@ -330,6 +350,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         if busy { return }
         let file = project.appendingPathComponent(script)
         guard FileManager.default.fileExists(atPath: file.path) else {
+            installLock.release()
             showError(F("missing", script))
             return
         }
@@ -430,6 +451,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
                       }
     }
     private func didFinish(statusCode: Int32, operation: SetupOperation) {
+        installLock.release()
         running = nil
         if unattendedUpdate && operation == .install && statusCode == 0 {
             NSApp.terminate(nil)
@@ -550,6 +572,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     }
     private func prepareControllerStop(operation: SetupOperation, arguments: [String]) {
         guard !busy else { return }
+        let lockURL = FileManager.default.temporaryDirectory.appendingPathComponent("ecz-keyboardlight-setup.lock")
+        guard installLock.acquire(at: lockURL) else { showError(T("busy")); return }
         preparingControllerStop = true
         setBusy(true)
         statusKey = operation == .install ? "installing" : "uninstalling"
@@ -563,6 +587,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
             preparingControllerStop = false
             start(operation == .install ? "Installeer.command" : "Verwijder.command", arguments: arguments, operation: operation)
         } else if attempt >= 50 {
+            installLock.release()
             preparingControllerStop = false
             setBusy(false)
             statusKey = "ready"
