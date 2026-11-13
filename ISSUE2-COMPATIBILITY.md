@@ -1,4 +1,4 @@
-> Status update: the tester confirmed two minimum/off cycles in [comment 6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957). Beta7.1 now integrates the exact protocol into the regular backend; see [integrated acceptance](BETA7.1-ACCEPTANCE.md). The instructions below describe the original isolated tool at commit `5f2de80`, not the new production gate.
+> Status update: the tester confirmed two minimum/off cycles in [comment 6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957). Beta7.1 integrates the exact protocol into the regular backend, and the tester has since reported successful compilation/app launch, lighting, idle timeout and wake response, with qualified confidence in brightness steps; see [integrated acceptance](BETA7.1-ACCEPTANCE.md). The instructions below describe the original isolated tool at commit `5f2de80`, not the new production gate.
 
 # Issue #2 — isolated Butterfly compatibility test
 

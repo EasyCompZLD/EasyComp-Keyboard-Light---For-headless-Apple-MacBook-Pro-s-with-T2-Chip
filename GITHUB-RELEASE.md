@@ -16,7 +16,7 @@ This prerelease integrates the MacBookPro15,4 Butterfly backlight protocol into 
 
 [mjesticfalco confirmed two visible minimum-light/off cycles](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957) on **MacBookPro15,4, macOS Sequoia 15.8.3 (24H241), x86_64**. Device open, BF configuration reads and B0 writes for values 32 and 0 all returned success, and the keyboard visibly lit briefly and went off.
 
-**Full brightness range and installation through this integrated update still require the tester's follow-up.** Minimum/off success is not a claim that every brightness step, sleep/wake, idle restoration or original Touch Bar control has been physically accepted on this model. Other T2 models remain experimental. Issue #2 stays open for those checks.
+**Hardware follow-up, 13 November 2026:** [the tester reports](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6838177188) normal compilation, menu bar app launch, working keyboard backlight and idle timeout, and backlight response after sleep. The 10–100% steps appear to work, although some brightness differences are hard to distinguish. This is a successful integrated-app report, not a measurement of each brightness level. Exact restoration, manual-off protection, persistence, individual timeout modes and original Touch Bar controls still need explicit confirmation. Other T2 models remain experimental. Issue #2 stays open pending review of the remaining checks.
 
 ## Install and test
 

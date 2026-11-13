@@ -21,9 +21,9 @@ There is one maintained Swift + C codebase and one cumulative macOS regression s
 - Serialized/coalesced HID writes, stale-command protection, helper watchdog and diagnostics.
 - Local/global illumination-event monitors plus a recovering background event tap.
 - Native installer, staging/rollback, prerequisite handling and eight interface languages.
-- Issue #2 integration for MacBookPro15,4: exact PID/primary descriptor, unique interface and BF-v1/0/32/512 validation before normal B0 brightness/off writes. Minimum/off was physically confirmed; the integrated installer/full range remain in acceptance.
+- Issue #2 integration for MacBookPro15,4: exact PID/primary descriptor, unique interface and BF-v1/0/32/512 validation before normal B0 brightness/off writes. The tester now reports successful beta7.1 compilation/app launch, backlight, idle timeout and wake response; brightness steps appear functional with a visual qualification.
 
-Implementation does not imply complete hardware acceptance. The tester confirmed two visible minimum/off cycles and successful IOKit results on MacBookPro15,4 / Sequoia 15.8.3. Beta7.1 integrates that exact protocol. See [integrated acceptance](BETA7.1-ACCEPTANCE.md) for installation and full-range checks. Touch Bar, idle/sleep and other models still need their own physical validation.
+Implementation does not imply complete hardware acceptance. Following the isolated minimum/off test, the MacBookPro15,4 tester reports successful beta7.1 compilation/app launch, backlight, idle timeout and wake response. Brightness steps appear to work, although some differences are hard to distinguish. See [integrated acceptance](BETA7.1-ACCEPTANCE.md) for the sourced observations and remaining checks, including Touch Bar, exact brightness restoration, manual-off protection and persistence. Other models need their own validation.
 
 ## One workflow
 
@@ -47,7 +47,7 @@ Follow [hardware acceptance](HARDWARE-ACCEPTANCE.md) before installation/release
 These items are planned work on the same beta, rather than a separate beta8 codebase:
 
 1. Finish A2141 acceptance of timeout, activity sources, monitor permissions, Touch Bar and sleep/session behavior.
-2. Complete beta7.1 integrated installation/full-range acceptance after the successful isolated minimum/off test. Keep issue #2 open until follow-up passes.
+2. Record the successful beta7.1 tester follow-up and complete the remaining explicit checks listed in BETA7.1-ACCEPTANCE.md. Keep issue #2 open pending owner review; do not infer Touch Bar or every timeout mode from the general success report.
 3. Add manual, local sunset/sunrise and custom-schedule modes, including intervals across midnight. Location requires permission; no online API or account.
 4. Complete lock/unlock behavior: normal timeout by default, optional immediate off, permitted activity on the lock screen where macOS allows it, and persistent manual off.
 
@@ -63,4 +63,4 @@ The preceding published `v1.2.0-beta7` release and `main` remain unchanged; beta
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation for beta7.1: 36 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. Integrated installation/full-range acceptance is still pending.
+Latest local validation for beta7.1: 36 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.

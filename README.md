@@ -41,12 +41,12 @@ The download contains **one setup app**. Backend scripts are bundled inside it. 
 |---|---|
 | MacBookPro16,1 / A2141 Magic HID method | Hardware-proven method; current beta changes need physical acceptance |
 | Original Touch Bar controls | Monitoring implemented; event emission and physical response still require testing |
-| MacBookPro15,4 / Issue #2 | Minimum/off physically confirmed on Sequoia 15.8.3; beta7.1 integrates the protocol. [Installer/full-range follow-up](BETA7.1-ACCEPTANCE.md) pending |
+| MacBookPro15,4 / Issue #2 | Tester reports successful beta7.1 compilation/app launch, backlight, idle timeout and wake response on Sequoia 15.8.3. Brightness steps appear to work; some differences are hard to distinguish. [Evidence and remaining checks](BETA7.1-ACCEPTANCE.md) |
 | Other T2 models | Experimental; no compatibility claim without hardware evidence |
 | Ambient-light adjustment | Unsupported without a reliable sensor/data source |
 | Sunset/sunrise schedules and complete lock policy | Backlog within the same beta |
 
-No LED commands are allowed for an unvalidated interface. The proven A2141 report bytes and installer rollback protections are retained. See [Issue #2](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2) for the Butterfly hardware evidence and pending integrated acceptance.
+No LED commands are allowed for an unvalidated interface. The proven A2141 report bytes and installer rollback protections are retained. See [Issue #2](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2) for the Butterfly hardware evidence and remaining acceptance checks.
 
 ## Development and testing
 

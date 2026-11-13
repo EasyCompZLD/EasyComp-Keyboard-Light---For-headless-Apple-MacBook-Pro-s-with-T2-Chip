@@ -2,7 +2,23 @@
 
 The Issue #2 report [6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6825954957) confirms the exact `MacBookPro15,4 / 05ac:027d / 0001:0006 / BF-v1 / 0:32:512` configuration, two accepted B0 32/0 sequences and visible minimum lighting followed by off. The normal backend now integrates that protocol behind those same strict model/interface/configuration gates.
 
-## Tester follow-up
+## Hardware follow-up — 13 November 2026
+
+Source: [mjesticfalco's beta7.1 follow-up](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6838177188), on the previously reported MacBookPro15,4 / Sequoia 15.8.3 setup. The comment follows the beta7.1 download instructions; it does not include a new diagnostic report or build hash.
+
+| Check | Reported result |
+|---|---|
+| Compilation and menu bar app launch | Compiles normally; menu bar app appears. No installer error reported; rollback/update paths were not separately tested. |
+| Backlight on | Working. |
+| 10–100% brightness steps | Tester is quite sure they work; some levels are hard to distinguish. Qualified visual evidence, not a measurement of every step. |
+| Idle timeout | Working; selected duration and input device are not specified. |
+| Return from sleep | Backlight responds after sleep; exact level restoration and manual-off state are not specified. |
+
+Still unconfirmed: explicit manual off in the integrated app, app restart/login and preference persistence, 15/30-second timing separately, Never, restoration of the exact chosen brightness through each input device, manual-off protection across activity/sleep, lights going off before sleep, Touch Bar with menu open/closed/another app frontmost, session/lock/permission behavior and fresh A2141 regression. These are separate checks, not evidence that the tester encountered a defect. Keep issue #2 open pending owner review; do not request the entire successful test again.
+
+## Tester follow-up checklist
+
+The original checklist below is retained for reproduction; consult the results above before requesting further tests.
 
 Use the ordinary Setup app, rather than the isolated Issue #2 test tool:
 
@@ -30,4 +46,4 @@ This is a compatibility prerelease from the existing `dev/beta` branch, not a ne
 - 38 retained isolated-tool scenarios and the existing native GUI/state/localization/installer checks also pass. No real HID helper is run by these fixtures.
 - `bash Controleer-build.command`: native app, setup, research tool, metadata and all sixteen localization tables passed.
 - Compared with `5f2de80`: Magic usage/descriptor functions, complete Magic write branch and report writer are identical. Installer/app state logic differs only in version labels.
-- Physical evidence is the tester's two minimum/off cycles. Full-range, integrated installation and fresh A2141 physical acceptance are not marked complete.
+- Physical evidence now includes the original two minimum/off cycles and the successful integrated-app follow-up above. Brightness evidence retains the tester's qualification. Remaining explicit checks and fresh A2141 physical acceptance are not marked complete.
