@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Backlight manually off";
 "idle.status.suspended" = "Backlight paused: sleep or inactive session";
 "idle.status.disabled" = "Automatic idle-off disabled";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Automatically install stable updates";
+"update.check" = "Check for updates…";
+"update.ready" = "Updates: ready";
+"update.checking" = "Updates: checking…";
+"update.current" = "Updates: up to date";
+"update.failed" = "Updates: check or installation failed";
+"update.installing" = "Updates: installing…";
+"update.available" = "Version %@ is available";
+"update.installBody" = "The verified update will use Setup to stop the app, install safely and restart it. Your settings are kept.";
+"update.install" = "Install update";
+"update.later" = "Later";

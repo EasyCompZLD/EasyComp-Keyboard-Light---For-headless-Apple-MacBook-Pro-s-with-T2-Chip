@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Iluminación apagada manualmente";
 "idle.status.suspended" = "Iluminación en pausa: reposo o sesión inactiva";
 "idle.status.disabled" = "Apagado automático desactivado";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Instalar actualizaciones estables automáticamente";
+"update.check" = "Buscar actualizaciones…";
+"update.ready" = "Actualizaciones: listo";
+"update.checking" = "Actualizaciones: comprobando…";
+"update.current" = "Actualizaciones: al día";
+"update.failed" = "Actualizaciones: error al comprobar o instalar";
+"update.installing" = "Actualizaciones: instalando…";
+"update.available" = "La versión %@ está disponible";
+"update.installBody" = "La actualización verificada usa Setup para cerrar la app, instalar de forma segura y reiniciarla. Se conservan tus ajustes.";
+"update.install" = "Instalar actualización";
+"update.later" = "Más tarde";

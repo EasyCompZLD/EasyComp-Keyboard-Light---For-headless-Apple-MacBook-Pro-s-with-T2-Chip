@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Beende die Tastaturbeleuchtungs-App und versuche es erneut.";
 "wizard.actionFailed" = "Aktion nicht abgeschlossen";
 "wizard.actionFailedBody" = "Öffne die Details zur Fehlermeldung oder erstelle einen Diagnosebericht.";
+
+"wizard.updateRefused" = "Automatisches Update abgelehnt. Prüfe installierte Version, Update-Einstellung und unterstütztes Modell.";

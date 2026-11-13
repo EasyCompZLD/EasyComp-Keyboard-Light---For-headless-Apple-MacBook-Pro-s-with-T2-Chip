@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Sluit de toetsenbordverlichtingsapp af en probeer opnieuw.";
 "wizard.actionFailed" = "Actie niet voltooid";
 "wizard.actionFailedBody" = "Open de details voor de foutmelding. Je kunt ook een probleemrapport maken.";
+
+"wizard.updateRefused" = "Automatisch bijwerken geweigerd. Controleer de geïnstalleerde versie, updatevoorkeur en het ondersteunde model.";

@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Verlichting handmatig uit";
 "idle.status.suspended" = "Verlichting gepauzeerd: sluimerstand of inactieve sessie";
 "idle.status.disabled" = "Automatisch uitschakelen uitgeschakeld";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Stabiele updates automatisch installeren";
+"update.check" = "Controleer op updates…";
+"update.ready" = "Updates: gereed";
+"update.checking" = "Updates: controleren…";
+"update.current" = "Updates: bijgewerkt";
+"update.failed" = "Updates: controleren of installeren mislukt";
+"update.installing" = "Updates: installeren…";
+"update.available" = "Versie %@ is beschikbaar";
+"update.installBody" = "De gecontroleerde update stopt de app via Setup, installeert veilig en start de app opnieuw. Je instellingen blijven bewaard.";
+"update.install" = "Update installeren";
+"update.later" = "Later";

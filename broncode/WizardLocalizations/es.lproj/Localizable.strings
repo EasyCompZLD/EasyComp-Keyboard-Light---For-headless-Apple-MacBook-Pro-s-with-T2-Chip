@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Cierra la app de iluminación del teclado e inténtalo de nuevo.";
 "wizard.actionFailed" = "Acción no completada";
 "wizard.actionFailedBody" = "Consulta los detalles del error o crea un informe de diagnóstico.";
+
+"wizard.updateRefused" = "Actualización automática rechazada. Comprueba la versión instalada, la preferencia y el modelo compatible.";

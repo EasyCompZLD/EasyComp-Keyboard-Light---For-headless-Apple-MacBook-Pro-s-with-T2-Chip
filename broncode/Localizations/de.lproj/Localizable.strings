@@ -34,3 +34,16 @@
 "idle.status.manualoff" = "Beleuchtung manuell ausgeschaltet";
 "idle.status.suspended" = "Beleuchtung pausiert: Ruhezustand oder inaktive Sitzung";
 "idle.status.disabled" = "Automatische Abschaltung deaktiviert";
+
+/* Optional GitHub updates. */
+"update.automatic" = "Stabile Updates automatisch installieren";
+"update.check" = "Nach Updates suchen…";
+"update.ready" = "Updates: bereit";
+"update.checking" = "Updates: Prüfung läuft…";
+"update.current" = "Updates: aktuell";
+"update.failed" = "Updates: Prüfung oder Installation fehlgeschlagen";
+"update.installing" = "Updates: Installation läuft…";
+"update.available" = "Version %@ ist verfügbar";
+"update.installBody" = "Das geprüfte Update beendet die App über Setup, installiert sicher und startet sie neu. Deine Einstellungen bleiben erhalten.";
+"update.install" = "Update installieren";
+"update.later" = "Später";

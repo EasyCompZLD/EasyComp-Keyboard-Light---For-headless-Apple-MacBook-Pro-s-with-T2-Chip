@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Zamknij aplikację podświetlenia klawiatury i spróbuj ponownie.";
 "wizard.actionFailed" = "Nie ukończono działania";
 "wizard.actionFailedBody" = "Sprawdź szczegóły błędu lub utwórz raport diagnostyczny.";
+
+"wizard.updateRefused" = "Odmówiono automatycznej aktualizacji. Sprawdź zainstalowaną wersję, ustawienie i obsługiwany model.";

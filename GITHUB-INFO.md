@@ -8,11 +8,11 @@
 
 **Current development branch:** `dev/beta`
 
-**Working version:** `1.2.0`
+**Working version:** `1.2.1-dev.1` (unreleased; published stable: `1.2.0`)
 
 **Previous published beta:** `v1.2.0-beta7.1`
 
-Keep `main` and public releases unchanged until hardware acceptance and publication authorization. Pushing `dev/beta` uploads the development commits; it does not merge main or publish a release. [Release notes](GITHUB-RELEASE.md) describe the owner-approved stable 1.2.0 release; see [acceptance scope](RELEASE-ACCEPTANCE.md).
+Keep `main` and public releases unchanged until hardware acceptance and publication approval. Pushing `dev/beta` uploads the development commits; it does not merge main or publish a release. [Release notes](GITHUB-RELEASE.md) describe the stable 1.2.0 release; see [acceptance scope](RELEASE-ACCEPTANCE.md).
 
 The current demonstration uses `Assets/IMG_0919.gif`, with the full recording in `Assets/IMG_0919.webm`. Both are linked from README. Earlier demonstration files remain historical assets and are not used as the current demo.
 

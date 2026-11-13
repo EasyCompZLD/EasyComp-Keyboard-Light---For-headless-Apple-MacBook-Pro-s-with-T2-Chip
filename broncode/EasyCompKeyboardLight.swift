@@ -1,10 +1,196 @@
-// EasyComp Keyboard Light v1.2.0
+// EasyComp Keyboard Light v1.2.1-dev.1
 // Native menu bar utility for compatible headless Intel T2 MacBooks.
 // HID hardware control is delegated to the separately verified C helper.
 import AppKit
 import CoreGraphics
 import Foundation
 import Darwin
+import CryptoKit
+
+// Updates trust this repository over HTTPS, not arbitrary URLs or release text.
+// GitHub's asset digest checks downloaded bytes; ad-hoc signing is not publisher authentication.
+struct UpdateVersion: Comparable, Equatable {
+    let parts: [Int]
+    init?(_ text: String) {
+        let value = text.hasPrefix("v") ? String(text.dropFirst()) : text
+        let fields = value.split(separator: ".", omittingEmptySubsequences: false)
+        guard fields.count == 3, fields.allSatisfy({ !$0.isEmpty && $0.count <= 8 && $0.allSatisfy({ $0.isASCII && $0.isNumber }) }),
+              fields.allSatisfy({ $0.count == 1 || $0.first != "0" }) else { return nil }
+        parts = fields.compactMap { Int($0) }
+        if parts.count != 3 { return nil }
+    }
+    static func < (a: Self, b: Self) -> Bool { a.parts.lexicographicallyPrecedes(b.parts) }
+}
+
+struct UpdateRelease: Decodable {
+    struct Asset: Decodable {
+        let name: String
+        let browser_download_url: String
+        let digest: String?
+        let size: Int
+        let state: String
+    }
+    let tag_name: String
+    let draft: Bool
+    let prerelease: Bool
+    let assets: [Asset]
+    static let repository = "EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip"
+    static let archiveName = "EasyComp-Keyboard-Light.zip"
+    static let maxBytes = 64 * 1024 * 1024
+    var candidate: Asset? {
+        let matches = assets.filter { $0.name == Self.archiveName }
+        guard !draft, !prerelease, tag_name.hasPrefix("v"), UpdateVersion(tag_name) != nil,
+              matches.count == 1, let asset = matches.first, asset.state == "uploaded",
+              asset.size > 0, asset.size <= Self.maxBytes,
+              asset.browser_download_url == "https://github.com/\(Self.repository)/releases/download/\(tag_name)/\(Self.archiveName)",
+              let digest = asset.digest, digest.hasPrefix("sha256:"), digest.count == 71,
+              digest.dropFirst(7).allSatisfy({ "0123456789abcdef".contains($0) }) else { return nil }
+        return asset
+    }
+    func isNewer(than installed: String) -> Bool {
+        let fields = installed.split(separator: "-", maxSplits: 1)
+        guard let local = fields.first.flatMap({ UpdateVersion(String($0)) }),
+              let remote = UpdateVersion(tag_name), candidate != nil else { return false }
+        return remote > local || (remote == local && fields.count == 2)
+    }
+}
+
+enum UpdateFailure: Error { case invalidRelease, invalidArchive, invalidBundle, processFailed }
+
+// Check ZIP central directory paths, types and expansion limits before extraction.
+// Symlinks, traversal, duplicate paths, ZIP64 and encrypted archives are rejected.
+enum UpdateArchive {
+    static func validate(_ data: Data) throws {
+        let bytes = [UInt8](data)
+        func number(_ offset: Int, _ count: Int) throws -> Int {
+            guard offset >= 0, offset + count <= bytes.count else { throw UpdateFailure.invalidArchive }
+            return (0..<count).reduce(0) { $0 | (Int(bytes[offset + $1]) << (8 * $1)) }
+        }
+        guard bytes.count >= 22 else { throw UpdateFailure.invalidArchive }
+        var end: Int?
+        for i in stride(from: bytes.count - 22, through: max(0, bytes.count - 65557), by: -1) {
+            if try number(i, 4) == 0x06054b50, i + 22 + (try number(i + 20, 2)) == bytes.count { end = i; break }
+        }
+        guard let e = end, try number(e + 4, 4) == 0 else { throw UpdateFailure.invalidArchive }
+        let count = try number(e + 10, 2)
+        var offset = try number(e + 16, 4)
+        let directoryEnd = offset + (try number(e + 12, 4))
+        guard count > 0, count <= 4096, try number(e + 8, 2) == count, directoryEnd == e else { throw UpdateFailure.invalidArchive }
+        var paths = Set<String>(), expanded = 0
+        for _ in 0..<count {
+            guard try number(offset, 4) == 0x02014b50, try number(offset + 8, 2) & 1 == 0,
+                  [0, 8].contains(try number(offset + 10, 2)), try number(offset + 34, 2) == 0 else { throw UpdateFailure.invalidArchive }
+            let nameLength = try number(offset + 28, 2)
+            let size = try number(offset + 24, 4)
+            let mode = (try number(offset + 38, 4)) >> 16
+            let type = mode & 0xf000
+            guard [0, 0x8000, 0x4000].contains(type), size < 128 * 1024 * 1024,
+                  offset + 46 + nameLength <= directoryEnd else { throw UpdateFailure.invalidArchive }
+            let nameBytes = bytes[(offset + 46)..<(offset + 46 + nameLength)]
+            guard let path = String(bytes: nameBytes, encoding: .utf8),
+                  !path.contains("\\"), !path.contains("\0"), !path.contains("\n"), !path.contains("\r"),
+                  path.hasPrefix("EasyComp Keyboard Light Setup.app/"),
+                  path.split(separator: "/", omittingEmptySubsequences: false).allSatisfy({ $0 != "." && $0 != ".." }),
+                  paths.insert(path).inserted else { throw UpdateFailure.invalidArchive }
+            expanded += size
+            guard expanded <= 128 * 1024 * 1024 else { throw UpdateFailure.invalidArchive }
+            // Local header must name the same entry: extraction must not see different paths.
+            let local = try number(offset + 42, 4)
+            let localNameLength = try number(local + 26, 2)
+            let localExtra = try number(local + 28, 2)
+            let compressed = try number(offset + 20, 4)
+            guard try number(local, 4) == 0x04034b50, localNameLength == nameLength,
+                  local + 30 + localNameLength + localExtra + compressed <= (try number(e + 16, 4)),
+                  bytes[(local + 30)..<(local + 30 + localNameLength)].elementsEqual(nameBytes),
+                  try number(local + 6, 2) == number(offset + 8, 2),
+                  try number(local + 8, 2) == number(offset + 10, 2) else { throw UpdateFailure.invalidArchive }
+            offset += 46 + nameLength + (try number(offset + 30, 2)) + (try number(offset + 32, 2))
+        }
+        guard offset == directoryEnd else { throw UpdateFailure.invalidArchive }
+    }
+}
+
+private final class UpdateRedirects: NSObject, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        let allowed = request.url?.scheme == "https" && ["github.com", "release-assets.githubusercontent.com"].contains(request.url?.host ?? "")
+        completionHandler(allowed ? request : nil)
+    }
+}
+
+enum GitHubUpdater {
+    struct Staged { let workspace: URL; let app: URL; let version: String }
+    static func validateDownload(_ data: Data, asset: UpdateRelease.Asset) throws {
+        let digest = "sha256:" + SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        guard data.count == asset.size, data.count <= UpdateRelease.maxBytes, digest == asset.digest else { throw UpdateFailure.invalidArchive }
+        try UpdateArchive.validate(data)
+    }
+    private static func run(_ executable: String, _ arguments: [String]) throws {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: executable)
+        task.arguments = arguments
+        task.standardInput = FileHandle.nullDevice
+        task.standardOutput = FileHandle.nullDevice
+        task.standardError = FileHandle.nullDevice
+        try task.run()
+        let deadline = Date().addingTimeInterval(30)
+        while task.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.05) }
+        if task.isRunning {
+            task.terminate()
+            let stopDeadline = Date().addingTimeInterval(2)
+            while task.isRunning && Date() < stopDeadline { Thread.sleep(forTimeInterval: 0.05) }
+            if task.isRunning { kill(task.processIdentifier, SIGKILL) }
+            task.waitUntilExit()
+            throw UpdateFailure.processFailed
+        }
+        guard task.terminationStatus == 0 else { throw UpdateFailure.processFailed }
+    }
+    static func stage(installed: String) async throws -> Staged? {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 120
+        configuration.httpShouldSetCookies = false
+        configuration.urlCredentialStorage = nil
+        let session = URLSession(configuration: configuration, delegate: UpdateRedirects(), delegateQueue: nil)
+        defer { session.invalidateAndCancel() }
+        var request = URLRequest(url: URL(string: "https://api.github.com/repos/\(UpdateRelease.repository)/releases/latest")!)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
+        let (metadata, response) = try await session.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200, metadata.count <= 1024 * 1024 else { throw UpdateFailure.invalidRelease }
+        let release = try JSONDecoder().decode(UpdateRelease.self, from: metadata)
+        guard release.isNewer(than: installed), let asset = release.candidate else { return nil }
+        let (download, downloadResponse) = try await session.download(from: URL(string: asset.browser_download_url)!)
+        defer { try? FileManager.default.removeItem(at: download) }
+        guard (downloadResponse as? HTTPURLResponse)?.statusCode == 200,
+              (try download.resourceValues(forKeys: [.fileSizeKey])).fileSize == asset.size else { throw UpdateFailure.invalidArchive }
+        let data = try Data(contentsOf: download)
+        try validateDownload(data, asset: asset)
+        let workspace = FileManager.default.temporaryDirectory.appendingPathComponent("ecz-update-" + UUID().uuidString)
+        try FileManager.default.createDirectory(at: workspace, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
+        var retained = false
+        defer { if !retained { try? FileManager.default.removeItem(at: workspace) } }
+        let archive = workspace.appendingPathComponent("update.zip")
+        try data.write(to: archive, options: .atomic)
+        try run("/usr/bin/ditto", ["-x", "-k", archive.path, workspace.path])
+        let app = workspace.appendingPathComponent("EasyComp Keyboard Light Setup.app")
+        let version = String(release.tag_name.dropFirst())
+        guard let bundle = Bundle(url: app), bundle.bundleIdentifier == "nl.easycompzeeland.KeyboardLight.Setup",
+              bundle.object(forInfoDictionaryKey: "ECZAutomaticUpdateProtocol") as? Int == 1,
+              bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == version,
+              bundle.object(forInfoDictionaryKey: "ECZDevelopmentVersion") as? String == version else {
+            throw UpdateFailure.invalidBundle
+        }
+        let infoURL = app.appendingPathComponent("Contents/Resources/Project/broncode/Info.plist")
+        guard let info = try PropertyListSerialization.propertyList(from: Data(contentsOf: infoURL), format: nil) as? [String: Any],
+              info["CFBundleIdentifier"] as? String == "nl.easycompzeeland.KeyboardLight",
+              info["CFBundleShortVersionString"] as? String == version,
+              info["ECZDevelopmentVersion"] as? String == version else { throw UpdateFailure.invalidBundle }
+        try run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path])
+        retained = true
+        return Staged(workspace: workspace, app: app, version: version)
+    }
+}
 
 private let agentLabel = Bundle.main.bundleIdentifier ?? "nl.easycompzeeland.KeyboardLight"
 private let illuminationUp = 21
@@ -112,6 +298,14 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private let brighterItem = NSMenuItem()
     private let dimmerItem = NSMenuItem()
     private let loginItem = NSMenuItem()
+    private let automaticUpdateItem = NSMenuItem()
+    private let checkUpdateItem = NSMenuItem()
+    private let updateStatusItem = NSMenuItem()
+    private var updateTimer: Timer?
+    private var updateTask: Task<Void, Never>?
+    private var updateBusy = false
+    private var updateStatusKey = "update.ready"
+    private var updateGeneration = UUID()
     private let privacyItem = NSMenuItem()
     private let accessItem = NSMenuItem()
     private let languageItem = NSMenuItem()
@@ -184,6 +378,10 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         listenForIlluminationKeys()
         refreshMenu()
         scheduleWrite(delay: 0.25)
+        let timer = Timer(timeInterval: 60, repeats: true) { [weak self] _ in self?.checkAutomaticUpdate() }
+        updateTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        checkAutomaticUpdate()
     }
 
     private func configureMenu() {
@@ -249,6 +447,14 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         loginItem.action = #selector(toggleLogin)
         loginItem.target = self
         menu.addItem(loginItem)
+        automaticUpdateItem.target = self
+        automaticUpdateItem.action = #selector(toggleAutomaticUpdates)
+        menu.addItem(automaticUpdateItem)
+        checkUpdateItem.target = self
+        checkUpdateItem.action = #selector(checkUpdatesNow)
+        menu.addItem(checkUpdateItem)
+        updateStatusItem.isEnabled = false
+        menu.addItem(updateStatusItem)
 
         let languageMenu = NSMenu()
         languageMenu.autoenablesItems = false
@@ -282,6 +488,8 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         brighterItem.title = T("brightness.up")
         dimmerItem.title = T("brightness.down")
         loginItem.title = T("startup.login")
+        automaticUpdateItem.title = T("update.automatic")
+        checkUpdateItem.title = T("update.check")
         privacyItem.title = T("privacy.input")
         accessItem.title = T("privacy.accessibility")
         languageItem.title = T("language")
@@ -311,6 +519,9 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             : idleOff ? "idle.status.off" : "idle.status.active"
         idleStatusItem.title = T(idleStatusKey)
         loginItem.state = FileManager.default.fileExists(atPath: agentURL.path) ? .on : .off
+        automaticUpdateItem.state = UserDefaults.standard.bool(forKey: "automaticUpdates") ? .on : .off
+        checkUpdateItem.isEnabled = !updateBusy
+        updateStatusItem.title = T(updateStatusKey)
         statusItem.button?.toolTip = "\(T("brightness.tooltip")): \(level)%"
         for option in timeoutChoices {
             option.state = (option.representedObject as? Int) == timeoutSeconds ? .on : .off
@@ -337,6 +548,101 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         guard let code = sender.representedObject as? String else { return }
         LanguageManager.shared.selectedCode = code
         refreshTranslations()
+    }
+
+    @objc private func toggleAutomaticUpdates() {
+        let enabled = !UserDefaults.standard.bool(forKey: "automaticUpdates")
+        UserDefaults.standard.set(enabled, forKey: "automaticUpdates")
+        if enabled { checkUpdates(manual: false) }
+        else {
+            updateGeneration = UUID()
+            updateTask?.cancel()
+            // Keep the operation busy until its cleanup completes, so checks never overlap.
+            updateStatusKey = "update.ready"
+        }
+        refreshTranslations()
+    }
+    @objc private func checkUpdatesNow() { checkUpdates(manual: true) }
+    private func checkAutomaticUpdate() {
+        let store = UserDefaults.standard
+        guard store.bool(forKey: "automaticUpdates"), !sleeping, sessionActive,
+              Date().timeIntervalSince(store.object(forKey: "lastUpdateAttempt") as? Date ?? .distantPast) >= 3600 else { return }
+        checkUpdates(manual: false)
+    }
+    private func checkUpdates(manual: Bool) {
+        guard !updateBusy, !terminating else { return }
+        updateBusy = true
+        updateStatusKey = "update.checking"
+        let generation = UUID()
+        updateGeneration = generation
+        UserDefaults.standard.set(Date(), forKey: "lastUpdateAttempt")
+        let installed = Bundle.main.object(forInfoDictionaryKey: "ECZDevelopmentVersion") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        refreshTranslations()
+        updateTask = Task { @MainActor [weak self] in
+            do {
+                let staged = try await GitHubUpdater.stage(installed: installed)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { if let staged = staged { try? FileManager.default.removeItem(at: staged.workspace) }; return }
+                    self.updateTask = nil
+                    self.updateBusy = false
+                    guard self.updateGeneration == generation, !self.terminating else {
+                        if let staged = staged { try? FileManager.default.removeItem(at: staged.workspace) }; return
+                    }
+                    guard let staged = staged else { self.updateStatusKey = "update.current"; self.refreshTranslations(); return }
+                    guard manual || (UserDefaults.standard.bool(forKey: "automaticUpdates") && !self.sleeping && self.sessionActive) else {
+                        try? FileManager.default.removeItem(at: staged.workspace)
+                        self.updateStatusKey = "update.ready"; self.refreshTranslations(); return
+                    }
+                    if manual {
+                        let alert = NSAlert()
+                        alert.messageText = String(format: self.T("update.available"), staged.version)
+                        alert.informativeText = self.T("update.installBody")
+                        alert.addButton(withTitle: self.T("update.install"))
+                        alert.addButton(withTitle: self.T("update.later"))
+                        if alert.runModal() != .alertFirstButtonReturn {
+                            try? FileManager.default.removeItem(at: staged.workspace)
+                            self.updateStatusKey = "update.ready"; self.refreshTranslations(); return
+                        }
+                    }
+                    guard self.updateGeneration == generation, !self.terminating, !self.sleeping, self.sessionActive,
+                          manual || UserDefaults.standard.bool(forKey: "automaticUpdates") else {
+                        try? FileManager.default.removeItem(at: staged.workspace)
+                        self.updateStatusKey = "update.ready"; self.refreshTranslations(); return
+                    }
+                    self.updateBusy = true
+                    self.updateStatusKey = "update.installing"
+                    self.refreshTranslations()
+                    let configuration = NSWorkspace.OpenConfiguration()
+                    configuration.createsNewApplicationInstance = true
+                    configuration.arguments = [manual ? "--confirmed-update" : "--automatic-update",
+                                               "--update-version=" + staged.version,
+                                               "--update-language=" + LanguageManager.shared.effectiveCode]
+                    NSWorkspace.shared.openApplication(at: staged.app, configuration: configuration) { [weak self] _, error in
+                        DispatchQueue.main.async {
+                            guard let self = self else { return }
+                            if error != nil {
+                                try? FileManager.default.removeItem(at: staged.workspace)
+                                self.updateBusy = false; self.updateStatusKey = "update.failed"; self.refreshTranslations()
+                            }
+                        }
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in
+                        guard let self = self, self.updateGeneration == generation, self.updateBusy else { return }
+                        // A successful installer stops this process. If it is still here, permit retry.
+                        self.updateBusy = false; self.updateStatusKey = "update.failed"; self.refreshTranslations()
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.updateTask = nil; self.updateBusy = false
+                    if self.updateGeneration == generation { self.updateStatusKey = "update.failed" }
+                    self.refreshTranslations()
+                    NSLog("EasyComp update check/download failed; installed app retained")
+                }
+            }
+        }
     }
 
     private func save() {
@@ -670,6 +976,9 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     }
     func applicationWillTerminate(_ notification: Notification) {
         terminating = true
+        updateGeneration = UUID()
+        updateTask?.cancel()
+        updateTimer?.invalidate()
         pending?.cancel()
         idleTimer?.invalidate()
         helperWatchdog?.cancel()

@@ -48,6 +48,10 @@ The download contains **one setup app**. Backend scripts are bundled inside it. 
 
 No LED commands are allowed for an unvalidated interface. The proven A2141 report bytes and installer rollback protections are retained. See [Issue #2](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2) for the Butterfly hardware evidence and remaining acceptance checks.
 
+## Automatic updates — in development
+
+I am adding optional automatic stable updates for the next version. This feature is **not included in the published 1.2.0 download**. Once installed, the new app can check GitHub hourly and hand a verified newer stable package to Setup. See [automatic update behavior and limits](AUTO-UPDATES.md) and [next-release draft](NEXT-RELEASE.md). The source checkout is `1.2.1-dev.1`; building it produces a local prerelease in `dist/beta/`.
+
 ## Development and testing
 
 Use the existing checkout and `dev/beta`:
@@ -62,7 +66,13 @@ These are developer commands; users use the Setup app. Automated tests target ma
 
 See [development workflow and backlog](BETA-DEVELOPMENT.md), [hardware acceptance](HARDWARE-ACCEPTANCE.md) and [contributing](CONTRIBUTING.md). Generated artifacts and caches stay out of Git. Previous beta notes are retained in [docs/history](docs/history/).
 
-The owner approved stable publication on 13 November 2026 using the recorded A2141 evidence and MacBookPro15,4 tester follow-up. [Release scope and acceptance limits](RELEASE-ACCEPTANCE.md) distinguish supported backlight operation from unconfirmed Touch Bar and edge cases. Future publication and merges require owner authorization.
+I approved stable publication on 13 November 2026 using the recorded A2141 evidence and MacBookPro15,4 tester follow-up. [Release scope and acceptance limits](RELEASE-ACCEPTANCE.md) distinguish supported backlight operation from unconfirmed Touch Bar and edge cases. Future publication and merges require my authorization.
+
+## Thanks to my testers
+
+- [@mjesticfalco](https://github.com/mjesticfalco) — thank you for the MacBookPro15,4 / Sequoia 15.8.3 reports, safe Butterfly protocol tests, and confirmation of the integrated app, brightness steps, idle timeout and wake response. Your testing helped me bring this model into the release.
+
+I test the original A2141 / MacBookPro16,1 through EasyComp Zeeland. I only list contributors whose testing is documented; I will add other testers when they contribute.
 
 ## Privacy and troubleshooting
 

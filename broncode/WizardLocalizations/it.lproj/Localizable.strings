@@ -52,3 +52,5 @@
 "wizard.quitFirst" = "Chiudi l’app di illuminazione della tastiera e riprova.";
 "wizard.actionFailed" = "Azione non completata";
 "wizard.actionFailedBody" = "Consulta i dettagli dell’errore o crea un rapporto diagnostico.";
+
+"wizard.updateRefused" = "Aggiornamento automatico rifiutato. Controlla versione installata, preferenza e modello supportato.";

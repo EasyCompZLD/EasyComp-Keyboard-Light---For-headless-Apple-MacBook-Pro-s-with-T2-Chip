@@ -4,7 +4,7 @@
 
 This stable release includes the MacBookPro15,4 Butterfly backlight protocol into the regular app and installer. Previously the installer stopped because PID `05ac:027d` was not accepted as a writable backlight interface.
 
-The repository owner approved promotion from beta7.1 on 13 November 2026 after the successful MacBookPro15,4 follow-up. The proven HID protocol bytes and lighting state machine are unchanged. Stable release status covers manual backlight control, the timeout implementation and the native setup workflow; it does not certify original Touch Bar controls or every sleep/session edge case.
+I approved promotion from beta7.1 on 13 November 2026 after the successful MacBookPro15,4 follow-up. The proven HID protocol bytes and lighting state machine are unchanged. Stable release status covers manual backlight control, the timeout implementation and the native setup workflow; it does not certify original Touch Bar controls or every sleep/session edge case.
 
 ## What changed
 
@@ -36,3 +36,9 @@ The ZIP contains one universal Setup app with its backend bundled internally. Th
 ![EasyComp Keyboard Light demonstration](https://raw.githubusercontent.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/v1.2.0/Assets/IMG_0919.gif)
 
 [Full video (WebM)](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/blob/v1.2.0/Assets/IMG_0919.webm?raw=true)
+
+## Thanks to my testers
+
+A special thank you to [@mjesticfalco](https://github.com/mjesticfalco) for testing on MacBookPro15,4 / Sequoia 15.8.3, sharing the read-only reports, confirming the controlled minimum/off experiment, and testing the integrated app, brightness steps, idle timeout and wake response. Your help made this compatibility update possible.
+
+I continue testing the original A2141 / MacBookPro16,1 through EasyComp Zeeland. I will credit additional testers as their contributions are documented.

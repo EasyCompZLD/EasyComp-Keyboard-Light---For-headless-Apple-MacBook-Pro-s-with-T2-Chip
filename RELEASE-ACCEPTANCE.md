@@ -1,6 +1,6 @@
 # Version 1.2.0 release scope and acceptance
 
-The repository owner explicitly approved stable publication on **13 November 2026**, based on existing A2141 operation and the successful MacBookPro15,4 integrated-app follow-up. Additional tester confirmation was not required by the owner. This supersedes the earlier requirement to keep the entire application in beta until every matrix row is checked.
+I explicitly approved stable publication on **13 November 2026**, based on existing A2141 operation and the successful MacBookPro15,4 integrated-app follow-up. I did not require additional tester confirmation. This supersedes the earlier requirement to keep the entire application in beta until every matrix row is checked.
 
 ## Evidence
 
