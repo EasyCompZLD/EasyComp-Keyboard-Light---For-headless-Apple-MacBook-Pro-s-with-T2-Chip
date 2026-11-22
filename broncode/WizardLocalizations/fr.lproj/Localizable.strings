@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Consultez les détails de l’erreur ou créez un rapport de diagnostic.";
 
 "wizard.updateRefused" = "Mise à jour automatique refusée. Vérifiez la version installée, le réglage et le modèle pris en charge.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS refuse l’accès HID";
+"wizard.hidAccessBody" = "macOS refuse l’accès au clavier avant la validation du protocole. Vérifiez la Surveillance de l’entrée pour cette app Setup. Demander l’accès ouvre le dialogue ou les réglages macOS ; réessayez ensuite. Si macOS demande de quitter puis rouvrir Setup, faites-le d’abord. L’app existante et les réglages sont conservés. Si l’accès est déjà activé, créez ici un nouveau rapport de diagnostic.";
+"wizard.hidAccessRequest" = "Demander l’accès…";
+"wizard.hidAccessRetry" = "Réessayer l’installation";
+"wizard.hidAccessStatus" = "Accès HID refusé — vérifiez la Surveillance de l’entrée puis réessayez.";

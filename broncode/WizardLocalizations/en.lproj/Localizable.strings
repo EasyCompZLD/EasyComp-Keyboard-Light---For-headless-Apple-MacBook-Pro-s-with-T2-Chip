@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Open the details for the error. You can also create a diagnostic report.";
 
 "wizard.updateRefused" = "Automatic update was refused. Check the installed version, update preference and supported model.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS refused HID access";
+"wizard.hidAccessBody" = "macOS refused keyboard access before protocol validation. Check Input Monitoring for this Setup app. Request access opens the macOS prompt/settings; then retry installation. If macOS asks you to quit and reopen Setup, do that first. Existing app and settings are kept. If access is already enabled, create a fresh diagnostic report here.";
+"wizard.hidAccessRequest" = "Request access…";
+"wizard.hidAccessRetry" = "Retry installation";
+"wizard.hidAccessStatus" = "HID access refused — check Input Monitoring and retry.";

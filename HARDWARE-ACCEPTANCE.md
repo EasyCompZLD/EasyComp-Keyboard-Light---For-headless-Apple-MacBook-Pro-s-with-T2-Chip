@@ -64,6 +64,12 @@ Beta7.1 integrates this exact model/interface/configuration behind strict gates;
 
 The [beta7.1 follow-up](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6838177188) reports normal compilation, menu bar app launch, working backlight and idle timeout, and response after sleep. The tester is quite sure the 10–100% steps work, while noting difficulty distinguishing some levels. See [beta7.1 acceptance](BETA7.1-ACCEPTANCE.md) for remaining explicit checks. This report does not establish Touch Bar operation, every timeout mode, exact restoration or persistence; issue #2 is not closed automatically. The [isolated research tool](ISSUE2-COMPATIBILITY.md) remains available as historical evidence/reproduction, not the standard installer.
 
+## Issue #7 — stable installer access refusal
+
+The previously successful tester reports `HIDManagerOpen (05ac:027d): 0xe00002e2` with stable 1.2.0 while beta7.1 still lights the keyboard. This happens before configuration validation or GUI installation; it does not independently show a broken Touch Bar or brightness protocol. The current development helper reserves **exit 9** for an observed `kIOReturnNotPermitted` access failure when no write has been attempted. Other manager/device failures remain 4/6, configuration failures 7 and possible partial-write failures 8.
+
+Follow [Issue #7 recovery acceptance](ISSUE7-ACCESS-RECOVERY.md) for the explicit permission action, possible macOS relaunch requirement and fresh read-only retry. The menu bar app and Setup have distinct permission contexts. Leave the working beta available for rollback; do not close the issue or replace the stable release on fixture results alone.
+
 ## Previous test-app cleanup and rollback
 
 The previous `EasyComp Keyboard Light Beta7 Test.app` is historical. If installed, quit it and disable its “Start at login” setting. Its separate LaunchAgent was `~/Library/LaunchAgents/nl.easycompzeeland.KeyboardLight.Beta7Test.plist`. Remove that old test app only after preserving any test results you need. Its preferences are not automatically migrated; the current beta uses the regular installed app's existing preferences.

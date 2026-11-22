@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Sprawdź szczegóły błędu lub utwórz raport diagnostyczny.";
 
 "wizard.updateRefused" = "Odmówiono automatycznej aktualizacji. Sprawdź zainstalowaną wersję, ustawienie i obsługiwany model.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS odmówił dostępu HID";
+"wizard.hidAccessBody" = "macOS odmówił dostępu do klawiatury przed weryfikacją protokołu. Sprawdź Monitorowanie danych wejściowych dla tej aplikacji Setup. Poproś o dostęp otwiera monit lub ustawienia macOS; potem ponów instalację. Jeśli macOS poprosi o zamknięcie i ponowne otwarcie Setup, zrób to najpierw. Aplikacja i ustawienia zostają zachowane. Jeśli dostęp jest już włączony, utwórz tutaj nowy raport.";
+"wizard.hidAccessRequest" = "Poproś o dostęp…";
+"wizard.hidAccessRetry" = "Ponów instalację";
+"wizard.hidAccessStatus" = "Odmowa dostępu HID — sprawdź monitorowanie danych wejściowych i ponów próbę.";

@@ -47,3 +47,5 @@
 "update.installBody" = "De gecontroleerde update stopt de app via Setup, installeert veilig en start de app opnieuw. Je instellingen blijven bewaard.";
 "update.install" = "Update installeren";
 "update.later" = "Later";
+
+"hid.accessDenied" = "HID: toegang geweigerd — open de instellingen voor toetsmonitoring";

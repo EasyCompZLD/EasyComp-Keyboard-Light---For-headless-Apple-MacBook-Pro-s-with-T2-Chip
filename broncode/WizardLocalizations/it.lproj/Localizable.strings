@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Consulta i dettagli dell’errore o crea un rapporto diagnostico.";
 
 "wizard.updateRefused" = "Aggiornamento automatico rifiutato. Controlla versione installata, preferenza e modello supportato.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS ha negato l’accesso HID";
+"wizard.hidAccessBody" = "macOS ha negato l’accesso alla tastiera prima della verifica del protocollo. Controlla Monitoraggio input per questa app Setup. Richiedi accesso apre la richiesta o le impostazioni macOS; poi riprova l’installazione. Se macOS richiede di chiudere e riaprire Setup, fallo prima. App e impostazioni esistenti vengono mantenute. Se l’accesso è già attivo, crea qui un nuovo rapporto diagnostico.";
+"wizard.hidAccessRequest" = "Richiedi accesso…";
+"wizard.hidAccessRetry" = "Riprova installazione";
+"wizard.hidAccessStatus" = "Accesso HID negato — controlla Monitoraggio input e riprova.";

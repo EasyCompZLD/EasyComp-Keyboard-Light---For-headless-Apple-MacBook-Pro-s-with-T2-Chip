@@ -1,11 +1,12 @@
-// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.1.
+// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.2.
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
 import Darwin
+import IOKit.hidsystem
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
-private let versionText = "1.2.1-dev.1"
+private let versionText = "1.2.1-dev.2"
 
 private final class WizardLanguage {
     static let supported: [(code: String, nativeName: String)] = [
@@ -45,6 +46,15 @@ private final class WizardLanguage {
 }
 
 enum SetupOperation { case install, report, build, uninstall }
+
+enum SetupHIDAccess {
+    static func needsRecovery(status: Int32, operation: SetupOperation, output: String) -> Bool {
+        guard operation == .install else { return false }
+        if status == 9 { return true }
+        // Recognize old reports, but never retry a possibly partial write (exit 8).
+        return [4, 6, 7].contains(status) && output.contains("0xe00002e2")
+    }
+}
 
 // Kernel-held advisory lock: released automatically if a Setup process crashes.
 // One user's Setup windows must not replace/remove the same app concurrently.
@@ -114,6 +124,12 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var statusKey = "ready"
     private var lastExitCode: Int32 = 0
     private let installLock = SetupInstallLock()
+    private var requestHIDAccess: () -> Bool = { IOHIDRequestAccess(kIOHIDRequestTypeListenEvent) }
+    private var openHIDPrivacy: () -> Void = {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+            NSWorkspace.shared.open(url)
+        }
+    }
     private let unattendedUpdate = CommandLine.arguments.contains("--automatic-update") || CommandLine.arguments.contains("--confirmed-update")
 
     init(projectDirectory: String, languageCode: String?) {
@@ -384,6 +400,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         else { environment.removeValue(forKey: "ECZ_INSTALL_LANGUAGE") }
         if unattendedUpdate && operation == .install { environment["ECZ_PRESERVE_LOGIN_STATE"] = "1" }
         else { environment.removeValue(forKey: "ECZ_PRESERVE_LOGIN_STATE") }
+        environment["ECZ_SETUP_REQUESTER"] = "nl.easycompzeeland.KeyboardLight.Setup"
+        environment["ECZ_SETUP_VERSION"] = versionText
         p.environment = environment
         let output = Pipe()
         p.standardOutput = output
@@ -494,12 +512,43 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
             statusKey = "failedStatus"
             lastExitCode = statusCode
             refreshTranslations()
+            if SetupHIDAccess.needsRecovery(status: statusCode, operation: operation, output: fullLog) {
+                statusKey = "hidAccessStatus"
+                refreshTranslations()
+                handleHIDAccessResponse(hidAccessAlert().runModal())
+                return
+            }
             let message = NSAlert()
             message.alertStyle = .warning
             message.messageText = T(operation == .install ? "failedTitle" : "actionFailed")
             message.informativeText = T(operation == .install ? "failedBody" : "actionFailedBody")
             message.addButton(withTitle: "OK")
             message.runModal()
+        }
+    }
+    private func hidAccessAlert() -> NSAlert {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = T("hidAccessTitle")
+        alert.informativeText = T("hidAccessBody")
+        alert.addButton(withTitle: T("hidAccessRequest"))
+        alert.addButton(withTitle: T("hidAccessRetry"))
+        alert.addButton(withTitle: T("cancel"))
+        alert.buttons.first?.keyEquivalent = ""
+        alert.buttons.last?.keyEquivalent = "\r"
+        return alert
+    }
+    private func handleHIDAccessResponse(_ response: NSApplication.ModalResponse) {
+        if response == .alertFirstButtonReturn {
+            // Explicit user action only: no automatic permission requests during diagnosis or updates.
+            let granted = requestHIDAccess()
+            let entry = "\nSetup Input Monitoring request: " + (granted ? "granted" : "not granted; review System Settings") + "\n"
+            fullLog += entry
+            details.string += entry
+            openHIDPrivacy()
+        } else if response == .alertSecondButtonReturn {
+            // A fresh installer invocation always repeats its read-only protocol gate before replacement.
+            DispatchQueue.main.async { [weak self] in self?.install() }
         }
     }
     private func showError(_ description: String) {

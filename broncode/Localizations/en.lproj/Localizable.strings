@@ -47,3 +47,5 @@
 "update.installBody" = "The verified update will use Setup to stop the app, install safely and restart it. Your settings are kept.";
 "update.install" = "Install update";
 "update.later" = "Later";
+
+"hid.accessDenied" = "HID: access refused — open Input Monitoring settings";

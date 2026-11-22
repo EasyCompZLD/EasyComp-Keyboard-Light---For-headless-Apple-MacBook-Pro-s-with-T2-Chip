@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.1` (unreleased; published stable is `1.2.0`) (see `VERSION`)
+**Working version:** `1.2.1-dev.2` (unreleased; published stable is `1.2.0`) (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
@@ -11,6 +11,10 @@
 **Current package:** `dist/release/EasyComp-Keyboard-Light.zip`
 
 There is one maintained Swift + C codebase and one cumulative macOS regression suite. The previous beta7 work and its review fixes are already in this branch. Existing production preferences are retained through the same app identity and preference keys. The build script no longer creates a separate Beta7 Test app or preference domain.
+
+## Issue #7 access recovery
+
+I have added a separate HID access-denied result (9), read-only permission diagnostics and an explicit translated Setup request/retry flow. This responds to the stable installer refusal without changing packet bytes or descriptor checks. Input Monitoring is never used as a preflight requirement for successful feature-only access. See [the evidence and acceptance plan](ISSUE7-ACCESS-RECOVERY.md). Physical recovery on the tester’s Sequoia system remains unconfirmed.
 
 ## Next update
 
@@ -67,4 +71,4 @@ I approved stable `v1.2.0` publication on 13 November 2026; see [release scope](
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation for unreleased 1.2.1: 38 macOS tests passed with no failures/skips. The suite includes 45 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.
+Latest local validation for unreleased 1.2.1: 38 macOS tests passed with no failures/skips. The suite includes 58 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.

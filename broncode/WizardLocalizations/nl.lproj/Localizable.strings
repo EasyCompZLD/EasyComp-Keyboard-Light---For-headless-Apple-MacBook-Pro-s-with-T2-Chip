@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Open de details voor de foutmelding. Je kunt ook een probleemrapport maken.";
 
 "wizard.updateRefused" = "Automatisch bijwerken geweigerd. Controleer de geïnstalleerde versie, updatevoorkeur en het ondersteunde model.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS weigert HID-toegang";
+"wizard.hidAccessBody" = "macOS weigert toetsenbordtoegang vóór de protocolcontrole. Controleer Input Monitoring voor deze Setup-app. Toegang aanvragen opent de macOS-melding/instellingen; probeer daarna opnieuw. Vraagt macOS om Setup af te sluiten en te heropenen, doe dat dan eerst. De bestaande app en instellingen blijven behouden. Staat toegang al aan, maak dan hier een nieuw probleemrapport.";
+"wizard.hidAccessRequest" = "Toegang aanvragen…";
+"wizard.hidAccessRetry" = "Installatie opnieuw proberen";
+"wizard.hidAccessStatus" = "HID-toegang geweigerd — controleer Input Monitoring en probeer opnieuw.";

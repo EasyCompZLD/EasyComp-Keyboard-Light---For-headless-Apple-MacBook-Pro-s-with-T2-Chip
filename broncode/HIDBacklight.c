@@ -1,5 +1,5 @@
 /*
- * EasyComp Keyboard Light v1.2.0
+ * EasyComp Keyboard Light v1.2.1-dev.2
  * Backlight backend; no SMC or kernel modifications.
  *
  * IMPORTANT regression fix: do not open an IOHIDManager for all Apple HID
@@ -14,6 +14,7 @@
  */
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOReturn.h>
+#include <IOKit/hidsystem/IOHIDLib.h>
 #include <IOKit/hid/IOHIDManager.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDElement.h>
@@ -27,6 +28,25 @@
 
 #define APPLE_VID 0x05ac
 #define MAGIC_PID 0x8102
+
+/* Diagnose actual access failures, never preemptively block feature-only devices
+ * based on ListenEvent permission. Requesting permission belongs to an explicit GUI action.
+ */
+static int access_denied_seen;
+static void describe_input_access(void) {
+    IOHIDAccessType access=IOHIDCheckAccess(kIOHIDRequestTypeListenEvent);
+    const char *state=access==kIOHIDAccessTypeGranted?"granted":
+                      access==kIOHIDAccessTypeDenied?"denied":"unknown";
+    printf("Input Monitoring (current process context): %s\n",state);
+}
+static void describe_access_error(IOReturn result) {
+    if(result!=kIOReturnNotPermitted)return;
+    access_denied_seen=1;
+    puts("ECZ_HID_ACCESS_DENIED");
+    puts("macOS refused HID access (kIOReturnNotPermitted). This is not a descriptor mismatch.");
+    describe_input_access();
+    puts("Use Setup's explicit Input Monitoring recovery action, then retry the read-only probe. macOS may require relaunching Setup.");
+}
 
 static void set_number(CFMutableDictionaryRef d, CFStringRef key, int n) {
     CFNumberRef v=CFNumberCreate(kCFAllocatorDefault,kCFNumberIntType,&n);
@@ -131,6 +151,7 @@ static void put32(uint8_t *p,uint32_t n){for(int i=0;i<4;i++)p[i]=(uint8_t)(n>>(
 static int butterfly_config(IOHIDDeviceRef d,int *off,int *minB,int *maxB){
     uint8_t rep[64]={0};rep[0]=0xbf;CFIndex size=sizeof(rep);
     IOReturn r=IOHIDDeviceGetReport(d,kIOHIDReportTypeFeature,0xbf,rep,&size);
+    describe_access_error(r);
     printf("Butterfly GetReport 0xBF: status=0x%08x length=%ld\n",(unsigned)r,(long)size);
     if(r!=kIOReturnSuccess){printf("Butterfly read-only configuration error: 0x%08x\n",(unsigned)r);return 0;}
     if(size<8 || size>(CFIndex)sizeof(rep) || rep[0]!=0xbf || rep[1]!=1){
@@ -156,6 +177,7 @@ static int write_butterfly(IOHIDDeviceRef d,const char *mode,double level,int of
 static int issue2_config(IOHIDDeviceRef d){
     uint8_t rep[64]={0xbf};CFIndex size=sizeof(rep);
     IOReturn r=IOHIDDeviceGetReport(d,kIOHIDReportTypeFeature,0xbf,rep,&size);
+    describe_access_error(r);
     printf("MacBookPro15,4 GetReport 0xBF: status=0x%08x\n",(unsigned)r);
     if(r!=kIOReturnSuccess){puts("Configuration read failed; no LED command permitted.");return 0;}
     printf("MacBookPro15,4 returned configuration length=%ld\n",(long)size);
@@ -172,6 +194,7 @@ static int try_issue2(IOHIDDeviceRef *devices,CFIndex count,const char *mode,dou
     if(candidates!=1){puts("No unique validated Butterfly interface; no LED command sent.");return -5;}
     *seen=1;
     IOReturn r=IOHIDDeviceOpen(selected,0);
+    describe_access_error(r);
     printf("MacBookPro15,4 HIDDeviceOpen: 0x%08x\n",(unsigned)r);
     if(r!=kIOReturnSuccess)return -6;
     int rc=-7;
@@ -230,6 +253,7 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
     IOHIDManagerSetDeviceMatching(manager,match);
     CFRelease(match);
     IOReturn r=IOHIDManagerOpen(manager,0);
+    describe_access_error(r);
     if(r!=kIOReturnSuccess){
         printf("HIDManagerOpen (05ac:%04x): 0x%08x\n",pid,(unsigned)r);
         CFRelease(manager);
@@ -254,6 +278,7 @@ static int try_pid(int pid,const char *mode,double level,int *seen){
         printf("Candidate protocol: %s, PID 05ac:%04x\n",magic?"Magic (verified on A2141)":"Butterfly (experimental)",pid);
         *seen=1;
         r=IOHIDDeviceOpen(d,0);
+        describe_access_error(r);
         if(r!=kIOReturnSuccess){printf("HIDDeviceOpen: 0x%08x\n",(unsigned)r);rc=-6;continue;}
         if(butterfly && !butterfly_config(d,&off,&minB,&maxB)){
             puts("Butterfly report 0xBF did not validate; no write performed.");
@@ -286,9 +311,15 @@ cleanup:
     return rc;
 }
 int main(int argc,char **argv){
+    access_denied_seen=0;
     const char *mode=argc>1?argv[1]:"probe";
+    if(!strcmp(mode,"permissions")){
+        if(argc!=2){fputs("Usage: helper permissions\n",stderr);return 2;}
+        puts("Read-only permission status. No HID devices opened, no permission requested, no LED commands sent.");
+        describe_input_access();return 0;
+    }
     if(strcmp(mode,"probe") && strcmp(mode,"diagnose") && strcmp(mode,"on") && strcmp(mode,"off")){
-        fputs("Usage: helper probe | diagnose | on 0.1..1.0 | off\n",stderr);return 2;
+        fputs("Usage: helper permissions | probe | diagnose | on 0.1..1.0 | off\n",stderr);return 2;
     }
     double level=0.5;
     if(!strcmp(mode,"on")){
@@ -309,6 +340,9 @@ int main(int argc,char **argv){
     if(found==0)return 0;
     if(lastError==-8){
         puts("HID write failed; one or more LED commands may have been sent.");return 8;
+    }
+    if(access_denied_seen){
+        puts("HID access refused by macOS; no supported interface was validated. No LED command sent.");return 9;
     }
     puts("No supported backlight interface could be validated; no LED command sent.");
     if(lastError==-4)return 4;

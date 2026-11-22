@@ -47,3 +47,5 @@
 "update.installBody" = "Zweryfikowana aktualizacja użyje Setup do zamknięcia aplikacji, bezpiecznej instalacji i ponownego uruchomienia. Ustawienia zostaną zachowane.";
 "update.install" = "Zainstaluj aktualizację";
 "update.later" = "Później";
+
+"hid.accessDenied" = "HID: odmowa dostępu — otwórz ustawienia monitorowania danych wejściowych";

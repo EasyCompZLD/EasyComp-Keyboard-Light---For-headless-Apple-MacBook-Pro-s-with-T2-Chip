@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Öffne die Details zur Fehlermeldung oder erstelle einen Diagnosebericht.";
 
 "wizard.updateRefused" = "Automatisches Update abgelehnt. Prüfe installierte Version, Update-Einstellung und unterstütztes Modell.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS verweigert HID-Zugriff";
+"wizard.hidAccessBody" = "macOS verweigert den Tastaturzugriff vor der Protokollprüfung. Prüfe die Eingabeüberwachung für diese Setup-App. Zugriff anfordern öffnet den macOS-Dialog bzw. die Einstellungen; versuche danach erneut zu installieren. Falls macOS einen Neustart von Setup verlangt, beende und öffne Setup zuerst. App und Einstellungen bleiben erhalten. Ist der Zugriff bereits erlaubt, erstelle hier einen neuen Diagnosebericht.";
+"wizard.hidAccessRequest" = "Zugriff anfordern…";
+"wizard.hidAccessRetry" = "Installation wiederholen";
+"wizard.hidAccessStatus" = "HID-Zugriff verweigert — Eingabeüberwachung prüfen und erneut versuchen.";

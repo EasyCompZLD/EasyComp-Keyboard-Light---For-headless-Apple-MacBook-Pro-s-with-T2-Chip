@@ -47,3 +47,5 @@
 "update.installBody" = "La actualización verificada usa Setup para cerrar la app, instalar de forma segura y reiniciarla. Se conservan tus ajustes.";
 "update.install" = "Instalar actualización";
 "update.later" = "Más tarde";
+
+"hid.accessDenied" = "HID: acceso denegado — abrir ajustes de monitorización de entrada";
