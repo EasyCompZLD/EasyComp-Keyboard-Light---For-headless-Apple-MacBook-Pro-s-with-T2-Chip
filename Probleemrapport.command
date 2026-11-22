@@ -15,7 +15,7 @@ REASON="${2:-Not provided}"
 EXIT_CODE="${3:-N/A}"
 INSTALL_LOG="${4:-}"
 PROBE_LOG="${5:-}"
-REPORT_VERSION="1.2.1-dev.1"
+REPORT_VERSION="1.2.1-dev.2"
 
 # Reject any unexpected internal invocation rather than interpreting arguments as commands.
 if [[ "$MODE" != manual && "$MODE" != --installer-failure ]]; then
@@ -63,7 +63,7 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
 # Apple vendor/product/usage descriptors are read. Do not collect system_profiler -detailLevel full.
 {
   echo '=== EasyComp Keyboard Light: installation / compatibility report ==='
-  echo "Report schema: 1"
+  echo "Report schema: 2"
   echo "Project version: $REPORT_VERSION"
   echo 'Privacy: no serial numbers, hardware UUID, username, user address or network identity requested.'
   echo 'IMPORTANT: Review this report yourself before pasting it into a public GitHub issue.'
@@ -100,6 +100,16 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
   fi
   echo
   echo '--- Package / autostart ---'
+  if [[ "${ECZ_SETUP_REQUESTER:-}" == 'nl.easycompzeeland.KeyboardLight.Setup' ]]; then
+    echo 'Requester context: Setup GUI (nl.easycompzeeland.KeyboardLight.Setup)'
+    printf 'Setup version: '; safe_value "${ECZ_SETUP_VERSION:-Unknown}"
+  else
+    echo 'Requester context: CLI/unknown launcher; macOS permissions may differ from Setup GUI.'
+  fi
+  if [[ -f "$HERE/broncode/HIDBacklight.c" ]]; then
+    printf 'HID source SHA-256: '
+    /usr/bin/shasum -a 256 "$HERE/broncode/HIDBacklight.c" 2>/dev/null | awk '{print $1}'
+  fi
   [[ -f "$HERE/broncode/HIDBacklight.c" ]] && echo 'HIDBacklight.c: present' || echo 'HIDBacklight.c: missing'
   [[ -f "$HERE/broncode/EasyCompKeyboardLight.swift" ]] && echo 'EasyCompKeyboardLight.swift: present' || echo 'EasyCompKeyboardLight.swift: missing'
   [[ -d "$HERE/Assets/AppIcon.iconset" ]] && echo 'App icon source: present' || echo 'App icon source: missing'
@@ -119,6 +129,7 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
     echo 'Fresh HID descriptor scan (no SetReport / no LED changes):'
     if /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
        "$HERE/broncode/HIDBacklight.c" -o "$TEMP/ecz-t2-diagnostic" >"$TEMP/compile.log" 2>&1; then
+      "$TEMP/ecz-t2-diagnostic" permissions 2>&1 | sanitize
       "$TEMP/ecz-t2-diagnostic" diagnose >"$TEMP/scan.log" 2>&1
       PROBE_RESULT=$?
       printf 'HID diagnostic exit code: %s\n' "$PROBE_RESULT"

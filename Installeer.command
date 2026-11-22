@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.1-dev.1: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.1-dev.2: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -118,7 +118,7 @@ done
 export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
 cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
-printf '\n== EasyComp Keyboard Light 1.2.1-dev.1 ==\n'
+printf '\n== EasyComp Keyboard Light 1.2.1-dev.2 ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
@@ -132,6 +132,9 @@ cat "$PROBE_LOG"
   cat "$PROBE_LOG"
 } >> "$INSTALL_LOG"
 if (( PROBE_STATUS != 0 )); then
+  if (( PROBE_STATUS == 9 )); then
+    fail 'macOS refused HID access (Input Monitoring / requester context). Use the Setup recovery action and retry the read-only probe. No LED command sent.' 9
+  fi
   fail "HID-protocol niet bevestigd: probe exit $PROBE_STATUS. Geen LED-commando verstuurd." "$PROBE_STATUS"
 fi
 grep -q 'Protocolcontrole: OK' "$PROBE_LOG" || fail 'Geen valide HID-reportdescriptor; veilig gestopt.'

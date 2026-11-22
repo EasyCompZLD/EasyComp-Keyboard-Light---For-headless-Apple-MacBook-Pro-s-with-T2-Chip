@@ -8,6 +8,10 @@ A native macOS menu bar app for keyboard backlight control on headless Intel Mac
 
 **Stable version: 1.2.0.** [Download the Setup app](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/download/v1.2.0/EasyComp-Keyboard-Light.zip). Built from the single maintained codebase on `dev/beta`; previous beta releases remain available as history.
 
+## Known installation issue
+
+[@mjesticfalco reports](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7) that beta7.1 still works on MacBookPro15,4, while stable 1.2.0 is refused HID access before installation. I have added explicit permission recovery in the unreleased `1.2.1-dev.2` build. This recovery still needs confirmation on his Mac; I have not changed the proven backlight report bytes. See [Issue #7 diagnosis and acceptance](ISSUE7-ACCESS-RECOVERY.md).
+
 ## Start here
 
 The current local release package is `dist/release/EasyComp-Keyboard-Light.zip`.
@@ -50,7 +54,7 @@ No LED commands are allowed for an unvalidated interface. The proven A2141 repor
 
 ## Automatic updates — in development
 
-I am adding optional automatic stable updates for the next version. This feature is **not included in the published 1.2.0 download**. Once installed, the new app can check GitHub hourly and hand a verified newer stable package to Setup. See [automatic update behavior and limits](AUTO-UPDATES.md) and [next-release draft](NEXT-RELEASE.md). The source checkout is `1.2.1-dev.1`; building it produces a local prerelease in `dist/beta/`.
+I am adding optional automatic stable updates for the next version. This feature is **not included in the published 1.2.0 download**. Once installed, the new app can check GitHub hourly and hand a verified newer stable package to Setup. See [automatic update behavior and limits](AUTO-UPDATES.md) and [next-release draft](NEXT-RELEASE.md). The source checkout is `1.2.1-dev.2`; building it produces a local prerelease in `dist/beta/`.
 
 ## Development and testing
 
@@ -70,7 +74,7 @@ I approved stable publication on 13 November 2026 using the recorded A2141 evide
 
 ## Thanks to my testers
 
-- [@mjesticfalco](https://github.com/mjesticfalco) — thank you for the MacBookPro15,4 / Sequoia 15.8.3 reports, safe Butterfly protocol tests, and confirmation of the integrated app, brightness steps, idle timeout and wake response. Your testing helped me bring this model into the release.
+- [@mjesticfalco](https://github.com/mjesticfalco) — thank you for the MacBookPro15,4 / Sequoia 15.8.3 reports, safe Butterfly protocol tests, and confirmation of the integrated app, brightness steps, idle timeout and wake response. Your testing helped me bring this model into the release, and your later stable-installation report is helping me improve permission recovery.
 
 I test the original A2141 / MacBookPro16,1 through EasyComp Zeeland. I only list contributors whose testing is documented; I will add other testers when they contribute.
 

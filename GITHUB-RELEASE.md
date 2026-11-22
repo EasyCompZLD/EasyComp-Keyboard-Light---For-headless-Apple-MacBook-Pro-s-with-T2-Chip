@@ -21,6 +21,10 @@ I approved promotion from beta7.1 on 13 November 2026 after the successful MacBo
 
 **Hardware follow-up, 13 November 2026:** [the tester reports](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/2#issuecomment-6838177188) normal compilation, menu bar app launch, working keyboard backlight and idle timeout, and backlight response after sleep. The 10–100% steps appear to work, although some brightness differences are hard to distinguish. This is a successful integrated-app report, not a measurement of each brightness level. Exact restoration, manual-off protection, persistence, individual timeout modes and original Touch Bar controls still need explicit confirmation. Other T2 models remain experimental. Issue #2 stays open pending review of the remaining checks.
 
+## Known issue reported after release
+
+I am investigating [Issue #7](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7): the MacBookPro15,4 tester reports that beta7.1 still works while this stable installer is refused HID access with `0xe00002e2`. The refusal happens before protocol validation and app installation. I have prepared an explicit permission recovery path in development; hardware confirmation is still pending. This note does not replace the published archive or claim that the issue is resolved.
+
 ## Install and test
 
 1. Download `EasyComp-Keyboard-Light.zip`, extract it locally and open **EasyComp Keyboard Light Setup.app**.

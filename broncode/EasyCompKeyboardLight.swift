@@ -1,4 +1,4 @@
-// EasyComp Keyboard Light v1.2.1-dev.1
+// EasyComp Keyboard Light v1.2.1-dev.2
 // Native menu bar utility for compatible headless Intel T2 MacBooks.
 // HID hardware control is delegated to the separately verified C helper.
 import AppKit
@@ -6,6 +6,7 @@ import CoreGraphics
 import Foundation
 import Darwin
 import CryptoKit
+import IOKit.hidsystem
 
 // Updates trust this repository over HTTPS, not arbitrary URLs or release text.
 // GitHub's asset digest checks downloaded bytes; ad-hoc signing is not publisher authentication.
@@ -535,7 +536,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         switch hidState {
         case .ready: messageItem.title = T("hid.ready")
         case .succeeded: messageItem.title = T("hid.success")
-        case .failed(let code): messageItem.title = "\(T("hid.error")) \(code)"
+        case .failed(let code): messageItem.title = code == 9 ? T("hid.accessDenied") : "\(T("hid.error")) \(code)"
         case .couldNotStart: messageItem.title = T("hid.launchfailed")
         case .autostartFailed: messageItem.title = T("startup.error")
         }
@@ -951,7 +952,11 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
             NSWorkspace.shared.open(url)
         }
     }
-    @objc private func openInputMonitoring() { openSettings("Privacy_ListenEvent") }
+    @objc private func openInputMonitoring() {
+        // Menu action is explicit consent to request access. Background helper failures never prompt.
+        _ = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
+        openSettings("Privacy_ListenEvent")
+    }
     @objc private func openAccessibility() { openSettings("Privacy_Accessibility") }
 
     @objc private func toggleLogin() {

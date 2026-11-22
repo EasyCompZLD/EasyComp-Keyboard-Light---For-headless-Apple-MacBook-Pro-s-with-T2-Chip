@@ -47,3 +47,5 @@
 "update.installBody" = "Das geprüfte Update beendet die App über Setup, installiert sicher und startet sie neu. Deine Einstellungen bleiben erhalten.";
 "update.install" = "Update installieren";
 "update.later" = "Später";
+
+"hid.accessDenied" = "HID: Zugriff verweigert — Einstellungen zur Eingabeüberwachung öffnen";

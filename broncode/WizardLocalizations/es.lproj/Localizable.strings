@@ -54,3 +54,10 @@
 "wizard.actionFailedBody" = "Consulta los detalles del error o crea un informe de diagnóstico.";
 
 "wizard.updateRefused" = "Actualización automática rechazada. Comprueba la versión instalada, la preferencia y el modelo compatible.";
+
+/* Explicit recovery after macOS rejects HID access. */
+"wizard.hidAccessTitle" = "macOS denegó el acceso HID";
+"wizard.hidAccessBody" = "macOS denegó el acceso al teclado antes de validar el protocolo. Comprueba la monitorización de entrada de esta app Setup. Solicitar acceso abre el aviso o los ajustes de macOS; después reintenta la instalación. Si macOS pide cerrar y volver a abrir Setup, hazlo primero. Se conservan la app y los ajustes existentes. Si el acceso ya está activado, crea aquí un nuevo informe.";
+"wizard.hidAccessRequest" = "Solicitar acceso…";
+"wizard.hidAccessRetry" = "Reintentar instalación";
+"wizard.hidAccessStatus" = "Acceso HID denegado — comprueba la monitorización de entrada y reintenta.";

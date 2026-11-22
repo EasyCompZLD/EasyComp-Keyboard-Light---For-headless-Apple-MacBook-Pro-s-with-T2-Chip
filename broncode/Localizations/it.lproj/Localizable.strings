@@ -47,3 +47,5 @@
 "update.installBody" = "L’aggiornamento verificato usa Setup per chiudere l’app, installare in sicurezza e riavviarla. Le impostazioni vengono mantenute.";
 "update.install" = "Installa aggiornamento";
 "update.later" = "Più tardi";
+
+"hid.accessDenied" = "HID: accesso negato — apri le impostazioni di Monitoraggio input";

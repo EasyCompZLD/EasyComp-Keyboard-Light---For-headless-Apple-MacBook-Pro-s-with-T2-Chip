@@ -33,6 +33,7 @@ class NativeRuntimeTests(unittest.TestCase):
             temp = Path(td)
             (temp/'HIDBacklight.c').write_text((ROOT/'broncode/HIDBacklight.c').read_text())
             (temp/'arguments.c').write_text(r'''
+#define IOHIDCheckAccess fixture_check_access
 #define IOHIDManagerCreate forbidden_manager
 #define IOHIDDeviceGetReport fixture_get_report
 #define IOHIDDeviceSetReport forbidden_write
@@ -42,6 +43,7 @@ class NativeRuntimeTests(unittest.TestCase):
 IOHIDManagerRef forbidden_manager(CFAllocatorRef allocator, IOOptionBits options) {
     (void)allocator; (void)options; abort();
 }
+IOHIDAccessType fixture_check_access(IOHIDRequestType type){ (void)type; return kIOHIDAccessTypeUnknown; }
 static int config_case;
 IOReturn forbidden_write(IOHIDDeviceRef device, IOHIDReportType kind,
                          CFIndex reportID, const uint8_t *bytes, CFIndex length) {

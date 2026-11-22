@@ -18,6 +18,11 @@ extension InstallationWizard {
                            openButton, removeButton, buildButton, detailsButton] {
                 check(button!.intrinsicContentSize.width <= button!.frame.width, "Button title must fit: \(button!.title)")
             }
+            let recovery = hidAccessAlert()
+            check(recovery.messageText == T("hidAccessTitle"), "Translated HID access error")
+            check(recovery.buttons.count == 3 && recovery.buttons.last?.keyEquivalent == "\r", "Access recovery defaults to Cancel")
+            check(recovery.buttons.first?.title == T("hidAccessRequest"), "Explicit request action")
+            check(recovery.buttons[1].title == T("hidAccessRetry"), "Explicit retry action")
             let removal = uninstallConfirmation()
             check(removal.buttons.count == 2 && removal.buttons.last?.keyEquivalent == "\r", "Removal defaults to cancel")
             check(removal.buttons.first?.hasDestructiveAction == true, "Removal is clearly destructive")
@@ -39,6 +44,17 @@ extension InstallationWizard {
                 render(chooser.window.contentView!, name: "language-\(code).png")
             }
         }
+        var permissionRequests = 0, privacyOpens = 0
+        requestHIDAccess = { permissionRequests += 1; return false }
+        openHIDPrivacy = { privacyOpens += 1 }
+        check(permissionRequests == 0, "Building the GUI must not ask for permissions")
+        handleHIDAccessResponse(.alertThirdButtonReturn)
+        check(permissionRequests == 0 && privacyOpens == 0, "Cancel must not request access")
+        handleHIDAccessResponse(.alertFirstButtonReturn)
+        check(permissionRequests == 1 && privacyOpens == 1, "Explicit request uses mocked permission API/settings")
+        // Reset this log so the harmless report fixture below can verify its own completion.
+        fullLog = ""
+        details.string = T("details")
         toggleDetails()
         check(!detailsScroll.isHidden && !buildButton.isHidden && overview.isHidden, "Details disclosure")
         toggleDetails()
@@ -91,3 +107,16 @@ precondition(secondLock.acquire(at: lockURL))
 secondLock.release()
 try? FileManager.default.removeItem(at: lockURL)
 print("Setup cross-instance install lock assertions passed.")
+
+precondition(SetupHIDAccess.needsRecovery(status: 9, operation: .install, output: ""))
+for code: Int32 in [4, 6, 7] {
+    precondition(SetupHIDAccess.needsRecovery(status: code, operation: .install, output: "HIDManagerOpen: 0xe00002e2"))
+    precondition(!SetupHIDAccess.needsRecovery(status: code, operation: .install, output: "0xe00002c7"))
+}
+for code: Int32 in [0, 5, 8] {
+    precondition(!SetupHIDAccess.needsRecovery(status: code, operation: .install, output: "ECZ_HID_ACCESS_DENIED 0xe00002e2"))
+}
+for operation in [SetupOperation.report, .build, .uninstall] {
+    precondition(!SetupHIDAccess.needsRecovery(status: 9, operation: operation, output: "0xe00002e2"))
+}
+print("HID permission recovery classification and explicit consent assertions passed; no real permission requests.")

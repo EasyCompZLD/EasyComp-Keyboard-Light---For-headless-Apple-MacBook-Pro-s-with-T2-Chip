@@ -47,3 +47,5 @@
 "update.installBody" = "La mise à jour vérifiée utilise Setup pour fermer l’app, installer et la relancer. Vos réglages sont conservés.";
 "update.install" = "Installer la mise à jour";
 "update.later" = "Plus tard";
+
+"hid.accessDenied" = "HID : accès refusé — ouvrir les réglages de surveillance de l’entrée";

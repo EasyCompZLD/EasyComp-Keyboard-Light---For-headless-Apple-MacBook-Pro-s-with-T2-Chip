@@ -1,4 +1,6 @@
 /* Every HID API used by the real helper is replaced with a fixture here. */
+#define IOHIDCheckAccess fixture_check_access
+#define IOHIDRequestAccess forbidden_request_access
 #define IOHIDManagerCreate fixture_manager_create
 #define IOHIDManagerSetDeviceMatching fixture_match
 #define IOHIDManagerOpen fixture_manager_open
@@ -25,7 +27,10 @@
 #undef main
 #include <assert.h>
 
-static int manager_calls, opens, reads, writes;
+static int manager_calls, opens, reads, writes, access_checks;
+static IOHIDAccessType access_state=kIOHIDAccessTypeDenied;
+IOHIDAccessType fixture_check_access(IOHIDRequestType type){assert(type==kIOHIDRequestTypeListenEvent);access_checks++;return access_state;}
+bool forbidden_request_access(IOHIDRequestType type){(void)type;abort();}
 static int query_pid, magic, invalid_magic, magic_power=1;
 static int devices_count=1, signature_count=1, bad_descriptor;
 static int vendor=0x05ac, product=0x027d, primary_page=1, primary_usage=6;
@@ -151,8 +156,21 @@ int main(int argc,char **argv){
     else if(!strcmp(scenario,"ambiguous")){devices_count=2;expected=5;expected_writes=0;}
     else if(!strcmp(scenario,"duplicate-signature")){signature_count=2;expected=5;expected_writes=0;}
     else if(!strcmp(scenario,"no-devices")){devices_count=0;expected=5;expected_writes=0;}
-    else if(!strcmp(scenario,"manager-denied")){manager_error=kIOReturnNotPermitted;expected=4;expected_writes=0;}
-    else if(!strcmp(scenario,"device-denied")){open_error=kIOReturnNotPermitted;expected=6;expected_writes=0;}
+    else if(!strcmp(scenario,"manager-denied")){manager_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"device-denied")){open_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"permissions-granted")){args[1]="permissions";access_state=kIOHIDAccessTypeGranted;expected_writes=0;}
+    else if(!strcmp(scenario,"permissions-denied")){args[1]="permissions";expected_writes=0;}
+    else if(!strcmp(scenario,"permissions-unknown")){args[1]="permissions";access_state=kIOHIDAccessTypeUnknown;expected_writes=0;}
+    else if(!strcmp(scenario,"permissions-extra")){args[1]="permissions";expected=2;expected_writes=0;}
+    else if(!strcmp(scenario,"manager-unsupported")){manager_error=kIOReturnUnsupported;expected=4;expected_writes=0;}
+    else if(!strcmp(scenario,"device-unsupported")){open_error=kIOReturnUnsupported;expected=6;expected_writes=0;}
+    else if(!strcmp(scenario,"get-denied")){read_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"manager-denied-probe")){args[1]="probe";manager_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"manager-denied-diagnose")){args[1]="diagnose";manager_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"manager-denied-granted")){access_state=kIOHIDAccessTypeGranted;manager_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"magic-manager-denied")){magic=1;model_name="MacBookPro16,1";manager_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"magic-device-denied")){magic=1;model_name="MacBookPro16,1";open_error=kIOReturnNotPermitted;expected=9;expected_writes=0;}
+    else if(!strcmp(scenario,"magic-permission-not-required")){magic=1;model_name="MacBookPro16,1";expected_writes=2;}
     else if(!strcmp(scenario,"get-unsupported")){read_error=kIOReturnUnsupported;expected=7;expected_writes=0;}
     else if(!strcmp(scenario,"write-unsupported")){write_failure=1;expected=8;}
     else if(!strncmp(scenario,"config-",7)){bad_configuration=atoi(scenario+7);expected=7;expected_writes=0;}
@@ -162,8 +180,12 @@ int main(int argc,char **argv){
     else if(!strcmp(scenario,"magic-probe")){magic=1;args[1]="probe";expected_writes=0;model_name="MacBookPro16,1";}
     else if(!strcmp(scenario,"magic-rejected")){magic=1;invalid_magic=1;expected=5;expected_writes=0;model_name="MacBookPro16,1";}
     else abort();
-    int status=production_backend_main(!strcmp(args[1],"on")?3:2,args);
+    int arg_count=(!strcmp(args[1],"on") || !strcmp(scenario,"permissions-extra"))?3:2;
+    int status=production_backend_main(arg_count,args);
     assert(status==expected && writes==expected_writes);
+    if(!strcmp(args[1],"permissions"))assert(manager_calls==0 && opens==0 && reads==0 && access_checks==(expected==0?1:0));
+    if(status==9)assert(access_checks>0 && writes==0 && access_denied_seen);
+    if(!strcmp(scenario,"magic-permission-not-required"))assert(access_checks==0);
     if(!magic && expected_writes){
         const uint16_t levels[]={0,51,102,154,205,256,307,358,410,461,512};
         int index=!strcmp(args[1],"off")?0:(int)(strtod(args[2],NULL)*10+0.5);

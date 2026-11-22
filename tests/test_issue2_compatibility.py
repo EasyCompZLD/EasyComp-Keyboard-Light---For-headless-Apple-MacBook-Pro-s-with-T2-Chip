@@ -36,6 +36,10 @@ class Issue2CompatibilityTests(unittest.TestCase):
                  'wrong-primary-page','wrong-primary-usage','ambiguous','duplicate-signature',
                  'no-devices','manager-denied','device-denied','get-unsupported','write-unsupported',
                  'magic','magic-off','magic-probe','magic-rejected']
+        cases += ['permissions-granted','permissions-denied','permissions-unknown','permissions-extra',
+                  'manager-unsupported','device-unsupported','get-denied','manager-denied-probe',
+                  'manager-denied-diagnose','manager-denied-granted','magic-manager-denied',
+                  'magic-device-denied','magic-permission-not-required']
         cases += [f'level-{i/10:.1f}' for i in range(1,11)]
         cases += [f'descriptor-{i}' for i in range(1,9)] + [f'config-{i}' for i in range(1,9)]
         with tempfile.TemporaryDirectory(prefix='ecz-production-hid-') as td:
