@@ -36,3 +36,11 @@ Verified locally on **22 November 2026**: 38 Python regression tests passed, zer
 Local checks exercise 58 production-HID scenarios (including manager/device/read denial, generic errors, granted-but-refused context, read-only permission queries and exact Magic packet regression), plus the retained 38 isolated-tool scenarios. Native AppKit fixtures inspect recovery controls in all eight languages, default Cancel, explicit mocked permission/settings calls and error classification without requesting real permissions or running the installer.
 
 The full Python suite, native build, shell syntax, sixteen localization tables, version metadata and exact protocol/rollback comparisons are checked before packaging. Actual TCC attribution, prompts, relaunch requirements and successful installation on the tester’s Sequoia machine remain **pending hardware confirmation**. I have not published a new release, overwritten stable assets or marked Issue #7 resolved.
+
+## Packaged candidate
+
+The local ZIP was built from code commit `51acfe400b7c32b051f321c45d42a1c99c4f3c41`. Package verification confirmed the exact committed sources, version/build 13, all eight recovery languages, SHA-256 and a signed universal Setup containing both x86_64 and arm64 slices. The Intel slice declares a macOS 13.0 minimum. The installed controller is compiled locally by Setup on the target Mac.
+
+The current Apple CLT cross-linker warned that its `libswiftCompatibilityPacks.a` archive contains arm64/arm64e rather than x86_64. Linking and signature/archive verification succeeded, but I have not executed this Setup on Intel. I do not treat the warning as resolved or infer Intel runtime success from the slice inspection. The hardware retest must include actually opening Setup on the tester’s Sequoia system.
+
+Inspection of the locally retained stable 1.2.0 and candidate Setup confirms ad-hoc signing with no TeamIdentifier. This supports investigating signing/requester context, but does not prove which identity macOS used for the reported refusal. The report and GUI recovery are intended to obtain that next observation without changing the HID protocol or resetting permissions.
