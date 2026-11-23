@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Poproś o dostęp…";
 "wizard.hidAccessRetry" = "Ponów instalację";
 "wizard.hidAccessStatus" = "Odmowa dostępu HID — sprawdź monitorowanie danych wejściowych i ponów próbę.";
+
+"wizard.hidAccessGrantedBody" = "Ten Setup zgłasza dozwolone monitorowanie danych wejściowych, ale dostęp HID nadal jest odrzucany. Wielokrotne przełączanie tego samego uprawnienia nie pomaga. Zamknij ten dialog i utwórz tutaj nowy raport, abym mógł porównać Setup i natywny proces HID. Aplikacja i ustawienia zostają zachowane.";

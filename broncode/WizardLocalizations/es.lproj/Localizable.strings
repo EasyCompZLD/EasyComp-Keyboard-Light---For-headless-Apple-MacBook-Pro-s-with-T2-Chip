@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Solicitar acceso…";
 "wizard.hidAccessRetry" = "Reintentar instalación";
 "wizard.hidAccessStatus" = "Acceso HID denegado — comprueba la monitorización de entrada y reintenta.";
+
+"wizard.hidAccessGrantedBody" = "Este Setup indica que la monitorización de entrada está permitida, pero el acceso HID sigue denegado. No sirve activar y desactivar repetidamente el mismo permiso. Cierra este diálogo y crea aquí un informe nuevo para que pueda comparar Setup y el proceso HID nativo. Se conservan la app y los ajustes.";

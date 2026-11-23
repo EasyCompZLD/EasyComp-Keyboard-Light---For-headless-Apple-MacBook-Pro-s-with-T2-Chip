@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Request access…";
 "wizard.hidAccessRetry" = "Retry installation";
 "wizard.hidAccessStatus" = "HID access refused — check Input Monitoring and retry.";
+
+"wizard.hidAccessGrantedBody" = "This Setup reports Input Monitoring as allowed, but HID access is still refused. Repeatedly toggling the same permission is not useful. Cancel this dialog and create a fresh diagnostic report in this window so I can compare Setup and the native HID host. Existing app and settings are kept.";

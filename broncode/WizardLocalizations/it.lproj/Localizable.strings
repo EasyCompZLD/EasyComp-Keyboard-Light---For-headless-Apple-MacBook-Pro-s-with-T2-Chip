@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Richiedi accesso…";
 "wizard.hidAccessRetry" = "Riprova installazione";
 "wizard.hidAccessStatus" = "Accesso HID negato — controlla Monitoraggio input e riprova.";
+
+"wizard.hidAccessGrantedBody" = "Questo Setup indica che Monitoraggio input è consentito, ma l’accesso HID è ancora negato. Non serve attivare e disattivare ripetutamente lo stesso permesso. Chiudi questa finestra e crea qui un nuovo rapporto, così posso confrontare Setup e il processo HID nativo. App e impostazioni vengono mantenute.";

@@ -5,6 +5,7 @@ extension InstallationWizard {
             if !value() { fatalError(message) }
         }
         window.appearance = NSAppearance(named: .aqua)
+        checkHIDAccess = { kIOHIDAccessTypeGranted }
         check(detailsScroll.isHidden, "Technical logs must start collapsed")
         check(buildButton.isHidden, "Build check belongs to advanced details")
         check(!overview.isHidden, "Normal setup instructions must be visible")
@@ -19,6 +20,10 @@ extension InstallationWizard {
                 check(button!.intrinsicContentSize.width <= button!.frame.width, "Button title must fit: \(button!.title)")
             }
             let recovery = hidAccessAlert()
+            check(recovery.informativeText == T("hidAccessGrantedBody"), "Granted Setup must not repeat the same permission advice")
+            checkHIDAccess = { kIOHIDAccessTypeDenied }
+            check(hidAccessAlert().informativeText == T("hidAccessBody"), "Denied Setup has an explicit recovery action")
+            checkHIDAccess = { kIOHIDAccessTypeGranted }
             check(recovery.messageText == T("hidAccessTitle"), "Translated HID access error")
             check(recovery.buttons.count == 3 && recovery.buttons.last?.keyEquivalent == "\r", "Access recovery defaults to Cancel")
             check(recovery.buttons.first?.title == T("hidAccessRequest"), "Explicit request action")
@@ -45,6 +50,7 @@ extension InstallationWizard {
             }
         }
         var permissionRequests = 0, privacyOpens = 0
+        checkHIDAccess = { kIOHIDAccessTypeGranted }
         requestHIDAccess = { permissionRequests += 1; return false }
         openHIDPrivacy = { privacyOpens += 1 }
         check(permissionRequests == 0, "Building the GUI must not ask for permissions")

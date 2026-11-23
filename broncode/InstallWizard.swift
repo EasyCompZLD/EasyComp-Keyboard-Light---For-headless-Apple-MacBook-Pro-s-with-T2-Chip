@@ -1,4 +1,4 @@
-// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.2.
+// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.3.
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
@@ -6,7 +6,7 @@ import Darwin
 import IOKit.hidsystem
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
-private let versionText = "1.2.1-dev.2"
+private let versionText = "1.2.1-dev.3"
 
 private final class WizardLanguage {
     static let supported: [(code: String, nativeName: String)] = [
@@ -124,6 +124,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var statusKey = "ready"
     private var lastExitCode: Int32 = 0
     private let installLock = SetupInstallLock()
+    private var checkHIDAccess: () -> IOHIDAccessType = { IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) }
     private var requestHIDAccess: () -> Bool = { IOHIDRequestAccess(kIOHIDRequestTypeListenEvent) }
     private var openHIDPrivacy: () -> Void = {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
@@ -402,6 +403,10 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         else { environment.removeValue(forKey: "ECZ_PRESERVE_LOGIN_STATE") }
         environment["ECZ_SETUP_REQUESTER"] = "nl.easycompzeeland.KeyboardLight.Setup"
         environment["ECZ_SETUP_VERSION"] = versionText
+        environment["ECZ_SETUP_HID_HOST"] = Bundle.main.executableURL?.path
+        environment["ECZ_SETUP_NAME"] = Bundle.main.bundleURL.lastPathComponent
+        let access = checkHIDAccess()
+        environment["ECZ_SETUP_GUI_ACCESS"] = access == kIOHIDAccessTypeGranted ? "granted" : access == kIOHIDAccessTypeDenied ? "denied" : "unknown"
         p.environment = environment
         let output = Pipe()
         p.standardOutput = output
@@ -530,7 +535,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = T("hidAccessTitle")
-        alert.informativeText = T("hidAccessBody")
+        alert.informativeText = T(checkHIDAccess() == kIOHIDAccessTypeGranted ? "hidAccessGrantedBody" : "hidAccessBody")
         alert.addButton(withTitle: T("hidAccessRequest"))
         alert.addButton(withTitle: T("hidAccessRetry"))
         alert.addButton(withTitle: T("cancel"))
@@ -667,6 +672,18 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
 }
 
 #if !ECZ_TESTS
+let hidArguments = Array(CommandLine.arguments.dropFirst())
+if hidArguments.first == "--ecz-hid" {
+    guard hidArguments.count == 2 || hidArguments.count == 3 else { exit(2) }
+    print("HID host: signed Setup read-only executable")
+    let result = hidArguments[1].withCString { mode in
+        if hidArguments.count == 3 {
+            return hidArguments[2].withCString { ECZBacklightRun(mode, $0, 1) }
+        }
+        return ECZBacklightRun(mode, nil, 1)
+    }
+    exit(result)
+}
 let app = NSApplication.shared
 let bundledProject = Bundle.main.resourceURL!.appendingPathComponent("Project")
 let fallbackProject = FileManager.default.fileExists(atPath: bundledProject.path)

@@ -22,9 +22,17 @@
 #define IOHIDDeviceSetReport fixture_set
 #define IOHIDDeviceConformsTo fixture_conforms
 #define sysctlbyname fixture_sysctl
+#ifdef ECZ_TEST_BRIDGE
+#include "HIDBridge.c"
+static int bridge_readonly,bridge_nullmode;
+static int production_backend_main(int argc,char **argv) {
+    return ECZBacklightRun(bridge_nullmode?NULL:argv[1],argc>2?argv[2]:NULL,bridge_readonly);
+}
+#else
 #define main production_backend_main
 #include "HIDBacklight.c"
 #undef main
+#endif
 #include <assert.h>
 
 static int manager_calls, opens, reads, writes, access_checks;
@@ -148,6 +156,14 @@ int main(int argc,char **argv){
     else if(!strcmp(scenario,"diagnose")){args[1]="diagnose";expected_writes=0;}
     else if(!strcmp(scenario,"off")){args[1]="off";}
     else if(!strncmp(scenario,"level-",6)){args[2]=(char *)scenario+6;}
+    #ifdef ECZ_TEST_BRIDGE
+    else if(!strcmp(scenario,"bridge-readonly-on")){bridge_readonly=1;expected=2;expected_writes=0;}
+    else if(!strcmp(scenario,"bridge-readonly-off")){bridge_readonly=1;args[1]="off";expected=2;expected_writes=0;}
+    else if(!strcmp(scenario,"bridge-readonly-probe")){bridge_readonly=1;args[1]="probe";expected_writes=0;}
+    else if(!strcmp(scenario,"bridge-readonly-diagnose")){bridge_readonly=1;args[1]="diagnose";expected_writes=0;}
+    else if(!strcmp(scenario,"bridge-readonly-permissions")){bridge_readonly=1;args[1]="permissions";expected_writes=0;}
+    else if(!strcmp(scenario,"bridge-null-mode")){bridge_nullmode=1;expected=2;expected_writes=0;}
+#endif
     else if(!strcmp(scenario,"wrong-model")){model_name="MacBookPro16,1";expected=5;expected_writes=0;}
     else if(!strcmp(scenario,"unknown-product")){product=0x027b;expected=5;expected_writes=0;}
     else if(!strcmp(scenario,"unknown-vendor")){vendor=1;expected=5;expected_writes=0;}
@@ -183,6 +199,9 @@ int main(int argc,char **argv){
     int arg_count=(!strcmp(args[1],"on") || !strcmp(scenario,"permissions-extra"))?3:2;
     int status=production_backend_main(arg_count,args);
     assert(status==expected && writes==expected_writes);
+#ifdef ECZ_TEST_BRIDGE
+    if(expected==2)assert(manager_calls==0 && opens==0 && reads==0 && writes==0);
+#endif
     if(!strcmp(args[1],"permissions"))assert(manager_calls==0 && opens==0 && reads==0 && access_checks==(expected==0?1:0));
     if(status==9)assert(access_checks>0 && writes==0 && access_denied_seen);
     if(!strcmp(scenario,"magic-permission-not-required"))assert(access_checks==0);

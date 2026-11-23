@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.2` (unreleased; published stable is `1.2.0`) (see `VERSION`)
+**Working version:** `1.2.1-dev.3` (unreleased; published stable is `1.2.0`) (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
@@ -12,9 +12,9 @@
 
 There is one maintained Swift + C codebase and one cumulative macOS regression suite. The previous beta7 work and its review fixes are already in this branch. Existing production preferences are retained through the same app identity and preference keys. The build script no longer creates a separate Beta7 Test app or preference domain.
 
-## Issue #7 access recovery
+## Issue #7 native execution context
 
-I have added a separate HID access-denied result (9), read-only permission diagnostics and an explicit translated Setup request/retry flow. This responds to the stable installer refusal without changing packet bytes or descriptor checks. Input Monitoring is never used as a preflight requirement for successful feature-only access. See [the evidence and acceptance plan](ISSUE7-ACCESS-RECOVERY.md). Physical recovery on the tester’s Sequoia system remains unconfirmed.
+The dev.2 permission/retry UI did not resolve the tester’s failure. I have moved GUI HID commands to worker modes of the signed Setup/controller executables, linking the canonical C driver through HIDBridge.c. Setup workers reject writes; the installed controller retains its serialized queue/watchdog. The installer never skips its real read-only probe. Host selection verifies signature, identity, version and a source digest; GUI mismatches fail closed with exit 10. The standalone CLI helper remains available for source workflows. See [current evidence and acceptance](ISSUE7-ACCESS-RECOVERY.md).
 
 ## Next update
 
@@ -71,4 +71,4 @@ I approved stable `v1.2.0` publication on 13 November 2026; see [release scope](
 
 See [the GUI simplification review](GUI-SIMPLIFICATION.md) for the single Setup app, language-first flow, internal backend packaging, safe action lifecycle and acceptance limits.
 
-Latest local validation for unreleased 1.2.1: 38 macOS tests passed with no failures/skips. The suite includes 58 production-HID fixture scenarios and 38 isolated-tool scenarios. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.
+Latest local validation for unreleased 1.2.1: 41 macOS tests passed with no failures/skips. The suite includes 58 standalone production-HID cases, 64 native bridge cases and 38 isolated-tool cases. Native build, both metadata files, eight app/eight setup languages and shell syntax passed. A subsequent hardware follow-up is recorded in BETA7.1-ACCEPTANCE.md; the remaining explicit checks are not marked complete.

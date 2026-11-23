@@ -22,6 +22,7 @@ jobs:
           bash -n legacy/Install.command
           bash -n scripts/cli-i18n.sh
           bash -n scripts/developer-tools.sh
+          bash -n scripts/native-hid.sh
           bash -n scripts/build-beta.sh
           bash -n scripts/build-release.sh
           bash -n scripts/build-issue2-test.sh

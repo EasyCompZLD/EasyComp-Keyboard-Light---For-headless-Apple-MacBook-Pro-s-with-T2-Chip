@@ -32,6 +32,12 @@ class Issue2CompatibilityTests(unittest.TestCase):
                     self.assertIn('no real HID APIs invoked',result.stdout)
 
     def test_integrated_production_protocol_and_magic_regression(self):
+        self.run_production_fixture(bridge=False)
+
+    def test_native_bridge_retains_protocol_and_read_only_boundary(self):
+        self.run_production_fixture(bridge=True)
+
+    def run_production_fixture(self, bridge):
         cases = ['probe','diagnose','off','wrong-model','unknown-product','unknown-vendor',
                  'wrong-primary-page','wrong-primary-usage','ambiguous','duplicate-signature',
                  'no-devices','manager-denied','device-denied','get-unsupported','write-unsupported',
@@ -42,11 +48,14 @@ class Issue2CompatibilityTests(unittest.TestCase):
                   'magic-device-denied','magic-permission-not-required']
         cases += [f'level-{i/10:.1f}' for i in range(1,11)]
         cases += [f'descriptor-{i}' for i in range(1,9)] + [f'config-{i}' for i in range(1,9)]
+        if bridge:
+            cases += ['bridge-readonly-on','bridge-readonly-off','bridge-readonly-probe',
+                      'bridge-readonly-diagnose','bridge-readonly-permissions','bridge-null-mode']
         with tempfile.TemporaryDirectory(prefix='ecz-production-hid-') as td:
             temp = Path(td)
-            for source in ['broncode/HIDBacklight.c','tests/fixtures/production_hid_fixture.c']:
+            for source in ['broncode/HIDBacklight.c','broncode/HIDBridge.c','broncode/HIDBridge.h','tests/fixtures/production_hid_fixture.c']:
                 (temp/Path(source).name).write_text((ROOT/source).read_text())
-            build = subprocess.run(['xcrun','clang','-Wall','-Wextra',str(temp/'production_hid_fixture.c'),
+            build = subprocess.run(['xcrun','clang','-Wall','-Wextra',*(['-DECZ_TEST_BRIDGE'] if bridge else []),str(temp/'production_hid_fixture.c'),
                                     '-framework','IOKit','-framework','CoreFoundation',
                                     '-o',str(temp/'fixture')],capture_output=True,text=True,timeout=60)
             self.assertEqual(build.returncode,0,build.stdout+build.stderr)

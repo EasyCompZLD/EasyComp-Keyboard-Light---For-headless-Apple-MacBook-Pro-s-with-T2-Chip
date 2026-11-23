@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Toegang aanvragen…";
 "wizard.hidAccessRetry" = "Installatie opnieuw proberen";
 "wizard.hidAccessStatus" = "HID-toegang geweigerd — controleer Input Monitoring en probeer opnieuw.";
+
+"wizard.hidAccessGrantedBody" = "Deze Setup meldt dat Input Monitoring is toegestaan, maar HID-toegang wordt nog geweigerd. Dezelfde toestemming steeds omzetten helpt dan niet. Sluit dit venster en maak hier een nieuw probleemrapport, zodat ik Setup en het native HID-programma kan vergelijken. De bestaande app en instellingen blijven behouden.";

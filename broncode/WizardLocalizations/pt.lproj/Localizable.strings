@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Pedir acesso…";
 "wizard.hidAccessRetry" = "Tentar instalar novamente";
 "wizard.hidAccessStatus" = "Acesso HID recusado — verifique a Monitorização de Entrada e tente novamente.";
+
+"wizard.hidAccessGrantedBody" = "Este Setup indica que a Monitorização de Entrada está permitida, mas o acesso HID continua recusado. Alternar repetidamente a mesma permissão não ajuda. Feche este diálogo e crie aqui um novo relatório para eu comparar o Setup e o processo HID nativo. A aplicação e as definições são mantidas.";

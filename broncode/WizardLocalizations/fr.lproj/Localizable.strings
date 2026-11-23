@@ -61,3 +61,5 @@
 "wizard.hidAccessRequest" = "Demander l’accès…";
 "wizard.hidAccessRetry" = "Réessayer l’installation";
 "wizard.hidAccessStatus" = "Accès HID refusé — vérifiez la Surveillance de l’entrée puis réessayez.";
+
+"wizard.hidAccessGrantedBody" = "Ce Setup indique que la Surveillance de l’entrée est autorisée, mais l’accès HID reste refusé. Réactiver sans cesse la même permission n’est pas utile. Fermez ce dialogue et créez ici un nouveau rapport pour que je puisse comparer Setup et l’hôte HID natif. L’app et les réglages sont conservés.";

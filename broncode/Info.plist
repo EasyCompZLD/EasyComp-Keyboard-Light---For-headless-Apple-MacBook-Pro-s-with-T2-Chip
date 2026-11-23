@@ -15,9 +15,11 @@
       <string>es</string><string>it</string><string>pt</string><string>pl</string>
     </array>
     <key>CFBundleShortVersionString</key><string>1.2.1</string>
-    <key>CFBundleVersion</key><string>13</string>
-    <key>ECZDevelopmentVersion</key><string>1.2.1-dev.2</string>
-    <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>CFBundleVersion</key><string>14</string>
+    <key>ECZDevelopmentVersion</key><string>1.2.1-dev.3</string>
+    <key>ECZHIDHostProtocol</key><integer>1</integer>
+  <key>ECZHIDSourceSHA</key><string>BUILD_TIME</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
 </dict></plist>

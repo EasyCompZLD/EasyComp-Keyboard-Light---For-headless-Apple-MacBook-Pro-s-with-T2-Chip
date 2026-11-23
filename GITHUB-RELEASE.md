@@ -23,7 +23,7 @@ I approved promotion from beta7.1 on 13 November 2026 after the successful MacBo
 
 ## Known issue reported after release
 
-I am investigating [Issue #7](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7): the MacBookPro15,4 tester reports that beta7.1 still works while this stable installer is refused HID access with `0xe00002e2`. The refusal happens before protocol validation and app installation. I have prepared an explicit permission recovery path in development; hardware confirmation is still pending. This note does not replace the published archive or claim that the issue is resolved.
+I am investigating [Issue #7](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7): the MacBookPro15,4 tester reports that beta7.1 still works while this stable installer is refused HID access with `0xe00002e2`. The refusal happens before protocol validation and app installation. The dev.2 permission-recovery test did not resolve the refusal after permission was enabled and Setup relaunched. I am investigating the execution context and testing a native signed-executable worker in development; hardware confirmation is still pending. This note does not replace the published archive or claim that the issue is resolved.
 
 ## Install and test
 
