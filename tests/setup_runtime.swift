@@ -5,6 +5,7 @@ extension InstallationWizard {
             if !value() { fatalError(message) }
         }
         window.appearance = NSAppearance(named: .aqua)
+        checkHIDAccess = { kIOHIDAccessTypeGranted }
         check(detailsScroll.isHidden, "Technical logs must start collapsed")
         check(buildButton.isHidden, "Build check belongs to advanced details")
         check(!overview.isHidden, "Normal setup instructions must be visible")
@@ -15,14 +16,23 @@ extension InstallationWizard {
             check(openButton.title == T("openApp"), "Translated open button")
             check(removeButton.title == T("uninstall"), "Translated uninstall button")
             for button in [installButton, reportButton, copyButton, issuesButton, closeButton,
-                           openButton, removeButton, buildButton, detailsButton] {
+                           openButton, removeButton, accessButton, buildButton, detailsButton] {
                 check(button!.intrinsicContentSize.width <= button!.frame.width, "Button title must fit: \(button!.title)")
             }
             let recovery = hidAccessAlert()
+            check(recovery.informativeText == T("hidAccessGrantedBody"), "Granted Setup must not repeat the same permission advice")
+            checkHIDAccess = { kIOHIDAccessTypeDenied }
+            check(hidAccessAlert().informativeText == T("hidAccessBody"), "Denied Setup has an explicit recovery action")
+            checkHIDAccess = { kIOHIDAccessTypeGranted }
             check(recovery.messageText == T("hidAccessTitle"), "Translated HID access error")
-            check(recovery.buttons.count == 3 && recovery.buttons.last?.keyEquivalent == "\r", "Access recovery defaults to Cancel")
+            check(recovery.buttons.count == 4 && recovery.buttons.last?.keyEquivalent == "\r", "Access recovery defaults to Cancel")
             check(recovery.buttons.first?.title == T("hidAccessRequest"), "Explicit request action")
             check(recovery.buttons[1].title == T("hidAccessRetry"), "Explicit retry action")
+            check(!accessButton.isHidden && accessButton.title == T("hidAccessButton"), "Access recovery is available before installation")
+            let reset = hidResetConfirmation()
+            check(reset.buttons.count == 2 && reset.buttons.last?.keyEquivalent == "\r", "Permission reset defaults to Cancel")
+            check(reset.buttons.first?.hasDestructiveAction == true, "Permission reset is explicitly marked")
+            check(!busy && lastHIDResetStatus == nil, "Building dialogs does not reset permission")
             let removal = uninstallConfirmation()
             check(removal.buttons.count == 2 && removal.buttons.last?.keyEquivalent == "\r", "Removal defaults to cancel")
             check(removal.buttons.first?.hasDestructiveAction == true, "Removal is clearly destructive")
@@ -45,13 +55,31 @@ extension InstallationWizard {
             }
         }
         var permissionRequests = 0, privacyOpens = 0
+        checkHIDAccess = { kIOHIDAccessTypeGranted }
         requestHIDAccess = { permissionRequests += 1; return false }
         openHIDPrivacy = { privacyOpens += 1 }
         check(permissionRequests == 0, "Building the GUI must not ask for permissions")
-        handleHIDAccessResponse(.alertThirdButtonReturn)
+        handleHIDAccessResponse(NSApplication.ModalResponse(rawValue: 1003))
         check(permissionRequests == 0 && privacyOpens == 0, "Cancel must not request access")
         handleHIDAccessResponse(.alertFirstButtonReturn)
         check(permissionRequests == 1 && privacyOpens == 1, "Explicit request uses mocked permission API/settings")
+        var resetCalls = 0, resetResults = 0
+        var completeReset: ((Int32) -> Void)?
+        resetHIDAccess = { completion in resetCalls += 1; completeReset = completion }
+        presentHIDResetResult = { _ in resetResults += 1 }
+        beginHIDReset(.alertSecondButtonReturn)
+        check(resetCalls == 0, "Cancelling confirmation must not reset permission")
+        for result: Int32 in [0, 1, -1] {
+            beginHIDReset(.alertFirstButtonReturn)
+            check(busy && !accessButton.isEnabled && !installButton.isEnabled, "Reset prevents concurrent install or reset")
+            let count = resetCalls
+            beginHIDReset(.alertFirstButtonReturn)
+            check(resetCalls == count, "Busy reset cannot run twice")
+            completeReset?(result)
+            check(!busy && lastHIDResetStatus == result && accessButton.isEnabled, "Reset completion restores controls and records success/failure")
+        }
+        check(resetCalls == 3 && resetResults == 3, "Each explicit reset reports its result")
+        check(permissionRequests == 1 && privacyOpens == 1, "Reset does not grant/request access or open settings automatically")
         // Reset this log so the harmless report fixture below can verify its own completion.
         fullLog = ""
         details.string = T("details")
@@ -63,7 +91,7 @@ extension InstallationWizard {
         let fixture = project.appendingPathComponent("Fixture.command")
         try! Data("#!/bin/bash\nprintf 'fixture output\\n'\nprintf 'Saved report: %s\\n' \"$1\"\n".utf8).write(to: fixture)
         start("Fixture.command", arguments: [report.path], operation: .report)
-        check(busy && !installButton.isEnabled && !removeButton.isEnabled && !languagePopup.isEnabled, "No concurrent actions")
+        check(busy && !installButton.isEnabled && !removeButton.isEnabled && !accessButton.isEnabled && !languagePopup.isEnabled, "No concurrent actions")
         let deadline = Date().addingTimeInterval(10)
         while busy && Date() < deadline { RunLoop.main.run(until: Date().addingTimeInterval(0.01)) }
         check(!busy, "Fixture must finish")

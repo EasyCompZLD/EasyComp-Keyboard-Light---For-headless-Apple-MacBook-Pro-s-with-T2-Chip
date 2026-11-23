@@ -61,3 +61,14 @@
 "wizard.hidAccessRequest" = "Zugriff anfordern…";
 "wizard.hidAccessRetry" = "Installation wiederholen";
 "wizard.hidAccessStatus" = "HID-Zugriff verweigert — Eingabeüberwachung prüfen und erneut versuchen.";
+
+"wizard.hidAccessGrantedBody" = "Dieses Setup meldet erlaubte Eingabeüberwachung, aber HID-Zugriff wird weiterhin verweigert. Wiederholtes Umschalten derselben Berechtigung hilft dann nicht. Schließe diesen Dialog und erstelle hier einen neuen Diagnosebericht, damit ich Setup und den nativen HID-Host vergleichen kann. App und Einstellungen bleiben erhalten.";
+
+"wizard.hidAccessButton" = "Tastaturzugriff…";
+"wizard.hidResetAction" = "Setup-Berechtigung löschen…";
+"wizard.hidResetTitle" = "Nur die Setup-Berechtigung löschen?";
+"wizard.hidResetBody" = "Dies löscht nur die Berechtigung zur Eingabeüberwachung für EasyComp Keyboard Light Setup, damit macOS erneut fragen kann. Es gewährt keinen Zugriff, ändert keine Berechtigung der installierten App, löscht keine Einstellungen und sendet keine LED-Befehle. Eine veraltete Berechtigung ist nur eine vermutete Ursache. Fortfahren?";
+"wizard.hidResetDoneTitle" = "Setup-Berechtigung gelöscht";
+"wizard.hidResetDoneBody" = "Beende dieses Setup und öffne dieselbe Kopie erneut. Wähle Tastaturzugriff und dann Zugriff anfordern und erlaube diesem Setup den Zugriff in macOS. Öffne es erneut, falls macOS dazu auffordert. Wiederhole danach die Installation oder erstelle einen neuen Bericht. Das Löschen bestätigt keine Behebung des HID-Problems.";
+"wizard.hidResetFailedTitle" = "Setup-Berechtigung nicht gelöscht";
+"wizard.hidResetFailedBody" = "Ich konnte die Berechtigung zur Eingabeüberwachung von Setup nicht löschen. Es gab keinen automatischen erneuten Versuch und keine Zugriffsanfrage. Erstelle hier einen neuen Bericht, damit ich das Ergebnis prüfen kann.";

@@ -61,3 +61,14 @@
 "wizard.hidAccessRequest" = "Demander l’accès…";
 "wizard.hidAccessRetry" = "Réessayer l’installation";
 "wizard.hidAccessStatus" = "Accès HID refusé — vérifiez la Surveillance de l’entrée puis réessayez.";
+
+"wizard.hidAccessGrantedBody" = "Ce Setup indique que la Surveillance de l’entrée est autorisée, mais l’accès HID reste refusé. Réactiver sans cesse la même permission n’est pas utile. Fermez ce dialogue et créez ici un nouveau rapport pour que je puisse comparer Setup et l’hôte HID natif. L’app et les réglages sont conservés.";
+
+"wizard.hidAccessButton" = "Accès au clavier…";
+"wizard.hidResetAction" = "Réinitialiser l’accès de Setup…";
+"wizard.hidResetTitle" = "Réinitialiser uniquement l’accès de Setup ?";
+"wizard.hidResetBody" = "Cela efface uniquement l’autorisation de surveillance de l’entrée d’EasyComp Keyboard Light Setup pour que macOS puisse la redemander. Aucun accès n’est accordé, aucune autorisation de l’app installée ni aucun réglage n’est modifié et aucune commande LED n’est envoyée. Une autorisation obsolète n’est qu’une cause supposée. Continuer ?";
+"wizard.hidResetDoneTitle" = "Autorisation de Setup réinitialisée";
+"wizard.hidResetDoneBody" = "Quittez ce Setup puis rouvrez la même copie. Choisissez Accès au clavier puis Demander l’accès et autorisez ce Setup dans macOS. Rouvrez-le si macOS le demande, puis réessayez l’installation ou créez un rapport. Cette réinitialisation ne prouve pas que le problème HID est résolu.";
+"wizard.hidResetFailedTitle" = "Échec de la réinitialisation";
+"wizard.hidResetFailedBody" = "Je n’ai pas pu effacer l’autorisation de surveillance de l’entrée de Setup. Aucune nouvelle tentative ni demande d’accès automatique n’a eu lieu. Créez ici un nouveau rapport pour que je puisse vérifier le résultat.";

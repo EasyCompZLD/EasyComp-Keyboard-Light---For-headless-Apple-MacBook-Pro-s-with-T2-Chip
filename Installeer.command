@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.1-dev.2: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.1-dev.4: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -7,6 +7,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 source "$HERE/scripts/cli-i18n.sh"
 source "$HERE/scripts/developer-tools.sh"
+source "$HERE/scripts/native-hid.sh"
 APP="$HOME/Applications/EasyComp Keyboard Light.app"
 LABEL='nl.easycompzeeland.KeyboardLight'
 AGENT="$HOME/Library/LaunchAgents/$LABEL.plist"
@@ -117,15 +118,19 @@ done
 # Compile stable local snapshots even when the checkout is on an SMB share.
 export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
-cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
-printf '\n== EasyComp Keyboard Light 1.2.1-dev.2 ==\n'
+cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/HIDBridge.c" "$HERE/broncode/HIDBridge.h" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
+printf '\n== EasyComp Keyboard Light 1.2.1-dev.4 ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
   "$WORK/HIDBacklight.c" -o "$WORK/ecz-t2-backlight"
 CURRENT_STAGE='Read-only HID protocol probe'
 PROBE_STATUS=0
-"$WORK/ecz-t2-backlight" probe >"$PROBE_LOG" 2>&1 || PROBE_STATUS=$?
+if ! ecz_hid_select_host "$HERE"; then
+  fail 'Signed Setup HID host failed identity/source/signature validation; no probe or replacement performed.' 10
+fi
+if [[ "$ECZ_HID_HOST_ACTIVE" == 0 ]]; then ECZ_HID_RUNNER=("$WORK/ecz-t2-backlight"); fi
+"${ECZ_HID_RUNNER[@]}" probe >"$PROBE_LOG" 2>&1 || PROBE_STATUS=$?
 cat "$PROBE_LOG"
 {
   echo "=== HID probe (exit $PROBE_STATUS) ==="
@@ -141,7 +146,10 @@ grep -q 'Protocolcontrole: OK' "$PROBE_LOG" || fail 'Geen valide HID-reportdescr
 
 echo "ECZ_STEP:2"
 echo "$(ecz_t boot.bundle)"
+run_step 'Compile native HID bridge' /usr/bin/xcrun clang -O2 -Wall -Wextra -c \
+  "$WORK/HIDBridge.c" -o "$WORK/hid.o"
 run_step 'Compile Swift app' /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
+  -import-objc-header "$WORK/HIDBridge.h" "$WORK/hid.o" -framework IOKit -framework CoreFoundation \
   "$WORK/EasyCompKeyboardLight.swift" -o "$WORK/EasyCompKeyboardLight"
 
 echo "ECZ_STEP:3"
@@ -153,6 +161,7 @@ cp -R "$HERE/broncode/Localizations/"*.lproj "$CONTENTS/Resources/"
 cp "$WORK/ecz-t2-backlight" "$CONTENTS/MacOS/ecz-t2-backlight"
 cp "$WORK/EasyCompKeyboardLight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
 cp "$HERE/broncode/Info.plist" "$CONTENTS/Info.plist"
+ecz_hid_stamp "$WORK" "$CONTENTS/Info.plist"
 chmod 755 "$CONTENTS/MacOS/ecz-t2-backlight" "$CONTENTS/MacOS/EasyCompKeyboardLight"
 run_step 'Validate Info.plist' /usr/bin/plutil -lint "$CONTENTS/Info.plist"
 run_step 'Ad-hoc sign staged app' /usr/bin/codesign --force --deep --sign - "$STAGE_APP"

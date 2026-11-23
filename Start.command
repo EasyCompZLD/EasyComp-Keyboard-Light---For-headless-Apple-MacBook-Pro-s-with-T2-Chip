@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light 1.2.1-dev.2
+# EasyComp Keyboard Light 1.2.1-dev.4
 # First-run bootstrap: compile a REAL native Mach-O .app on this Mac, then open it.
 # This .command is the entry point for new installations and keeps an error log.
 set -Eeuo pipefail
@@ -8,6 +8,7 @@ PROJECT="$(cd "$(dirname "$0")" && pwd -P)"
 # Localized messages and user-selected language. Original technical filenames remain stable.
 source "$PROJECT/scripts/cli-i18n.sh"
 source "$PROJECT/scripts/developer-tools.sh"
+source "$PROJECT/scripts/native-hid.sh"
 REQUESTED_LANGUAGE="${ECZ_INSTALL_LANGUAGE:-auto}"
 APP="$HOME/Library/Application Support/EasyComp Keyboard Light/EasyComp Keyboard Light Setup.app"
 ISSUE_URL='https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md'
@@ -49,7 +50,7 @@ trap finish EXIT
 # Terminal output is also recorded locally. This bootstrap intentionally never
 # sends the report or any collected information to GitHub.
 exec > >(tee -a "$LOG") 2>&1
-printf '\n== EasyComp Keyboard Light 1.2.1-dev.2 — %s ==\n' "$(ecz_t boot.title)"
+printf '\n== EasyComp Keyboard Light 1.2.1-dev.4 — %s ==\n' "$(ecz_t boot.title)"
 printf 'Opstartlog / startup log: %s\n' "$LOG"
 
 if [[ "$(uname -s)" != Darwin ]]; then
@@ -83,7 +84,11 @@ echo "$(ecz_t boot.compile)"
 export CLANG_MODULE_CACHE_PATH="$TMP/clang-cache"
 export SWIFT_MODULECACHE_PATH="$TMP/swift-cache"
 cp "$PROJECT/broncode/InstallWizard.swift" "$TMP/InstallWizard.swift"
-/usr/bin/xcrun swiftc -framework AppKit \
+cp "$PROJECT/broncode/HIDBacklight.c" "$PROJECT/broncode/HIDBridge.c" "$PROJECT/broncode/HIDBridge.h" "$TMP/"
+/usr/bin/xcrun clang -O2 -Wall -Wextra -c "$TMP/HIDBridge.c" -o "$TMP/hid.o"
+ecz_hid_stamp "$TMP" "$STAGE/Contents/Info.plist"
+/usr/bin/xcrun swiftc -framework AppKit -framework IOKit -framework CoreFoundation \
+  -import-objc-header "$TMP/HIDBridge.h" "$TMP/hid.o" \
   "$TMP/InstallWizard.swift" \
   -o "$STAGE/Contents/MacOS/EasyCompWizard"
 chmod 755 "$STAGE/Contents/MacOS/EasyCompWizard"

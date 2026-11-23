@@ -8,9 +8,11 @@
 
 **Current development branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.2` (unreleased; published stable: `1.2.0`)
+**Working version:** `1.2.1-dev.4` (published test prerelease; published stable: `1.2.0`)
 
-**Previous published beta:** `v1.2.0-beta7.1`
+**Current published test prerelease:** [v1.2.1-dev.4](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.4)
+
+**Previous compatibility beta:** `v1.2.0-beta7.1`
 
 Keep `main` and public releases unchanged until hardware acceptance and publication approval. Pushing `dev/beta` uploads the development commits; it does not merge main or publish a release. [Release notes](GITHUB-RELEASE.md) describe the stable 1.2.0 release; see [acceptance scope](RELEASE-ACCEPTANCE.md).
 

@@ -4,6 +4,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 source "$HERE/scripts/cli-i18n.sh"
 source "$HERE/scripts/developer-tools.sh"
+source "$HERE/scripts/native-hid.sh"
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo 'Alleen op macOS te compileren (AppKit/IOKit vereist).' >&2
   exit 1
@@ -16,13 +17,15 @@ trap 'rm -rf "$TMP"' EXIT
 # Keep compiler caches inside the disposable build directory.
 export CLANG_MODULE_CACHE_PATH="$TMP/clang-cache"
 export SWIFT_MODULECACHE_PATH="$TMP/swift-cache"
-cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" \
+cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/HIDBridge.c" "$HERE/broncode/HIDBridge.h" "$HERE/broncode/EasyCompKeyboardLight.swift" \
   "$HERE/broncode/InstallWizard.swift" "$TMP/"
 /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
   "$TMP/HIDBacklight.c" -o "$TMP/ecz-t2-backlight"
+/usr/bin/xcrun clang -O2 -Wall -Wextra -c "$TMP/HIDBridge.c" -o "$TMP/hid.o"
 /usr/bin/xcrun swiftc -O -framework AppKit -framework CoreGraphics \
+  -import-objc-header "$TMP/HIDBridge.h" "$TMP/hid.o" -framework IOKit -framework CoreFoundation \
   "$TMP/EasyCompKeyboardLight.swift" -o "$TMP/EasyCompKeyboardLight"
-/usr/bin/xcrun swiftc -framework AppKit "$TMP/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
+/usr/bin/xcrun swiftc -framework AppKit -import-objc-header "$TMP/HIDBridge.h" "$TMP/hid.o" -framework IOKit -framework CoreFoundation "$TMP/InstallWizard.swift" -o "$TMP/EasyComp-Installer"
 # The standalone Issue #2 experiment is checked only when its sources are present.
 # The normal packaged setup intentionally does not contain this research tool.
 if [[ -f "$HERE/broncode/Issue2ButterflyTest.c" && -f "$HERE/broncode/Issue2CompatibilityTest.swift" ]]; then

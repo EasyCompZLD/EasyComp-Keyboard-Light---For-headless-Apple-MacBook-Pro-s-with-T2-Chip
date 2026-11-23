@@ -1,6 +1,6 @@
-// EasyComp Keyboard Light v1.2.1-dev.2
+// EasyComp Keyboard Light v1.2.1-dev.4
 // Native menu bar utility for compatible headless Intel T2 MacBooks.
-// HID hardware control is delegated to the separately verified C helper.
+// HID hardware control runs in a native worker using the single verified C driver.
 import AppKit
 import CoreGraphics
 import Foundation
@@ -350,8 +350,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
     private var brightness = 0.5 // 0.1 ... 1.0, supported by the proven helper
     private var powered = true
     private var helperURL: URL {
-        Bundle.main.executableURL!.deletingLastPathComponent()
-            .appendingPathComponent("ecz-t2-backlight")
+        Bundle.main.executableURL!
     }
     private var agentURL: URL {
         FileManager.default.homeDirectoryForCurrentUser
@@ -804,7 +803,7 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
         guard let generation = writes.begin(level: level) else { return }
         let task = Process()
         task.executableURL = helperURL
-        task.arguments = level <= 0 ? ["off"] : ["on", String(level)]
+        task.arguments = level <= 0 ? ["--ecz-hid", "off"] : ["--ecz-hid", "on", String(level)]
         // The helper writes its bounded protocol diagnostics to stdout.
         let errorPipe = Pipe()
         task.standardOutput = errorPipe
@@ -1002,6 +1001,18 @@ final class KeyboardLightApp: NSObject, NSApplicationDelegate {
 }
 
 #if !ECZ_TESTS
+let hidArguments = Array(CommandLine.arguments.dropFirst())
+if hidArguments.first == "--ecz-hid" {
+    guard hidArguments.count == 2 || hidArguments.count == 3 else { exit(2) }
+    print("HID host: signed controller executable")
+    let result = hidArguments[1].withCString { mode in
+        if hidArguments.count == 3 {
+            return hidArguments[2].withCString { ECZBacklightRun(mode, $0, 0) }
+        }
+        return ECZBacklightRun(mode, nil, 0)
+    }
+    exit(result)
+}
 let application = NSApplication.shared
 let delegate = KeyboardLightApp()
 application.delegate = delegate

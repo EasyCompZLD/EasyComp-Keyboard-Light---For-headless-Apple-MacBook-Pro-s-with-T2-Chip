@@ -68,6 +68,8 @@ The [beta7.1 follow-up](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light--
 
 The previously successful tester reports `HIDManagerOpen (05ac:027d): 0xe00002e2` with stable 1.2.0 while beta7.1 still lights the keyboard. This happens before configuration validation or GUI installation; it does not independently show a broken Touch Bar or brightness protocol. The current development helper reserves **exit 9** for an observed `kIOReturnNotPermitted` access failure when no write has been attempted. Other manager/device failures remain 4/6, configuration failures 7 and possible partial-write failures 8.
 
+The dev.2 follow-up still failed with the current Setup allowed and relaunched. The new dev.3 candidate runs its C backend through the signed app executable’s worker mode. Setup remains read-only; signature/source/version mismatches fail with exit 10. Schema 3 separates the actual GUI access check from the worker result.
+
 Follow [Issue #7 recovery acceptance](ISSUE7-ACCESS-RECOVERY.md) for the explicit permission action, possible macOS relaunch requirement and fresh read-only retry. The menu bar app and Setup have distinct permission contexts. Leave the working beta available for rollback; do not close the issue or replace the stable release on fixture results alone.
 
 ## Previous test-app cleanup and rollback
@@ -75,3 +77,5 @@ Follow [Issue #7 recovery acceptance](ISSUE7-ACCESS-RECOVERY.md) for the explici
 The previous `EasyComp Keyboard Light Beta7 Test.app` is historical. If installed, quit it and disable its “Start at login” setting. Its separate LaunchAgent was `~/Library/LaunchAgents/nl.easycompzeeland.KeyboardLight.Beta7Test.plist`. Remove that old test app only after preserving any test results you need. Its preferences are not automatically migrated; the current beta uses the regular installed app's existing preferences.
 
 Do not run the generic uninstall script just to remove the old test app: it targets the regular app. If physical acceptance fails, stop the beta and restore your backed-up installed app. No cleanup, replacement or preference reset is performed by the build command.
+
+Dev.3 follow-up: the signed native worker runs on Intel Sequoia but both GUI and worker report denied access; the proposed fix did not resolve the refusal. Dev.4 adds a separately confirmed Setup-only ListenEvent reset and schema 4 signature/session-reset metadata. Accept only after a tester confirms cancel is harmless, reset affects only Setup, explicit regrant works, and a real BF probe and installation succeed. No automatic reset or HID write is part of diagnosis. See ISSUE7-ACCESS-RECOVERY.md.

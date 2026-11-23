@@ -6,7 +6,7 @@ The Issue #2 report [6825954957](https://github.com/EasyCompZLD/EasyComp-Keyboar
 
 ## Subsequent stable-installation report
 
-The earlier success below remains a beta7.1 observation. The same tester later reported stable 1.2.0 refusing HID access while beta7.1 still works. I am tracking that distinction in [Issue #7 recovery acceptance](ISSUE7-ACCESS-RECOVERY.md); it is not a new observation that the brightness protocol itself failed.
+The earlier success below remains a beta7.1 observation. The same tester later reported stable 1.2.0 refusing HID access while beta7.1 still works. The dev.2 recovery test also failed despite Setup being allowed and relaunched. I am tracking that distinction in [Issue #7 recovery acceptance](ISSUE7-ACCESS-RECOVERY.md); it is not a new observation that the brightness protocol itself failed.
 
 ## Hardware follow-up — 13 November 2026
 

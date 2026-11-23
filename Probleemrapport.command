@@ -8,6 +8,7 @@ set -o pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 source "$HERE/scripts/cli-i18n.sh"
 source "$HERE/scripts/developer-tools.sh"
+source "$HERE/scripts/native-hid.sh"
 REPO_URL='https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip'
 ISSUE_URL="$REPO_URL/issues/new?template=installation_failure.md"
 MODE="${1:-manual}"
@@ -15,7 +16,7 @@ REASON="${2:-Not provided}"
 EXIT_CODE="${3:-N/A}"
 INSTALL_LOG="${4:-}"
 PROBE_LOG="${5:-}"
-REPORT_VERSION="1.2.1-dev.2"
+REPORT_VERSION="1.2.1-dev.4"
 
 # Reject any unexpected internal invocation rather than interpreting arguments as commands.
 if [[ "$MODE" != manual && "$MODE" != --installer-failure ]]; then
@@ -63,7 +64,7 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
 # Apple vendor/product/usage descriptors are read. Do not collect system_profiler -detailLevel full.
 {
   echo '=== EasyComp Keyboard Light: installation / compatibility report ==='
-  echo "Report schema: 2"
+  echo "Report schema: 4"
   echo "Project version: $REPORT_VERSION"
   echo 'Privacy: no serial numbers, hardware UUID, username, user address or network identity requested.'
   echo 'IMPORTANT: Review this report yourself before pasting it into a public GitHub issue.'
@@ -101,7 +102,16 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
   echo
   echo '--- Package / autostart ---'
   if [[ "${ECZ_SETUP_REQUESTER:-}" == 'nl.easycompzeeland.KeyboardLight.Setup' ]]; then
-    echo 'Requester context: Setup GUI (nl.easycompzeeland.KeyboardLight.Setup)'
+    echo 'Launcher context: Setup GUI (declared bundle ID; not proof of TCC attribution)'
+    printf 'Setup file name: '; safe_value "${ECZ_SETUP_NAME:-Unknown}"
+    case "${ECZ_SETUP_GUI_ACCESS:-unknown}" in
+      granted|denied|unknown) echo "Setup GUI Input Monitoring: ${ECZ_SETUP_GUI_ACCESS:-unknown}" ;;
+      *) echo 'Setup GUI Input Monitoring: unknown' ;;
+    esac
+    case "${ECZ_SETUP_RESET_STATUS:-not attempted}" in
+      'not attempted'|0|-1|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]) echo "Setup-only permission reset exit (this session): ${ECZ_SETUP_RESET_STATUS:-not attempted}" ;;
+      *) echo 'Setup-only permission reset exit (this session): unknown' ;;
+    esac
     printf 'Setup version: '; safe_value "${ECZ_SETUP_VERSION:-Unknown}"
   else
     echo 'Requester context: CLI/unknown launcher; macOS permissions may differ from Setup GUI.'
@@ -122,24 +132,43 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
   else
     echo 'No previous HID probe output available.'
   fi
-  # A failed installer may have stopped before compiling the helper. Rebuild and run
-  # the strictly read-only 'diagnose' mode if Apple's compiler is available.
-  if [[ "$(uname -s 2>/dev/null || true)" == Darwin ]] &&
-     ecz_prereq_probe_all && [[ -f "$HERE/broncode/HIDBacklight.c" ]]; then
-    echo 'Fresh HID descriptor scan (no SetReport / no LED changes):'
-    if /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
-       "$HERE/broncode/HIDBacklight.c" -o "$TEMP/ecz-t2-diagnostic" >"$TEMP/compile.log" 2>&1; then
-      "$TEMP/ecz-t2-diagnostic" permissions 2>&1 | sanitize
-      "$TEMP/ecz-t2-diagnostic" diagnose >"$TEMP/scan.log" 2>&1
-      PROBE_RESULT=$?
-      printf 'HID diagnostic exit code: %s\n' "$PROBE_RESULT"
-      head -n 140 "$TEMP/scan.log" | sanitize
+  if [[ "$(uname -s 2>/dev/null || true)" == Darwin ]]; then
+    if ! ecz_hid_select_host "$HERE"; then
+      echo 'Signed Setup HID host validation failed. No diagnostic device access attempted.'
     else
-      echo 'Could not compile the diagnostic helper:'
-      head -n 45 "$TEMP/compile.log" | sanitize
+      if [[ "$ECZ_HID_HOST_ACTIVE" == 1 ]]; then
+        signature="$(/usr/bin/codesign --display --verbose=4 "${ECZ_HID_RUNNER[0]}" 2>&1 || true)"
+        if printf '%s\n' "$signature" | grep -q '^Signature=adhoc$'; then
+          echo 'Native host signing kind: ad-hoc (identity is build-specific)'
+        elif printf '%s\n' "$signature" | grep -q '^Authority='; then
+          echo 'Native host signing kind: certificate (publisher identity not assessed here)'
+        else
+          echo 'Native host signing kind: unknown'
+        fi
+        printf '%s\n' "$signature" | awk '/^CDHash=[0-9a-f]+$/ { print "Native host code hash: " substr($0,8) }'
+      fi
+      if [[ "$ECZ_HID_HOST_ACTIVE" == 0 ]] && ecz_prereq_probe_all; then
+        if /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
+           "$HERE/broncode/HIDBacklight.c" -o "$TEMP/ecz-t2-diagnostic" >"$TEMP/compile.log" 2>&1; then
+          ECZ_HID_RUNNER=("$TEMP/ecz-t2-diagnostic")
+          ECZ_HID_HOST_ACTIVE=1
+        else
+          head -n 45 "$TEMP/compile.log" | sanitize
+        fi
+      fi
+      if [[ "$ECZ_HID_HOST_ACTIVE" == 1 ]]; then
+        echo 'Fresh read-only scan (no SetReport / no LED changes):'
+        "${ECZ_HID_RUNNER[@]}" permissions 2>&1 | sanitize
+        "${ECZ_HID_RUNNER[@]}" diagnose >"$TEMP/scan.log" 2>&1
+        PROBE_RESULT=$?
+        printf 'HID diagnostic exit code: %s\n' "$PROBE_RESULT"
+        head -n 140 "$TEMP/scan.log" | sanitize
+      else
+        echo 'Fresh scan unavailable: no signed GUI host or usable CLI compiler.'
+      fi
     fi
   else
-    echo 'Fresh HID scan skipped (macOS + Xcode Command Line Tools required).'
+    echo 'Fresh HID scan requires macOS.'
   fi
   echo
   echo '--- Installer diagnostic log (last 100 lines) ---'

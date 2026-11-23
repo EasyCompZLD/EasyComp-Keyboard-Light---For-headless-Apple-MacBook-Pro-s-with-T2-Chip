@@ -7,9 +7,11 @@
   <key>CFBundleDisplayName</key><string>EasyComp Keyboard Light Setup</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>1.2.1</string>
-  <key>ECZDevelopmentVersion</key><string>1.2.1-dev.2</string>
-  <key>CFBundleVersion</key><string>13</string>
+  <key>ECZDevelopmentVersion</key><string>1.2.1-dev.4</string>
+  <key>CFBundleVersion</key><string>15</string>
   <key>ECZAutomaticUpdateProtocol</key><integer>1</integer>
+  <key>ECZHIDHostProtocol</key><integer>1</integer>
+  <key>ECZHIDSourceSHA</key><string>BUILD_TIME</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>CFBundleIconFile</key><string>AppIcon.icns</string>

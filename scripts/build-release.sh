@@ -3,6 +3,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 source "$HERE/scripts/developer-tools.sh"
+source "$HERE/scripts/native-hid.sh"
 ecz_require_developer_tools --check-only
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/ecz-beta.XXXXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
@@ -10,13 +11,18 @@ export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
 APP="$WORK/EasyComp Keyboard Light.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/EasyCompKeyboardLight.swift" "$HERE/broncode/InstallWizard.swift" "$WORK/"
+cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/HIDBridge.c" "$HERE/broncode/HIDBridge.h" "$HERE/broncode/EasyCompKeyboardLight.swift" "$HERE/broncode/InstallWizard.swift" "$WORK/"
 xcrun clang -arch x86_64 -mmacosx-version-min=13.0 -O2 -Wall -Wextra \
   -framework IOKit -framework CoreFoundation "$WORK/HIDBacklight.c" \
   -o "$APP/Contents/MacOS/ecz-t2-backlight"
+for arch in x86_64 arm64; do
+  xcrun clang -arch "$arch" -mmacosx-version-min=13.0 -O2 -Wall -Wextra -c "$WORK/HIDBridge.c" -o "$WORK/hid-$arch.o"
+done
 xcrun swiftc -target x86_64-apple-macosx13.0 -O -framework AppKit -framework CoreGraphics \
+  -import-objc-header "$WORK/HIDBridge.h" "$WORK/hid-x86_64.o" -framework IOKit -framework CoreFoundation \
   "$WORK/EasyCompKeyboardLight.swift" -o "$APP/Contents/MacOS/EasyCompKeyboardLight"
 cp "$HERE/broncode/Info.plist" "$APP/Contents/Info.plist"
+ecz_hid_stamp "$WORK" "$APP/Contents/Info.plist"
 for lang in en nl de fr es it pt pl; do
   cp -R "$HERE/broncode/Localizations/$lang.lproj" "$APP/Contents/Resources/"
 done
@@ -29,8 +35,10 @@ SETUP="$WORK/EasyComp Keyboard Light Setup.app"
 PAYLOAD="$SETUP/Contents/Resources/Project"
 mkdir -p "$SETUP/Contents/MacOS" "$PAYLOAD/broncode" "$PAYLOAD/scripts" "$PAYLOAD/Assets"
 cp "$HERE/broncode/SetupInfo.plist" "$SETUP/Contents/Info.plist"
+ecz_hid_stamp "$WORK" "$SETUP/Contents/Info.plist"
 for arch in x86_64 arm64; do
   xcrun swiftc -target "$arch-apple-macosx13.0" -O -framework AppKit \
+    -import-objc-header "$WORK/HIDBridge.h" "$WORK/hid-$arch.o" -framework IOKit -framework CoreFoundation \
     "$WORK/InstallWizard.swift" -o "$WORK/wizard-$arch"
 done
 xcrun lipo -create "$WORK/wizard-x86_64" "$WORK/wizard-arm64" -output "$SETUP/Contents/MacOS/EasyCompWizard"
@@ -41,8 +49,8 @@ cp "$APP/Contents/Resources/AppIcon.icns" "$SETUP/Contents/Resources/"
 for script in Installeer.command Verwijder.command Probleemrapport.command Controleer-build.command; do
   cp "$HERE/$script" "$PAYLOAD/"
 done
-cp "$HERE/scripts/cli-i18n.sh" "$HERE/scripts/developer-tools.sh" "$PAYLOAD/scripts/"
-cp "$WORK/HIDBacklight.c" "$WORK/EasyCompKeyboardLight.swift" "$WORK/InstallWizard.swift" "$PAYLOAD/broncode/"
+cp "$HERE/scripts/cli-i18n.sh" "$HERE/scripts/developer-tools.sh" "$HERE/scripts/native-hid.sh" "$PAYLOAD/scripts/"
+cp "$WORK/HIDBacklight.c" "$WORK/HIDBridge.c" "$WORK/HIDBridge.h" "$WORK/EasyCompKeyboardLight.swift" "$WORK/InstallWizard.swift" "$PAYLOAD/broncode/"
 cp "$HERE/broncode/Info.plist" "$HERE/broncode/SetupInfo.plist" "$PAYLOAD/broncode/"
 cp -R "$HERE/broncode/Localizations" "$HERE/broncode/WizardLocalizations" "$PAYLOAD/broncode/"
 cp -R "$HERE/Assets/AppIcon.iconset" "$PAYLOAD/Assets/"
@@ -60,7 +68,7 @@ mkdir -p "$OUT"
   echo "$VERSION — $STATUS. Universal setup, Intel T2 controller, macOS 13 or later."
   git -C "$HERE" rev-parse HEAD
   git -C "$HERE" branch --show-current
-  (cd "$WORK" && shasum -a 256 HIDBacklight.c EasyCompKeyboardLight.swift InstallWizard.swift)
+  (cd "$WORK" && shasum -a 256 HIDBacklight.c HIDBridge.c HIDBridge.h EasyCompKeyboardLight.swift InstallWizard.swift)
 } > "$WORK/BUILD-INFO.txt"
 # Archive on the local volume before copying: SMB can add Finder metadata that
 # invalidates an unpacked signed bundle. Verify the archive after the SMB roundtrip.

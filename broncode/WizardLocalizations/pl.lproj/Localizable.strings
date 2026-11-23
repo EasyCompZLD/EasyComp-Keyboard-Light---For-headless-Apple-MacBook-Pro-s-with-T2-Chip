@@ -61,3 +61,14 @@
 "wizard.hidAccessRequest" = "Poproś o dostęp…";
 "wizard.hidAccessRetry" = "Ponów instalację";
 "wizard.hidAccessStatus" = "Odmowa dostępu HID — sprawdź monitorowanie danych wejściowych i ponów próbę.";
+
+"wizard.hidAccessGrantedBody" = "Ten Setup zgłasza dozwolone monitorowanie danych wejściowych, ale dostęp HID nadal jest odrzucany. Wielokrotne przełączanie tego samego uprawnienia nie pomaga. Zamknij ten dialog i utwórz tutaj nowy raport, abym mógł porównać Setup i natywny proces HID. Aplikacja i ustawienia zostają zachowane.";
+
+"wizard.hidAccessButton" = "Dostęp do klawiatury…";
+"wizard.hidResetAction" = "Wyzeruj zgodę dla Setup…";
+"wizard.hidResetTitle" = "Wyzerować tylko zgodę dla Setup?";
+"wizard.hidResetBody" = "To usuwa tylko zgodę na monitorowanie wprowadzania dla EasyComp Keyboard Light Setup, aby macOS mógł zapytać ponownie. Nie przyznaje dostępu, nie zmienia zgód zainstalowanej aplikacji, nie usuwa ustawień i nie wysyła poleceń LED. Nieaktualna zgoda to tylko przypuszczalna przyczyna. Kontynuować?";
+"wizard.hidResetDoneTitle" = "Zgoda dla Setup wyzerowana";
+"wizard.hidResetDoneBody" = "Zamknij ten Setup i otwórz ponownie tę samą kopię. Wybierz Dostęp do klawiatury, a następnie Poproś o dostęp i zezwól na dostęp w macOS. Otwórz ponownie, jeśli macOS o to poprosi, a potem ponów instalację lub utwórz raport. Wyzerowanie zgody nie potwierdza naprawy problemu HID.";
+"wizard.hidResetFailedTitle" = "Nie udało się wyzerować zgody";
+"wizard.hidResetFailedBody" = "Nie udało mi się usunąć zgody na monitorowanie wprowadzania dla Setup. Nie ponowiono próby ani nie poproszono automatycznie o dostęp. Utwórz tutaj nowy raport, abym mógł sprawdzić wynik.";

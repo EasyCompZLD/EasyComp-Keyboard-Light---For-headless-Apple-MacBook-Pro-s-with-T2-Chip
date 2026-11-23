@@ -32,3 +32,7 @@ On a refused or failed install, copy the report from `~/Downloads/` into a new
 The report includes model, macOS build, HID descriptors, installer stage and compiler errors.
 For a read-only report without installing, open Setup, choose your language and create a diagnostic report. Source users can also run `bash Probleemrapport.command`.
 The script does **not** send any data to GitHub itself. **Inspect the report before sharing.**
+
+## Signing and privacy recovery
+
+I distribute ad-hoc signed packages without requiring a paid Apple Developer membership. macOS may require fresh Input Monitoring consent after a changed build; a previous Settings toggle is not proof that the current process is authorized. Setup provides an explicit, separately confirmed reset for only its own ListenEvent permission. Reports, startup and updates never reset permission automatically. Mock the reset command in tests; do not reset a developer’s real privacy settings during verification. See [Issue #7 evidence and acceptance](ISSUE7-ACCESS-RECOVERY.md).
