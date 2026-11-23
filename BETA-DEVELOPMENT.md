@@ -8,7 +8,9 @@
 
 **Bundle ID / LaunchAgent:** `nl.easycompzeeland.KeyboardLight`
 
-**Current package:** `dist/release/EasyComp-Keyboard-Light.zip`
+**Current development package:** `dist/beta/EasyComp-Keyboard-Light-Beta.zip`
+
+**Published stable package:** `dist/release/EasyComp-Keyboard-Light.zip`
 
 There is one maintained Swift + C codebase and one cumulative macOS regression suite. The previous beta7 work and its review fixes are already in this branch. Existing production preferences are retained through the same app identity and preference keys. The build script no longer creates a separate Beta7 Test app or preference domain.
 
