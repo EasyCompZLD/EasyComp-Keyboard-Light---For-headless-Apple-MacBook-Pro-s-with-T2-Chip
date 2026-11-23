@@ -14,7 +14,7 @@ I have retained the explicit Setup recovery flow when macOS refuses keyboard HID
 
 The tester reports stable 1.2.0 failing while beta7.1 still works. I have verified that their HID code differs only in the version comment. The exact reason for the different macOS access decisions is still unconfirmed; I do not claim a tested hardware fix from the regression fixtures. See [Issue #7 acceptance](ISSUE7-ACCESS-RECOVERY.md).
 
-The dev.3 follow-up also failed: Setup itself and its native worker both report denied access. I am preparing dev.4 with a permanently available Keyboard access action and a separately confirmed reset of Setup's Input Monitoring permission. It uses Apple's documented per-app reset, never grants access automatically and leaves controller permissions and HID protocol bytes intact. This remains an unvalidated recovery experiment; distribution remains ad hoc without requiring a paid Apple Developer membership, so permission preservation across rebuilt packages is not promised.
+The dev.3 follow-up also failed: Setup itself and its native worker both report denied access. I published [dev.4 as a test prerelease](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.4) with a permanently available Keyboard access action and a separately confirmed reset of Setup's Input Monitoring permission. It uses Apple's documented per-app reset, never grants access automatically and leaves controller permissions and HID protocol bytes intact. This remains an unvalidated recovery experiment; distribution remains ad hoc without requiring a paid Apple Developer membership, so permission preservation across rebuilt packages is not promised.
 
 ## Thanks to my testers
 

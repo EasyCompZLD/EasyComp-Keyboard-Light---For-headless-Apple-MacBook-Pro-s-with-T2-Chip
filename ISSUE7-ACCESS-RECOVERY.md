@@ -1,6 +1,6 @@
 # Issue #7 — permission recovery investigation
 
-**Working build:** `1.2.1-dev.4`, build 15, on `dev/beta`. This is a local, unpublished candidate. The published dev.3 test did not resolve the refusal; stable remains 1.2.0.
+**Working build:** `1.2.1-dev.4`, build 15, on `dev/beta`. I have published [this test prerelease](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.4); hardware acceptance is pending. The published dev.3 test did not resolve the refusal; stable remains 1.2.0.
 
 ## Dev.3 follow-up: both processes denied
 
@@ -52,6 +52,14 @@ Apple discusses responsible code and stable code-signing identity in its [launch
 Local regression coverage includes 58 standalone production-HID cases, 64 native bridge cases (including forbidden Setup writes), 38 isolated-tool cases, real Swift native entry points with a mock backend, signature/source/version mismatch fixtures, the GUI consent/recovery controls in all eight languages and the existing installer/state/update regressions. The dev.4 GUI fixture also checks reset confirmation/Cancel, success/failure/tool-launch error, duplicate busy actions and restored controls. Tests do not request or reset real permissions or run physical HID writes.
 
 Local verification passed: 41 regression tests and the native macOS build, including all eight controller and eight Setup localizations. Shell syntax and the unchanged canonical driver body were also checked before packaging. Dev.3 native-host diagnostic execution is now confirmed on Intel Sequoia, but permission recovery failed. Dev.4 consent/reset/regrant behavior and successful installation remain **pending hardware confirmation**. This is a candidate implementation, not a claim that the issue is resolved.
+
+## Published dev.4 recovery test
+
+I published dev.4 from `23621444a1ccb1a752acfd50a3cceaee96ee9011`, build 15. ZIP SHA-256: `8a7799b322e5940cb8092f810338b7965be773502d5c5fcf7f843dc7e7919032`. GitHub's uploaded digest matches the local ZIP. [Actions run 45282093953](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/actions/runs/45282093953) passed for this commit. The preceding source commit also passed all 41 local tests and the native build; a final shell-only correction enabled actual code-hash output.
+
+The final archive passed signature verification after extraction, source/payload/digest checks and x86_64/arm64 Setup validation. Its real native worker ran only the passive permission query locally: no device open, grant, reset, installation or LED write. Reset behavior was tested with mocks; physical permission recovery remains pending. The local Intel linker warning was emitted again and is not treated as runtime acceptance.
+
+I posted [the download and GUI recovery steps](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7#issuecomment-7116135551) and kept the issue open. Stable 1.2.0 and main were not replaced. A paid Apple Developer membership is not required for this workflow; ad-hoc identity limitations remain explicit.
 
 ## Published dev.3 test package (failed recovery)
 
