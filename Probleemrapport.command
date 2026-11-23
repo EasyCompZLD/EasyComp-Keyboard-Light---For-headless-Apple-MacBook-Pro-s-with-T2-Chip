@@ -137,7 +137,7 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
       echo 'Signed Setup HID host validation failed. No diagnostic device access attempted.'
     else
       if [[ "$ECZ_HID_HOST_ACTIVE" == 1 ]]; then
-        signature="$(/usr/bin/codesign --display --verbose=2 "${ECZ_HID_RUNNER[0]}" 2>&1 || true)"
+        signature="$(/usr/bin/codesign --display --verbose=4 "${ECZ_HID_RUNNER[0]}" 2>&1 || true)"
         if printf '%s\n' "$signature" | grep -q '^Signature=adhoc$'; then
           echo 'Native host signing kind: ad-hoc (identity is build-specific)'
         elif printf '%s\n' "$signature" | grep -q '^Authority='; then
