@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyComp Keyboard Light v1.2.1-dev.3: safe, locally compiled installation.
+# EasyComp Keyboard Light v1.2.1-dev.4: safe, locally compiled installation.
 # Public entry point for CLI users; GUI wizard calls this script as a child.
 # Does not require sudo, SIP changes, kernel extensions or a network connection.
 set -euo pipefail
@@ -119,7 +119,7 @@ done
 export CLANG_MODULE_CACHE_PATH="$WORK/clang-cache"
 export SWIFT_MODULECACHE_PATH="$WORK/swift-cache"
 cp "$HERE/broncode/HIDBacklight.c" "$HERE/broncode/HIDBridge.c" "$HERE/broncode/HIDBridge.h" "$HERE/broncode/EasyCompKeyboardLight.swift" "$WORK/"
-printf '\n== EasyComp Keyboard Light 1.2.1-dev.3 ==\n'
+printf '\n== EasyComp Keyboard Light 1.2.1-dev.4 ==\n'
 echo "ECZ_STEP:1"
 echo "$(ecz_t boot.compile)"
 run_step 'Compile C HID helper' /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \

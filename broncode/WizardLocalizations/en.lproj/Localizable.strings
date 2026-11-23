@@ -63,3 +63,12 @@
 "wizard.hidAccessStatus" = "HID access refused — check Input Monitoring and retry.";
 
 "wizard.hidAccessGrantedBody" = "This Setup reports Input Monitoring as allowed, but HID access is still refused. Repeatedly toggling the same permission is not useful. Cancel this dialog and create a fresh diagnostic report in this window so I can compare Setup and the native HID host. Existing app and settings are kept.";
+
+"wizard.hidAccessButton" = "Keyboard access…";
+"wizard.hidResetAction" = "Reset Setup permission…";
+"wizard.hidResetTitle" = "Reset only Setup’s permission?";
+"wizard.hidResetBody" = "This clears only Input Monitoring permission for EasyComp Keyboard Light Setup, so macOS can ask again. It does not grant access, change the installed controller’s permission, remove settings or send LED commands. A stale permission is only a suspected cause. Continue?";
+"wizard.hidResetDoneTitle" = "Setup permission reset";
+"wizard.hidResetDoneBody" = "Quit this Setup and reopen the same copy. Choose Keyboard access, then Request access and approve this Setup in macOS. Reopen again if macOS asks, then retry installation or create a new report. Resetting permission does not prove that the HID problem is fixed.";
+"wizard.hidResetFailedTitle" = "Setup permission could not be reset";
+"wizard.hidResetFailedBody" = "I could not clear Setup’s Input Monitoring permission. No automatic retry or permission request was made. Create a fresh report in this window so I can check the reset result.";

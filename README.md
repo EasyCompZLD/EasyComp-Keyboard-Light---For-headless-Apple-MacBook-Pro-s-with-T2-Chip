@@ -10,7 +10,7 @@ A native macOS menu bar app for keyboard backlight control on headless Intel Mac
 
 ## Known installation issue
 
-[@mjesticfalco reports](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7) that beta7.1 works on MacBookPro15,4 while stable 1.2.0 is refused HID access. The dev.2 recovery test **still failed after Setup was allowed and relaunched**. I am now testing a native HID worker inside the signed Setup/controller executables instead of a temporary standalone program. I have published [the `1.2.1-dev.3` test prerelease](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.3); operation on his Mac remains unconfirmed. The proven report bytes are unchanged. See [Issue #7 diagnosis and acceptance](ISSUE7-ACCESS-RECOVERY.md).
+[@mjesticfalco reports](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/7) that beta7.1 works on MacBookPro15,4 while stable 1.2.0 is refused HID access. The dev.2 recovery test **still failed after Setup was allowed and relaunched**. I am now testing a native HID worker inside the signed Setup/controller executables instead of a temporary standalone program. I have published [the `1.2.1-dev.3` test prerelease](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.3); the follow-up still reports denied access in both Setup and its worker. I am preparing an unpublished dev.4 candidate with an explicit Setup-only permission recovery action. The proven report bytes are unchanged. See [Issue #7 diagnosis and acceptance](ISSUE7-ACCESS-RECOVERY.md).
 
 ## Start here
 
@@ -54,7 +54,7 @@ No LED commands are allowed for an unvalidated interface. The proven A2141 repor
 
 ## Automatic updates — in development
 
-I am adding optional automatic stable updates for the next version. This feature is **not included in the published 1.2.0 download**. Once installed, the new app can check GitHub hourly and hand a verified newer stable package to Setup. See [automatic update behavior and limits](AUTO-UPDATES.md) and [next-release draft](NEXT-RELEASE.md). The source checkout is `1.2.1-dev.3`, published as a test prerelease; building it produces a local package in `dist/beta/`.
+I am adding optional automatic stable updates for the next version. This feature is **not included in the published 1.2.0 download**. Once installed, the new app can check GitHub hourly and hand a verified newer stable package to Setup. See [automatic update behavior and limits](AUTO-UPDATES.md) and [next-release draft](NEXT-RELEASE.md). The source checkout is `1.2.1-dev.4` (unpublished); dev.3 remains the latest published test prerelease. Building the checkout produces a local package in `dist/beta/`.
 
 ## Development and testing
 

@@ -8,7 +8,7 @@
 
 **Current development branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.3` (published test prerelease; published stable: `1.2.0`)
+**Working version:** `1.2.1-dev.4` (unpublished; published stable: `1.2.0`)
 
 **Current published test prerelease:** [v1.2.1-dev.3](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.3)
 

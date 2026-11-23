@@ -63,3 +63,12 @@
 "wizard.hidAccessStatus" = "HID-toegang geweigerd — controleer Input Monitoring en probeer opnieuw.";
 
 "wizard.hidAccessGrantedBody" = "Deze Setup meldt dat Input Monitoring is toegestaan, maar HID-toegang wordt nog geweigerd. Dezelfde toestemming steeds omzetten helpt dan niet. Sluit dit venster en maak hier een nieuw probleemrapport, zodat ik Setup en het native HID-programma kan vergelijken. De bestaande app en instellingen blijven behouden.";
+
+"wizard.hidAccessButton" = "Toetsenbordtoegang…";
+"wizard.hidResetAction" = "Setup-toestemming wissen…";
+"wizard.hidResetTitle" = "Alleen Setup-toestemming wissen?";
+"wizard.hidResetBody" = "Dit wist alleen de toestemming voor Invoercontrole van EasyComp Keyboard Light Setup, zodat macOS opnieuw kan vragen. Het verleent geen toegang, wijzigt geen toestemming van de geïnstalleerde app, verwijdert geen instellingen en verstuurt geen ledopdrachten. Een verouderde toestemming is slechts een vermoedelijke oorzaak. Doorgaan?";
+"wizard.hidResetDoneTitle" = "Setup-toestemming gewist";
+"wizard.hidResetDoneBody" = "Sluit deze Setup en open dezelfde kopie opnieuw. Kies Toetsenbordtoegang en daarna Toegang aanvragen; geef deze Setup toestemming in macOS. Open opnieuw als macOS dat vraagt. Probeer daarna de installatie of maak een nieuw rapport. Het wissen bewijst niet dat het HID-probleem is opgelost.";
+"wizard.hidResetFailedTitle" = "Setup-toestemming niet gewist";
+"wizard.hidResetFailedBody" = "Ik kon de Invoercontrole-toestemming van Setup niet wissen. Er is niet automatisch opnieuw geprobeerd of toegang aangevraagd. Maak in dit venster een nieuw rapport zodat ik het resultaat kan controleren.";

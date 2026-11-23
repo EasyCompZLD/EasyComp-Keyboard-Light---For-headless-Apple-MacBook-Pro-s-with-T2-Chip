@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.3` (published test prerelease; published stable is `1.2.0`) (see `VERSION`)
+**Working version:** `1.2.1-dev.4` (unpublished; published stable is `1.2.0`) (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
@@ -17,6 +17,10 @@ There is one maintained Swift + C codebase and one cumulative macOS regression s
 ## Issue #7 native execution context
 
 The dev.2 permission/retry UI did not resolve the tester’s failure. I have moved GUI HID commands to worker modes of the signed Setup/controller executables, linking the canonical C driver through HIDBridge.c. Setup workers reject writes; the installed controller retains its serialized queue/watchdog. The installer never skips its real read-only probe. Host selection verifies signature, identity, version and a source digest; GUI mismatches fail closed with exit 10. The standalone CLI helper remains available for source workflows. See [current evidence and acceptance](ISSUE7-ACCESS-RECOVERY.md).
+
+### Dev.4 permission recovery candidate
+
+Dev.3 still reports denied access in both processes. Setup now exposes **Keyboard access…** before installation and offers a separately confirmed reset for only its own Input Monitoring permission, using Apple's documented app-specific ListenEvent reset. Reports/startup/updates never reset automatically; the user must quit/reopen the same copy and explicitly regrant access. Schema 4 records session reset status and the validated native host's signing kind/code hash. Distribution remains ad hoc without requiring a paid Apple Developer membership; fresh consent may be needed after a changed build. See [the evidence and exact test steps](ISSUE7-ACCESS-RECOVERY.md).
 
 ## Next update
 

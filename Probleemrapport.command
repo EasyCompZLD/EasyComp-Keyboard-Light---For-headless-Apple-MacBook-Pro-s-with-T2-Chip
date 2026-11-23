@@ -16,7 +16,7 @@ REASON="${2:-Not provided}"
 EXIT_CODE="${3:-N/A}"
 INSTALL_LOG="${4:-}"
 PROBE_LOG="${5:-}"
-REPORT_VERSION="1.2.1-dev.3"
+REPORT_VERSION="1.2.1-dev.4"
 
 # Reject any unexpected internal invocation rather than interpreting arguments as commands.
 if [[ "$MODE" != manual && "$MODE" != --installer-failure ]]; then
@@ -64,7 +64,7 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
 # Apple vendor/product/usage descriptors are read. Do not collect system_profiler -detailLevel full.
 {
   echo '=== EasyComp Keyboard Light: installation / compatibility report ==='
-  echo "Report schema: 3"
+  echo "Report schema: 4"
   echo "Project version: $REPORT_VERSION"
   echo 'Privacy: no serial numbers, hardware UUID, username, user address or network identity requested.'
   echo 'IMPORTANT: Review this report yourself before pasting it into a public GitHub issue.'
@@ -108,6 +108,10 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
       granted|denied|unknown) echo "Setup GUI Input Monitoring: ${ECZ_SETUP_GUI_ACCESS:-unknown}" ;;
       *) echo 'Setup GUI Input Monitoring: unknown' ;;
     esac
+    case "${ECZ_SETUP_RESET_STATUS:-not attempted}" in
+      'not attempted'|0|-1|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]) echo "Setup-only permission reset exit (this session): ${ECZ_SETUP_RESET_STATUS:-not attempted}" ;;
+      *) echo 'Setup-only permission reset exit (this session): unknown' ;;
+    esac
     printf 'Setup version: '; safe_value "${ECZ_SETUP_VERSION:-Unknown}"
   else
     echo 'Requester context: CLI/unknown launcher; macOS permissions may differ from Setup GUI.'
@@ -132,6 +136,17 @@ read_cmd() { "$@" 2>/dev/null || printf 'Unavailable\n'; }
     if ! ecz_hid_select_host "$HERE"; then
       echo 'Signed Setup HID host validation failed. No diagnostic device access attempted.'
     else
+      if [[ "$ECZ_HID_HOST_ACTIVE" == 1 ]]; then
+        signature="$(/usr/bin/codesign --display --verbose=2 "${ECZ_HID_RUNNER[0]}" 2>&1 || true)"
+        if printf '%s\n' "$signature" | grep -q '^Signature=adhoc$'; then
+          echo 'Native host signing kind: ad-hoc (identity is build-specific)'
+        elif printf '%s\n' "$signature" | grep -q '^Authority='; then
+          echo 'Native host signing kind: certificate (publisher identity not assessed here)'
+        else
+          echo 'Native host signing kind: unknown'
+        fi
+        printf '%s\n' "$signature" | awk '/^CDHash=[0-9a-f]+$/ { print "Native host code hash: " substr($0,8) }'
+      fi
       if [[ "$ECZ_HID_HOST_ACTIVE" == 0 ]] && ecz_prereq_probe_all; then
         if /usr/bin/xcrun clang -O2 -Wall -Wextra -framework IOKit -framework CoreFoundation \
            "$HERE/broncode/HIDBacklight.c" -o "$TEMP/ecz-t2-diagnostic" >"$TEMP/compile.log" 2>&1; then

@@ -63,3 +63,12 @@
 "wizard.hidAccessStatus" = "Acesso HID recusado — verifique a Monitorização de Entrada e tente novamente.";
 
 "wizard.hidAccessGrantedBody" = "Este Setup indica que a Monitorização de Entrada está permitida, mas o acesso HID continua recusado. Alternar repetidamente a mesma permissão não ajuda. Feche este diálogo e crie aqui um novo relatório para eu comparar o Setup e o processo HID nativo. A aplicação e as definições são mantidas.";
+
+"wizard.hidAccessButton" = "Acesso ao teclado…";
+"wizard.hidResetAction" = "Repor permissão do Setup…";
+"wizard.hidResetTitle" = "Repor apenas a permissão do Setup?";
+"wizard.hidResetBody" = "Isto apaga apenas a permissão de monitorização de entrada do EasyComp Keyboard Light Setup, para que o macOS a possa pedir novamente. Não concede acesso, altera permissões da app instalada, remove definições nem envia comandos LED. Uma permissão desatualizada é apenas uma possível causa. Continuar?";
+"wizard.hidResetDoneTitle" = "Permissão do Setup reposta";
+"wizard.hidResetDoneBody" = "Feche este Setup e reabra a mesma cópia. Escolha Acesso ao teclado e depois Pedir acesso e autorize este Setup no macOS. Reabra-o se o macOS pedir e tente novamente a instalação ou crie um relatório. Repor a permissão não prova que o problema HID esteja resolvido.";
+"wizard.hidResetFailedTitle" = "Não foi possível repor a permissão";
+"wizard.hidResetFailedBody" = "Não consegui apagar a permissão de monitorização de entrada do Setup. Não houve nova tentativa nem pedido de acesso automáticos. Crie aqui um novo relatório para eu verificar o resultado.";

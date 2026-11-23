@@ -1,4 +1,4 @@
-// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.3.
+// EasyComp Keyboard Light — native multilingual setup wizard v1.2.1-dev.4.
 // The eight language bundles ship with the wizard; no online translation service.
 import AppKit
 import Foundation
@@ -6,7 +6,7 @@ import Darwin
 import IOKit.hidsystem
 
 private let issuePage = "https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/issues/new?template=installation_failure.md"
-private let versionText = "1.2.1-dev.3"
+private let versionText = "1.2.1-dev.4"
 
 private final class WizardLanguage {
     static let supported: [(code: String, nativeName: String)] = [
@@ -109,12 +109,15 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var languagePopup: NSPopUpButton!
     private var openButton: NSButton!
     private var removeButton: NSButton!
+    private var accessButton: NSButton!
     private var buildButton: NSButton!
     private var detailsButton: NSButton!
     private var detailsScroll: NSScrollView!
     private var overview: NSTextField!
     private var welcomeAlert: NSAlert?
     private var preparingControllerStop = false
+    private var resettingHIDAccess = false
+    private var lastHIDResetStatus: Int32?
     private var running: Process?
     private var fullLog = ""
     private var reportURL: URL?
@@ -126,6 +129,25 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private let installLock = SetupInstallLock()
     private var checkHIDAccess: () -> IOHIDAccessType = { IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) }
     private var requestHIDAccess: () -> Bool = { IOHIDRequestAccess(kIOHIDRequestTypeListenEvent) }
+    // Fixed service and bundle only; no caller-supplied reset target or global reset.
+    private var resetHIDAccess: (@escaping (Int32) -> Void) -> Void = { completion in
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+        task.arguments = ["reset", "ListenEvent", "nl.easycompzeeland.KeyboardLight.Setup"]
+        task.standardInput = FileHandle.nullDevice
+        task.standardOutput = FileHandle.nullDevice
+        task.standardError = FileHandle.nullDevice
+        task.terminationHandler = { finished in
+            DispatchQueue.main.async { completion(finished.terminationStatus) }
+        }
+        do {
+            try task.run()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                if task.isRunning { task.terminate() }
+            }
+        } catch { DispatchQueue.main.async { completion(-1) } }
+    }
+    private var presentHIDResetResult: (NSAlert) -> Void = { _ = $0.runModal() }
     private var openHIDPrivacy: () -> Void = {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
             NSWorkspace.shared.open(url)
@@ -211,7 +233,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         progress.isDisplayedWhenStopped = false
         content.addSubview(progress)
 
-        let scroll = NSScrollView(frame: NSRect(x: 28, y: 130, width: 800, height: 225))
+        let scroll = NSScrollView(frame: NSRect(x: 28, y: 170, width: 800, height: 185))
         scroll.borderType = .bezelBorder
         scroll.hasVerticalScroller = true
         scroll.autohidesScrollers = true
@@ -228,10 +250,11 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         content.addSubview(overview)
         openButton = button("", frame: NSRect(x: 26, y: 79, width: 170, height: 34), action: #selector(openInstalledApp))
         removeButton = button("", frame: NSRect(x: 208, y: 79, width: 170, height: 34), action: #selector(uninstall))
-        buildButton = button("", frame: NSRect(x: 390, y: 79, width: 200, height: 34), action: #selector(checkBuild))
+        accessButton = button("", frame: NSRect(x: 390, y: 79, width: 200, height: 34), action: #selector(showHIDAccess))
+        buildButton = button("", frame: NSRect(x: 28, y: 130, width: 260, height: 34), action: #selector(checkBuild))
         detailsButton = button("", frame: NSRect(x: 602, y: 79, width: 226, height: 34), action: #selector(toggleDetails))
         buildButton.isHidden = true
-        for control in [openButton, removeButton, buildButton, detailsButton] { content.addSubview(control!) }
+        for control in [openButton, removeButton, accessButton, buildButton, detailsButton] { content.addSubview(control!) }
 
         installButton = button("", frame: NSRect(x: 26, y: 22, width: 125, height: 34), action: #selector(install))
         installButton.keyEquivalent = "\r"
@@ -275,9 +298,10 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         openButton.title = T("openApp")
         removeButton.title = T("uninstall")
         buildButton.title = T("checkBuild")
+        accessButton.title = T("hidAccessButton")
         detailsButton.title = T(detailsScroll.isHidden ? "showDetails" : "hideDetails")
         overview.stringValue = T("overview")
-        if running == nil && !preparingControllerStop {
+        if !busy {
             openButton.isEnabled = installed
             removeButton.isEnabled = installed
         }
@@ -306,7 +330,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
     private var installedApp: URL {
         FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/EasyComp Keyboard Light.app")
     }
-    private var busy: Bool { running != nil || preparingControllerStop }
+    private var busy: Bool { running != nil || preparingControllerStop || resettingHIDAccess }
 
     private func languageChooser() -> NSAlert {
         let alert = NSAlert()
@@ -347,7 +371,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         refreshTranslations()
     }
     private func setBusy(_ value: Bool) {
-        for button in [installButton, reportButton, closeButton, buildButton, removeButton, openButton] {
+        for button in [installButton, reportButton, closeButton, buildButton, removeButton, openButton, accessButton] {
             button?.isEnabled = !value
         }
         languagePopup.isEnabled = !value
@@ -404,6 +428,7 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         environment["ECZ_SETUP_REQUESTER"] = "nl.easycompzeeland.KeyboardLight.Setup"
         environment["ECZ_SETUP_VERSION"] = versionText
         environment["ECZ_SETUP_HID_HOST"] = Bundle.main.executableURL?.path
+        environment["ECZ_SETUP_RESET_STATUS"] = lastHIDResetStatus.map(String.init) ?? "not attempted"
         environment["ECZ_SETUP_NAME"] = Bundle.main.bundleURL.lastPathComponent
         let access = checkHIDAccess()
         environment["ECZ_SETUP_GUI_ACCESS"] = access == kIOHIDAccessTypeGranted ? "granted" : access == kIOHIDAccessTypeDenied ? "denied" : "unknown"
@@ -538,12 +563,48 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
         alert.informativeText = T(checkHIDAccess() == kIOHIDAccessTypeGranted ? "hidAccessGrantedBody" : "hidAccessBody")
         alert.addButton(withTitle: T("hidAccessRequest"))
         alert.addButton(withTitle: T("hidAccessRetry"))
+        alert.addButton(withTitle: T("hidResetAction"))
         alert.addButton(withTitle: T("cancel"))
         alert.buttons.first?.keyEquivalent = ""
         alert.buttons.last?.keyEquivalent = "\r"
         return alert
     }
+    @objc private func showHIDAccess() {
+        guard !busy else { return }
+        handleHIDAccessResponse(hidAccessAlert().runModal())
+    }
+    private func hidResetConfirmation() -> NSAlert {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = T("hidResetTitle")
+        alert.informativeText = T("hidResetBody")
+        alert.addButton(withTitle: T("hidResetAction"))
+        alert.addButton(withTitle: T("cancel"))
+        alert.buttons.first?.hasDestructiveAction = true
+        alert.buttons.first?.keyEquivalent = ""
+        alert.buttons.last?.keyEquivalent = "\r"
+        return alert
+    }
+    private func beginHIDReset(_ response: NSApplication.ModalResponse) {
+        guard response == .alertFirstButtonReturn, !busy else { return }
+        resettingHIDAccess = true
+        setBusy(true)
+        resetHIDAccess { [weak self] code in
+            guard let self = self else { return }
+            self.lastHIDResetStatus = code
+            self.resettingHIDAccess = false
+            self.setBusy(false)
+            self.fullLog += "\nExplicit Setup-only ListenEvent reset: exit \(code). No HID command sent.\n"
+            self.details.string = self.fullLog
+            let alert = NSAlert()
+            alert.messageText = self.T(code == 0 ? "hidResetDoneTitle" : "hidResetFailedTitle")
+            alert.informativeText = self.T(code == 0 ? "hidResetDoneBody" : "hidResetFailedBody")
+            alert.addButton(withTitle: "OK")
+            self.presentHIDResetResult(alert)
+        }
+    }
     private func handleHIDAccessResponse(_ response: NSApplication.ModalResponse) {
+        guard !busy else { return }
         if response == .alertFirstButtonReturn {
             // Explicit user action only: no automatic permission requests during diagnosis or updates.
             let granted = requestHIDAccess()
@@ -551,6 +612,8 @@ final class InstallationWizard: NSObject, NSApplicationDelegate, NSWindowDelegat
             fullLog += entry
             details.string += entry
             openHIDPrivacy()
+        } else if response == .alertThirdButtonReturn {
+            beginHIDReset(hidResetConfirmation().runModal())
         } else if response == .alertSecondButtonReturn {
             // A fresh installer invocation always repeats its read-only protocol gate before replacement.
             DispatchQueue.main.async { [weak self] in self?.install() }

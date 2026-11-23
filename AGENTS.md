@@ -8,3 +8,5 @@
 - Clearly distinguish physical observations, successful HID requests, automated fixture results and pending hardware tests. Minimum/off operation alone does not prove full brightness, installer, timeout or Touch Bar compatibility.
 - Preserve historical documents as labelled snapshots, with links to current instructions when appropriate. Do not silently rewrite historical test results as current results.
 - Keep the single maintained source branch on dev/beta and preserve the proven A2141 Magic protocol and installer rollback. Do not publish, overwrite release assets, retag or merge to main as a side effect of documentation maintenance.
+
+- The owner does not have or plan to purchase Apple Developer membership. Do not make paid signing a project prerequisite. Keep ad-hoc signing limitations and explicit per-build privacy consent clear; preserve existing signature and HID safety checks.
