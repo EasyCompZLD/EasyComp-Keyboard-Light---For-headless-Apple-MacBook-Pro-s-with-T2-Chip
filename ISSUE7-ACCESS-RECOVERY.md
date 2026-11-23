@@ -1,6 +1,6 @@
 # Issue #7 — native HID execution candidate
 
-**Working build:** `1.2.1-dev.3`, build 14, on the existing `dev/beta` branch. Unreleased; no stable compatibility claim. The updater remains off by default and is not needed for this test.
+**Working build:** `1.2.1-dev.3`, build 14, on the existing `dev/beta` branch. I published [this test prerelease](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/releases/tag/v1.2.1-dev.3) on 23 November 2026; no stable compatibility claim. The updater remains off by default and is not needed for this test.
 
 ## Follow-up that changes the diagnosis
 
@@ -33,6 +33,12 @@ Apple discusses responsible code and stable code-signing identity in its [launch
 Local regression coverage includes 58 standalone production-HID cases, 64 native bridge cases (including forbidden Setup writes), 38 isolated-tool cases, real Swift native entry points with a mock backend, signature/source/version mismatch fixtures, the GUI consent/recovery controls in all eight languages and the existing installer/state/update regressions. Tests do not request real permissions or run physical HID writes.
 
 Local verification passed: 41 regression tests and the native macOS build, including all eight controller and eight Setup localizations. Shell syntax and the unchanged canonical driver body were also checked before packaging. TCC attribution and successful native-host operation on MacBookPro15,4 / Sequoia 15.8.3 remain **pending hardware confirmation**. This is a candidate implementation, not a claim that the issue is resolved.
+
+## Published test package
+
+I published dev.3 as a prerelease, without replacing stable 1.2.0 or merging main. Its source is `7d1609fc259261b623864b98190a63039ce92264`; the ZIP SHA-256 is `25e3fb363d4f782585080b0e3b0f659d846e9a10f6408fc601017adc0273eff6`. GitHub Actions [run 45169965666](https://github.com/EasyCompZLD/EasyComp-Keyboard-Light---For-headless-Apple-MacBook-Pro-s-with-T2-Chip/actions/runs/45169965666) passed for that commit. GitHub's uploaded asset digest matches the local archive.
+
+I also verified the signed archive after extraction, its bundled source/digest and x86_64/arm64 Setup slices. The real native Setup worker queried passive permission status on the development Mac without opening devices, requesting permission or writing reports. This does not establish the tester's TCC attribution or hardware result. The local Intel cross-link warning described below also occurred for dev.3; Intel Sequoia launch/runtime acceptance remains pending.
 
 ## Earlier dev.2 observations (historical)
 

@@ -2,7 +2,7 @@
 
 **Active branch:** `dev/beta`
 
-**Working version:** `1.2.1-dev.3` (unreleased; published stable is `1.2.0`) (see `VERSION`)
+**Working version:** `1.2.1-dev.3` (published test prerelease; published stable is `1.2.0`) (see `VERSION`)
 
 **Application:** `EasyComp Keyboard Light.app`
 
